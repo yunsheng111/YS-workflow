@@ -1,0 +1,29 @@
+# 工具缓存
+.ace-tool/
+
+# 运行时数据（调试/遥测/会话）
+debug/
+todos/
+telemetry/
+projects/
+shell-snapshots/
+nul
+
+# 统计和缓存
+stats-cache.json
+statsig/
+
+# 会话历史
+history.jsonl
+
+# 三术记忆
+.sanshu-memory/
+
+# 计划文档（临时）
+plan/
+
+# IDE 锁文件
+ide/*.lock
+
+# 敏感配置（包含 API Token）
+settings.json
