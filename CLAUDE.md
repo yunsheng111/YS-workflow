@@ -42,6 +42,8 @@
 
 **决策依据：任务复杂度 + 专业领域 + 上下文需求**
 
+**📊 可视化决策树**：查看 [.ccg/ARCHITECTURE-VISUAL.md - 工具选择决策树](./.ccg/ARCHITECTURE-VISUAL.md#工具选择决策树)
+
 ### 简单任务（直接使用 MCP 工具）
 
 - 代码检索 → `mcp__ace-tool__search_context`
@@ -60,26 +62,28 @@
 
 ### 高复杂度（委托给 CCG 命令 → 代理）
 
-| 任务类型 | 判定标准 | CCG 命令 | 执行方式 |
-|----------|----------|----------|----------|
-| 需求澄清 | 需求模糊、多目标 | `ccg:analyze` | 代理：`analyze-agent` |
-| UI/UX 设计文档 | 需要完整设计方案 | - | 代理：`ui-ux-designer` |
-| 前端开发 | 组件、页面、样式 | `ccg:frontend` | 代理：`frontend-agent` |
-| 后端开发 | API、服务、性能 | `ccg:backend` | 代理：`backend-agent` |
-| 全栈开发（轻量） | 中等复杂度、快速迭代 | `ccg:feat` | 代理：`fullstack-light-agent` |
-| 全栈开发（复杂） | 架构变更、多模块联动 | `ccg:workflow` | 代理：`fullstack-agent` |
-| 规划 | 生成实施计划 | `ccg:plan` | 代理：`planner` |
-| 执行 | 按计划实施 | `ccg:execute` | 代理：`execute-agent` |
-| 代码审查 | 需要多视角分析 | `ccg:review` | 代理：`review-agent` |
-| 调试 | 复杂缺陷定位 | `ccg:debug` | 代理：`debug-agent` |
-| 测试 | 测试计划与运行 | `ccg:test` | 代理：`test-agent` |
-| 性能优化 | 性能/成本调优 | `ccg:optimize` | 代理：`optimize-agent` |
-| Git 提交 | 生成提交信息 | `ccg:commit` | 代理：`commit-agent` |
-| 项目初始化 | 生成 CLAUDE.md 索引 | `ccg:init` | 代理：`init-architect` |
-| Prompt 增强 | 增强后确认执行 | `ccg:enhance` | 命令内执行（主代理） |
-| Git 回滚 | 安全回滚到历史版本 | `ccg:rollback` | 命令内执行（主代理） |
-| 分支清理 | 清理已合并/过期分支 | `ccg:clean-branches` | 命令内执行（主代理） |
-| Git Worktree | 管理工作树 | `ccg:worktree` | 命令内执行（主代理） |
+**📊 完整映射表**：查看 [.ccg/ARCHITECTURE-VISUAL.md - 命令-代理映射矩阵](./.ccg/ARCHITECTURE-VISUAL.md#命令-代理映射矩阵)
+
+| 任务类型 | 判定标准 | CCG 命令 | 执行方式 | 架构图 |
+|----------|----------|----------|----------|--------|
+| 需求澄清 | 需求模糊、多目标 | `ccg:analyze` | 代理：`analyze-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| UI/UX 设计文档 | 需要完整设计方案 | - | 代理：`ui-ux-designer` | - |
+| 前端开发 | 组件、页面、样式 | `ccg:frontend` | 代理：`frontend-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 后端开发 | API、服务、性能 | `ccg:backend` | 代理：`backend-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 全栈开发（轻量） | 中等复杂度、快速迭代 | `ccg:feat` | 代理：`fullstack-light-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 全栈开发（复杂） | 架构变更、多模块联动 | `ccg:workflow` | 代理：`fullstack-agent` | [6阶段工作流](./.ccg/ARCHITECTURE-VISUAL.md#6-阶段工作流图) |
+| 规划 | 生成实施计划 | `ccg:plan` | 代理：`planner` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 执行 | 按计划实施 | `ccg:execute` | 代理：`execute-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 代码审查 | 需要多视角分析 | `ccg:review` | 代理：`review-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 调试 | 复杂缺陷定位 | `ccg:debug` | 代理：`debug-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 测试 | 测试计划与运行 | `ccg:test` | 代理：`test-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 性能优化 | 性能/成本调优 | `ccg:optimize` | 代理：`optimize-agent` | [流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| Git 提交 | 生成提交信息 | `ccg:commit` | 代理：`commit-agent` | - |
+| 项目初始化 | 生成 CLAUDE.md 索引 | `ccg:init` | 代理：`init-architect` | - |
+| Prompt 增强 | 增强后确认执行 | `ccg:enhance` | 命令内执行（主代理） | - |
+| Git 回滚 | 安全回滚到历史版本 | `ccg:rollback` | 命令内执行（主代理） | - |
+| 分支清理 | 清理已合并/过期分支 | `ccg:clean-branches` | 命令内执行（主代理） | - |
+| Git Worktree | 管理工作树 | `ccg:worktree` | 命令内执行（主代理） | - |
 
 ### 工具类代理（非 CCG 命令路由）
 
@@ -108,6 +112,11 @@
 **架构说明**：
 - CCG 命令是入口，负责路由到对应代理
 - 代理封装完整的执行逻辑（工作流 + Skill + MCP）
+
+**📊 系统架构可视化**：
+- [系统三层架构图](./.ccg/ARCHITECTURE-VISUAL.md#系统三层架构图)
+- [命令调用流程图](./.ccg/ARCHITECTURE-VISUAL.md#命令调用流程图)
+- [代理工具集配置矩阵](./.ccg/ARCHITECTURE-VISUAL.md#代理工具集配置矩阵)
 
 ---
 
