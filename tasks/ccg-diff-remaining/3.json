@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "diff-group-g",
+  "description": "你是文件对比专家。请对比以下 3 类文件：\n\n## 1. Output Styles（上游有，本地无）\n上游路径：D:/Program Files/nvm/node_global/node_modul",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

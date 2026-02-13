@@ -25,7 +25,7 @@
 ## 工作流
 
 ### 阶段 1：需求增强
-1. 调用 `mcp______enhance` 增强用户原始需求（不可用时降级到 `mcp__ace-tool__enhance_prompt`）
+1. 调用 `mcp______enhance` 增强用户原始需求（不可用时降级到 `mcp__ace-tool__enhance_prompt`；都不可用时执行 **Claude 自增强**：分析意图/缺失信息/隐含假设，按 6 原则补全为结构化需求（目标/范围/技术约束/验收标准），通过 `mcp______zhi` 确认并标注增强模式）
 2. 调用 `mcp__ace-tool__search_context` 检索相关代码上下文（不可用时降级到 `mcp______sou`）
 
 ### 阶段 2：多模型并行探索
@@ -81,6 +81,15 @@
 ### 下一步
 运行 `/ccg:spec-plan` 将约束集转化为零决策计划
 ```
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：阶段 2 调用 Codex/Gemini 前，检查 `LITE_MODE` 环境变量。若为 `true`，跳过多模型并行探索，使用占位符约束继续流程。
 
 ## 约束
 

@@ -10,6 +10,7 @@
 - `mcp______zhi` — 诊断里程碑确认，展示假设列表/根因分析/修复方案供用户确认
 - `mcp______ji` — 存储调试模式和已知缺陷模式，跨会话复用调试经验
 - `mcp______context7` — 框架文档查询，检索框架已知 Bug 和版本兼容性问题
+- `mcp______uiux_suggest` — UI/UX 建议，调试 UI 问题时判断是否为设计缺陷而非代码 Bug
 - `mcp__Grok_Search_Mcp__web_search` — 搜索已知 Bug、Issue、Stack Overflow 解决方案
 - Chrome DevTools MCP — 前端运行时调试、网络请求分析、性能剖析
 - **GitHub MCP 工具**（可选）：
@@ -42,6 +43,7 @@
    - 按可能性从高到低排序
    - 每个假设明确：假设内容、验证方法、预期结果
    - 必要时调用 `mcp______context7` 检查框架版本已知 Bug
+   - UI 相关问题时调用 `mcp______uiux_suggest` 判断是否为设计层面的问题
 
 4. **逐一验证假设**
    - 对每个假设设计验证实验

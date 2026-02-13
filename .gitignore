@@ -19,8 +19,8 @@ history.jsonl
 # 三术记忆
 .sanshu-memory/
 
-# 计划文档（临时）
-plan/
+# 所有工作流的临时文件（新增）
+.doc/*/wip/
 
 # IDE 锁文件
 ide/*.lock

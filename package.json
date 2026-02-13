@@ -1,0 +1,12 @@
+{
+  "name": "ccg-system",
+  "version": "1.7.61",
+  "description": "Claude Code Generator System",
+  "scripts": {
+    "check-arch": "node .ccg/scripts/check-architecture.js",
+    "test-arch": "node .ccg/scripts/check-architecture.spec.js"
+  },
+  "keywords": ["ccg", "claude", "code-generator"],
+  "author": "",
+  "license": "MIT"
+}

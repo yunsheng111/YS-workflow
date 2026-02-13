@@ -18,7 +18,7 @@ description: '后端专项工作流（研究→构思→计划→执行→优化
 
 ## 你的角色
 
-你是**后端编排者**，协调多模型完成服务端任务（研究 → 构思 → 计划 → 执行 → 优化 → 评审），用中文协助用户。
+你是**后端编排者**，负责将用户的后端开发需求委托给 `backend-agent` 代理执行。
 
 **协作模型**：
 - **Codex** – 后端逻辑、算法（**后端权威，可信赖**）
@@ -27,147 +27,49 @@ description: '后端专项工作流（研究→构思→计划→执行→优化
 
 ---
 
-## 多模型调用规范
+## 执行工作流
 
-**调用语法**：
+**后端任务**：$ARGUMENTS
+
+### 步骤 1：委托给 backend-agent
+
+调用 Task 工具启动 backend-agent 代理，传入用户需求。
 
 ```
-# 新会话调用
-Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend codex - \"$PWD\" <<'EOF'
-ROLE_FILE: <角色提示词路径>
-<TASK>
-需求：<增强后的需求（如未增强则用 $ARGUMENTS）>
-上下文：<前序阶段收集的项目上下文、分析结果等>
-</TASK>
-OUTPUT: 期望输出格式
-EOF",
-  run_in_background: false,
-  timeout: 3600000,
-  description: "简短描述"
-})
-
-# 复用会话调用
-Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend codex resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <角色提示词路径>
-<TASK>
-需求：<增强后的需求（如未增强则用 $ARGUMENTS）>
-上下文：<前序阶段收集的项目上下文、分析结果等>
-</TASK>
-OUTPUT: 期望输出格式
-EOF",
-  run_in_background: false,
-  timeout: 3600000,
-  description: "简短描述"
+Task({
+  subagent_type: "backend-agent",
+  prompt: "$ARGUMENTS",
+  description: "后端专项开发（Codex 主导）"
 })
 ```
 
-**角色提示词**：
+backend-agent 将自动执行以下流程：
+1. 增强需求（可选）
+2. 检索代码上下文
+3. 调用 Codex 进行技术分析和架构规划
+4. 实施代码变更
+5. Codex 审查优化
+6. 最终评审
 
-| 阶段 | Codex |
-|------|-------|
-| 分析 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/analyzer.md` |
-| 规划 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md` |
-| 审查 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/reviewer.md` |
+### 步骤 2：等待代理完成
 
-**会话复用**：每次调用返回 `SESSION_ID: xxx`，后续阶段用 `resume xxx` 复用上下文。阶段 2 保存 `CODEX_SESSION`，阶段 3 和 5 使用 `resume` 复用。
-
----
-
-## 网络搜索规范（GrokSearch 优先）
-
-**首次需要外部信息时执行以下步骤**：
-
-1. 调用 `mcp__Grok_Search_Mcp__get_config_info` 做可用性检查
-2. 调用 `mcp__Grok_Search_Mcp__toggle_builtin_tools`，`action: "off"`，确保禁用内置 WebSearch/WebFetch
-3. 使用 `mcp__Grok_Search_Mcp__web_search` 进行搜索；需要全文时再调用 `mcp__Grok_Search_Mcp__web_fetch`
-4. 若搜索失败或结果不足，执行降级步骤：
-   - 调用 `get_config_info` 获取状态
-   - 若状态异常，调用 `switch_model` 切换模型后重试一次
-   - 仍失败则使用 `mcp______context7` 获取框架/库官方文档
-   - 若仍不足，提示用户提供权威来源
-5. 关键结论与来源需通过 `mcp______ji` 记录，便于后续复用与审计
+backend-agent 完成后会返回完整的后端实施报告，包含：
+- API 接口清单
+- 数据模型变更
+- 变更文件清单
+- 测试覆盖
+- 关键设计决策
 
 ---
 
-## 沟通守则
+## 适用场景
 
-1. 响应以模式标签 `[模式：X]` 开始，初始为 `[模式：研究]`
-2. 严格按 `研究 → 构思 → 计划 → 执行 → 优化 → 评审` 顺序流转
-3. 在需要询问用户时，优先使用三术 (`mcp______zhi`) 工具进行交互，举例场景：请求用户确认/选择/批准
-
----
-
-## 核心工作流
-
-### 🔍 阶段 0：Prompt 增强（可选）
-
-`[模式：准备]` - 优先调用 `mcp______enhance`（不可用时降级到 `mcp__ace-tool__enhance_prompt`），**用增强结果替代原始 $ARGUMENTS，后续调用 Codex 时传入增强后的需求**
-
-### 🔍 阶段 1：研究
-
-`[模式：研究]` - 理解需求并收集上下文
-
-1. 调用 `mcp______ji` 回忆项目后端架构规范和 API 设计模式
-2. **代码检索**：调用 `mcp__ace-tool__search_context` 检索现有 API、数据模型、服务架构（降级：`mcp______sou` → Glob + Grep）
-2. 需求完整性评分（0-10 分）：≥7 继续，<7 停止补充
-
-### 💡 阶段 2：构思
-
-`[模式：构思]` - Codex 主导分析
-
-**⚠️ 必须调用 Codex**（参照上方调用规范）：
-- ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/analyzer.md`
-- 需求：增强后的需求（如未增强则用 $ARGUMENTS）
-- 上下文：阶段 1 收集的项目上下文
-- OUTPUT: 技术可行性分析、推荐方案（至少 2 个）、风险点评估
-
-**📌 保存 SESSION_ID**（`CODEX_SESSION`）用于后续阶段复用。
-
-输出方案（至少 2 个），等待用户选择。
-
-### 📋 阶段 3：计划
-
-`[模式：计划]` - Codex 主导规划
-
-**⚠️ 必须调用 Codex**（使用 `resume <CODEX_SESSION>` 复用会话）：
-- ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md`
-- 需求：用户选择的方案
-- 上下文：阶段 2 的分析结果
-- OUTPUT: 文件结构、函数/类设计、依赖关系
-
-Claude 综合规划，请求用户批准后存入 `.claude/plan/任务名.md`
-
-### ⚡ 阶段 4：执行
-
-`[模式：执行]` - 代码开发
-
-- 严格按批准的计划实施
-- 遵循项目现有代码规范
-- 确保错误处理、安全性、性能优化
-
-### 🚀 阶段 5：优化
-
-`[模式：优化]` - Codex 主导审查
-
-**⚠️ 必须调用 Codex**（参照上方调用规范）：
-- ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/reviewer.md`
-- 需求：审查以下后端代码变更
-- 上下文：git diff 或代码内容
-- OUTPUT: 安全性、性能、错误处理、API 规范问题列表
-
-整合审查意见，用户确认后执行优化。
-
-### ✅ 阶段 6：评审
-
-`[模式：评审]` - 最终评估
-
-- 对照计划检查完成情况
-- 运行测试验证功能
-- 报告问题与建议
-
----
+| 场景 | 示例 |
+|------|------|
+| API 开发 | "实现用户认证 API" |
+| 数据库设计 | "设计订单表结构" |
+| 业务逻辑 | "实现支付流程" |
+| 性能优化 | "优化查询性能" |
 
 ## 关键规则
 

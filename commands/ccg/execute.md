@@ -20,12 +20,21 @@ $ARGUMENTS
 
 ## 多模型调用规范
 
+### 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：调用外部模型前，检查 `LITE_MODE` 环境变量。若为 `true`，跳过 Codex/Gemini 调用，使用占位符响应继续流程。
+
 **调用语法**（并行用 `run_in_background: true`）：
 
 ```
 # 复用会话调用（推荐）- 原型生成（Implementation Prototype）
 Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> resume <SESSION_ID> - \"$PWD\" <<'EOF'
+  command: "{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}resume <SESSION_ID> - \"{{WORKDIR}}\" <<'EOF'
 ROLE_FILE: <角色提示词路径>
 <TASK>
 需求：<任务描述>
@@ -40,7 +49,7 @@ EOF",
 
 # 新会话调用 - 原型生成（Implementation Prototype）
 Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> - \"$PWD\" <<'EOF'
+  command: "{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}- \"{{WORKDIR}}\" <<'EOF'
 ROLE_FILE: <角色提示词路径>
 <TASK>
 需求：<任务描述>
@@ -54,11 +63,13 @@ EOF",
 })
 ```
 
+**Gemini 模型指定**：调用 Gemini 时，wrapper 自动读取 `GEMINI_MODEL` 环境变量（默认 `gemini-2.5-pro`）。
+
 **审计调用语法**（Code Review / Audit）：
 
 ```
 Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> resume <SESSION_ID> - \"$PWD\" <<'EOF'
+  command: "{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}resume <SESSION_ID> - \"{{WORKDIR}}\" <<'EOF'
 ROLE_FILE: <角色提示词路径>
 <TASK>
 Scope: Audit the final code changes.
@@ -83,8 +94,8 @@ EOF",
 
 | 阶段 | Codex | Gemini |
 |------|-------|--------|
-| 实施 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/frontend.md` |
-| 审查 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/reviewer.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/reviewer.md` |
+| 实施 | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/frontend.md` |
+| 审查 | `~/.claude/.ccg/prompts/codex/reviewer.md` | `~/.claude/.ccg/prompts/gemini/reviewer.md` |
 
 **会话复用**：如果 `/ccg:plan` 提供了 SESSION_ID，使用 `resume <SESSION_ID>` 复用上下文。
 
@@ -121,246 +132,34 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 
 **执行任务**：$ARGUMENTS
 
-**执行初始化**：
-1. 调用 `mcp______ji` 回忆项目历史实施经验、常见问题和解决方案
-2. 如有历史经验，在后续阶段中参考使用
+**执行方式**：委托给 execute-agent 代理执行
 
-### 📖 Phase 0：读取计划
-
-`[模式：准备]`
-
-1. **识别输入类型**：
-   - 计划文件路径（如 `.claude/plan/xxx.md`）
-   - 直接的任务描述
-
-2. **读取计划内容**：
-   - 若提供了计划文件路径，读取并解析
-   - 提取：任务类型、实施步骤、关键文件、SESSION_ID
-
-3. **执行前确认（使用三术 zhi）**：
-
-   调用 `mcp______zhi` 工具确认执行：
-   - `message`:
-     ```
-     ## 📋 执行前确认
-
-     ### 计划文件
-     <计划文件路径>
-
-     ### 任务类型
-     <前端/后端/全栈>
-
-     ### 关键文件
-     <将要修改的文件列表>
-
-     ### SESSION_ID
-     - CODEX_SESSION: <session_id 或 "无">
-     - GEMINI_SESSION: <session_id 或 "无">
-
-     确认开始执行？
-     ```
-   - `is_markdown`: true
-   - `predefined_options`: ["确认执行", "查看计划详情", "取消"]
-
-   根据用户选择：
-   - 「确认执行」→ 进入 Phase 1
-   - 「查看计划详情」→ 展示完整计划后再次确认
-   - 「取消」→ 终止执行
-
-4. **任务类型判断**：
-
-   | 任务类型 | 判断依据 | 路由 |
-   |----------|----------|------|
-   | **前端** | 页面、组件、UI、样式、布局 | Gemini |
-   | **后端** | API、接口、数据库、逻辑、算法 | Codex |
-   | **全栈** | 同时包含前后端 | Codex ∥ Gemini 并行 |
-
----
-
-### 🔍 Phase 1：上下文快速检索
-
-`[模式：检索]`
-
-**⚠️ 必须使用 MCP 工具快速检索上下文，禁止手动逐个读取文件**
-
-根据计划中的"关键文件"列表，调用 `mcp__ace-tool__search_context` 检索相关代码：
+调用 Task 工具启动 execute-agent 代理：
 
 ```
-mcp__ace-tool__search_context({
-  query: "<基于计划内容构建的语义查询，包含关键文件、模块、函数名>",
-  project_root_path: "$PWD"
+Task({
+  subagent_type: "execute-agent",
+  prompt: "$ARGUMENTS",
+  description: "严格按计划执行实施任务"
 })
 ```
 
-**检索策略**：
-- 从计划的"关键文件"表格提取目标路径
-- 构建语义查询覆盖：入口文件、依赖模块、相关类型定义
-- 若检索结果不足，可追加 1-2 次递归检索
-- 若 `search_context` 不可用：优先调用 `mcp______sou` 语义搜索；再不可用则回退到 Glob + Grep
-- **禁止**使用 Bash + find/ls 手动探索项目结构
+**参数说明**：
+- `subagent_type`: 固定为 "execute-agent"
+- `prompt`: 传递计划文件路径或任务描述
+- `description`: 简短描述任务内容
 
-**检索完成后**：
-- 整理检索到的代码片段
-- 确认已获取实施所需的完整上下文
-- 进入 Phase 3
+**代理职责**：
+- execute-agent 代理内部封装完整的执行逻辑
+- 包含原型生成、编码实施、审计交付等所有阶段
+- 支持调用 Codex/Gemini 进行原型生成和审计
+- 自动处理占位符渲染（{{CCG_BIN}}、{{WORKDIR}} 等）
 
----
-
-### 🎨 Phase 3：原型获取
-
-`[模式：原型]`
-
-**根据任务类型路由**：
-
-#### Route A: 前端/UI/样式 → Gemini
-
-**限制**：上下文 < 32k tokens
-
-1. 调用 Gemini（使用 `C:/Users/Administrator/.claude/.ccg/prompts/gemini/frontend.md`）
-2. 输入：计划内容 + 检索到的上下文 + 目标文件
-3. OUTPUT: `Unified Diff Patch ONLY. Strictly prohibit any actual modifications.`
-4. **Gemini 是前端设计的权威，其 CSS/React/Vue 原型为最终视觉基准**
-5. ⚠️ **警告**：忽略 Gemini 对后端逻辑的建议
-6. 若计划包含 `GEMINI_SESSION`：优先 `resume <GEMINI_SESSION>`
-
-#### Route B: 后端/逻辑/算法 → Codex
-
-1. 调用 Codex（使用 `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md`）
-2. 输入：计划内容 + 检索到的上下文 + 目标文件
-3. OUTPUT: `Unified Diff Patch ONLY. Strictly prohibit any actual modifications.`
-4. **Codex 是后端逻辑的权威，利用其逻辑运算与 Debug 能力**
-5. 若计划包含 `CODEX_SESSION`：优先 `resume <CODEX_SESSION>`
-
-#### Route C: 全栈 → 并行调用
-
-1. **并行调用**（`run_in_background: true`）：
-   - Gemini：处理前端部分
-   - Codex：处理后端部分
-2. 用 `TaskOutput` 等待两个模型的完整结果
-3. 各自使用计划中对应的 `SESSION_ID` 进行 `resume`（若缺失则创建新会话）
-
-**务必遵循上方 `多模型调用规范` 的 `重要` 指示**
-
----
-
-### ⚡ Phase 4：编码实施
-
-`[模式：实施]`
-
-**Claude 作为代码主权者执行以下步骤**：
-
-1. **读取 Diff**：解析 Codex/Gemini 返回的 Unified Diff Patch
-
-2. **思维沙箱**：
-   - 模拟应用 Diff 到目标文件
-   - 检查逻辑一致性
-   - 识别潜在冲突或副作用
-
-3. **重构清理**：
-   - 将"脏原型"重构为**高可读、高可维护性、企业发布级代码**
-   - 去除冗余代码
-   - 确保符合项目现有代码规范
-   - **非必要不生成注释与文档**，代码自解释
-
-4. **最小作用域**：
-   - 变更仅限需求范围
-   - **强制审查**变更是否引入副作用
-   - 做针对性修正
-
-5. **应用变更**：
-   - 使用 Edit/Write 工具执行实际修改
-   - **仅修改必要的代码**，严禁影响用户现有的其他功能
-6. **自检验证**（强烈建议）：
-   - 运行项目既有的 lint / typecheck / tests（优先最小相关范围）
-   - 若失败：优先修复回归，再继续进入 Phase 5
-
----
-
-### ✅ Phase 5：审计与交付
-
-`[模式：审计]`
-
-#### 5.1 自动审计
-
-**变更生效后，强制立即并行调用** Codex 和 Gemini 进行 Code Review：
-
-1. **Codex 审查**（`run_in_background: true`）：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/reviewer.md`
-   - 输入：变更的 Diff + 目标文件
-   - 关注：安全性、性能、错误处理、逻辑正确性
-
-2. **Gemini 审查**（`run_in_background: true`）：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/gemini/reviewer.md`
-   - 输入：变更的 Diff + 目标文件
-   - 关注：可访问性、设计一致性、用户体验
-
-用 `TaskOutput` 等待两个模型的完整审查结果。优先复用 Phase 3 的会话（`resume <SESSION_ID>`）以保持上下文一致。
-
-#### 5.2 整合修复
-
-1. 综合 Codex + Gemini 的审查意见
-2. 按信任规则权衡：后端以 Codex 为准，前端以 Gemini 为准
-3. 执行必要的修复
-4. 修复后按需重复 Phase 5.1（直到风险可接受）
-
-#### 5.3 交付确认（使用三术 zhi）
-
-审计通过后，调用 `mcp______zhi` 工具展示结果：
-- `message`:
-  ```
-  ## ✅ 执行完成
-
-  ### 变更摘要
-  | 文件 | 操作 | 说明 |
-  |------|------|------|
-  | <path/to/file.ts> | <修改/新增/删除> | <描述> |
-
-  ### 审计结果
-  - Codex：<通过/发现 N 个问题>
-  - Gemini：<通过/发现 N 个问题>
-
-  ### 后续建议
-  1. <建议的测试步骤>
-  2. <建议的验证步骤>
-
-  请选择下一步操作：
-  ```
-- `is_markdown`: true
-- `predefined_options`: ["运行测试", "提交代码", "查看详细变更", "更新 Issue", "完成"]
-
-根据用户选择：
-- 「运行测试」→ 执行项目测试命令
-- 「提交代码」→ 提示用户执行 `/ccg:commit`
-- 「查看详细变更」→ 执行 `git diff` 展示完整变更
-- 「更新 Issue」→ 执行 Issue 更新流程
-- 「完成」→ 终止当前回复
-
-**GitHub Issue 更新流程**（用户选择「更新 Issue」或任务关联了 Issue 时执行）：
-
-1. **检测仓库信息**：`git remote get-url origin`，解析 owner 和 repo
-2. **更新 Issue 状态**：
-   ```
-   mcp__github__update_issue({
-     owner: "<owner>",
-     repo: "<repo>",
-     issue_number: <issue-number>,
-     state: "closed",
-     labels: ["fixed"]
-   })
-   ```
-3. **可选**：使用 `mcp__github__add_issue_comment` 添加实施摘要评论
-   ```
-   mcp__github__add_issue_comment({
-     owner: "<owner>",
-     repo: "<repo>",
-     issue_number: <issue-number>,
-     body: "## 实施完成\n<变更摘要>"
-   })
-   ```
-4. **降级方案**：GitHub MCP 不可用时使用 `gh issue close <issue-number> --comment "<message>"`
-
-**执行结束**：
-调用 `mcp______ji` 存储本次执行的关键决策、遇到的问题和解决方案，供后续会话复用。
+**执行流程**：
+1. 主代理调用 Task 工具启动 execute-agent
+2. execute-agent 读取计划并执行所有阶段
+3. execute-agent 完成后返回执行结果
+4. 主代理展示最终结果给用户
 
 ---
 

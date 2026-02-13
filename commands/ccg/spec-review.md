@@ -1,6 +1,22 @@
 ---
 description: "Multi-model compliance review before archiving"
 ---
+<!-- CCG:SPEC:REVIEW:START -->
+**Core Philosophy**
+- Critical 问题是硬门禁——必须修复才能归档，不可降级或跳过。
+- 双模型交叉审查确保审查覆盖度：单一模型可能遗漏的问题通过交叉验证捕获。
+- 审查完成即归档，约束经验沉淀为团队知识资产。
+
+**Guardrails**
+- 必须使用 `spec-review-agent` 子代理执行，主代理仅协调。
+- Critical 问题必须修复才能归档，不可绕过。
+- 问题分级必须清晰：Critical（必修） / Warning（建议修） / Info（可选修）。
+- 审查结果必须使用 `mcp______zhi` 展示并确认。
+- 归档后调用 `mcp______ji` 存储约束经验，沉淀为可复用知识。
+- 前置条件：`spec-impl` 已完成实施。
+- 与其他命令的关系：如有 Critical 问题，需回到 `spec-impl` 修复后重新审查。
+
+**Steps**
 
 # /ccg:spec-review
 
@@ -49,7 +65,7 @@ description: "Multi-model compliance review before archiving"
 ```
 Task({
   subagent_type: "spec-review-agent",
-  prompt: "审查实施结果是否符合计划和约束集。\n\n计划路径：$ARGUMENTS\n工作目录：$PWD\n约束目录：.claude/spec/constraints/\n审查目录：.claude/spec/reviews/\n\n请执行：\n1. 对照计划检查完成情况\n2. 对照约束集验证合规性\n3. 多模型交叉审查\n4. 分类问题（Critical/Major/Minor）",
+  prompt: "审查实施结果是否符合计划和约束集。\n\n计划路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.claude/spec/constraints/\n审查目录：.claude/spec/reviews/\n\n请执行：\n1. 对照计划检查完成情况\n2. 对照约束集验证合规性\n3. 多模型交叉审查\n4. 分类问题（Critical/Warning/Info）",
   description: "合规审查"
 })
 ```
@@ -63,8 +79,8 @@ Task({
 
   ### 审查结果
   - Critical：<N> 个（必须修复）
-  - Major：<N> 个
-  - Minor：<N> 个
+  - Warning：<N> 个
+  - Info：<N> 个
 
   ### 合规状态
   <通过 / 需修复>
@@ -89,3 +105,12 @@ Task({
 2. Critical 问题必须修复才能归档
 3. 审查结果必须使用 zhi 确认
 4. 归档后调用 `mcp______ji` 存储项目约束经验
+
+**Exit Criteria**
+- [ ] 双模型交叉审查已完成
+- [ ] 问题已分级：Critical / Warning / Info
+- [ ] Critical 问题已全部修复（或无 Critical 问题）
+- [ ] 审查报告已写入 `.claude/spec/reviews/`
+- [ ] 审查结果已通过 zhi 展示给用户
+- [ ] 归档完成后约束经验已通过 ji 记录
+<!-- CCG:SPEC:REVIEW:END -->

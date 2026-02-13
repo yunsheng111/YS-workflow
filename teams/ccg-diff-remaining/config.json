@@ -1,0 +1,61 @@
+{
+  "name": "ccg-diff-remaining",
+  "description": "并行对比剩余文件：代理、prompts、output-styles、skills、配置",
+  "createdAt": 1770840546313,
+  "leadAgentId": "team-lead@ccg-diff-remaining",
+  "leadSessionId": "3cca4169-db94-4a50-bb34-5fcfc0a3cd14",
+  "members": [
+    {
+      "agentId": "team-lead@ccg-diff-remaining",
+      "name": "team-lead",
+      "agentType": "team-lead",
+      "model": "claude-opus-4-6",
+      "joinedAt": 1770840546313,
+      "tmuxPaneId": "",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": []
+    },
+    {
+      "agentId": "diff-group-e@ccg-diff-remaining",
+      "name": "diff-group-e",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是文件对比专家。请对比代理文件（agents）。\n\n## 上游代理文件（4 个）\n路径：D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/agents/\n- get-current-datetime.md (835B)\n- init-architect.md (5779B)\n- planner.md (7531B)\n- ui-ux-designer.md (13724B)\n\n## 本地代理文件（20 个）\n路径：C:/Users/Administrator/.claude/agents/ccg/\n- analyze-agent.md\n- backend-agent.md\n- commit-agent.md\n- debug-agent.md\n- execute-agent.md\n- frontend-agent.md\n- fullstack-agent.md\n- fullstack-light-agent.md\n- get-current-datetime.md\n- init-architect.md\n- optimize-agent.md\n- planner.md\n- review-agent.md\n- spec-impl-agent.md\n- spec-init-agent.md\n- spec-plan-agent.md\n- spec-research-agent.md\n- spec-review-agent.md\n- test-agent.md\n- ui-ux-designer.md\n\n## 对比任务\n1. 对上游存在的 4 个文件，使用 diff 精确对比上游 vs 本地的差异\n2. 对本地独有的 16 个代理文件，列出每个文件的大小、角色定位、核心工作流步骤概要\n3. 重点分析 5 个 spec-*-agent 文件是否包含了上游 spec-* 命令中的详细工作流步骤（Core Philosophy、Guardrails、多模型并行调用、Exit Criteria）\n4. 生成完整对比报告\n\n输出报告写入：C:/Users/Administrator/.claude/.ccg/DIFF-GROUP-E.md",
+      "color": "blue",
+      "planModeRequired": false,
+      "joinedAt": 1770840631198,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    },
+    {
+      "agentId": "diff-group-f@ccg-diff-remaining",
+      "name": "diff-group-f",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是文件对比专家。请对比 prompts 模板文件。\n\n## 上游 prompts（19 个文件）\n路径：D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/prompts/\n- claude/analyzer.md (1446B)\n- claude/architect.md (1745B)\n- claude/debugger.md (1771B)\n- claude/optimizer.md (1903B)\n- claude/reviewer.md (1461B)\n- claude/tester.md (1580B)\n- codex/analyzer.md (1480B)\n- codex/architect.md (1485B)\n- codex/debugger.md (1571B)\n- codex/optimizer.md (1717B)\n- codex/reviewer.md (1727B)\n- codex/tester.md (1432B)\n- gemini/analyzer.md (1552B)\n- gemini/architect.md (1649B)\n- gemini/debugger.md (1632B)\n- gemini/frontend.md (1726B)\n- gemini/optimizer.md (1913B)\n- gemini/reviewer.md (1823B)\n- gemini/tester.md (1601B)\n\n## 本地 prompts（19 个文件）\n路径：C:/Users/Administrator/.claude/.ccg/prompts/\n同上文件名，但大小不同（本地更大）\n\n## 对比任务\n1. 对每个文件使用 diff 精确对比\n2. 分类汇总差异模式（共性差异 vs 特有差异）\n3. 分析各模型的 prompt 角色设计差异\n4. 生成完整对比报告\n\n输出报告写入：C:/Users/Administrator/.claude/.ccg/DIFF-GROUP-F.md",
+      "color": "green",
+      "planModeRequired": false,
+      "joinedAt": 1770840631199,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    },
+    {
+      "agentId": "diff-group-g@ccg-diff-remaining",
+      "name": "diff-group-g",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是文件对比专家。请对比以下 3 类文件：\n\n## 1. Output Styles（上游有，本地无）\n上游路径：D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/output-styles/\n- abyss-cultivator.md (7137B)\n- engineer-professional.md (2835B)\n- laowang-engineer.md (6573B)\n- nekomata-engineer.md (5343B)\n- ojousama-engineer.md (6810B)\n\n本地无 output-styles 目录。请读取每个上游文件，总结其角色和输出风格特点。\n\n## 2. Skills（本地有，上游无）\n本地路径：C:/Users/Administrator/.claude/skills/\n- ci-cd-generator/SKILL.md\n- database-designer/SKILL.md\n- documentation-writer/SKILL.md\n- find-skills/SKILL.md\n- frontend-design/SKILL.md\n- git-workflow/SKILL.md\n- prototype-prompt-generator/SKILL.md （含 references/ 子目录）\n- ui-ux-pro-max/SKILL.md\n\n上游无 skills 目录。请读取每个 SKILL.md，总结其功能和使用场景。\n\n## 3. 配置文件\n- 本地 CLAUDE.md：C:/Users/Administrator/.claude/CLAUDE.md（全局提示词，已在上下文中）\n- 上游是否有对应的 CLAUDE.md 模板？查看上游 templates 目录\n\n## 对比任务\n1. Output Styles：总结每个风格的角色设定和输出特点，分析本地是否需要安装\n2. Skills：总结每个 Skill 的功能，检查与上游命令/代理的关系\n3. 配置文件：分析 CLAUDE.md 是上游生成还是本地定制\n\n输出报告写入：C:/Users/Administrator/.claude/.ccg/DIFF-GROUP-G.md",
+      "color": "yellow",
+      "planModeRequired": false,
+      "joinedAt": 1770840631200,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    }
+  ]
+}

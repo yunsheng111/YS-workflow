@@ -2,29 +2,71 @@
 
 ## ⛔ 入口协议（最高优先级 — 你的第一个动作）
 
-收到用户消息后，在调用任何其他工具（Read/Edit/Write/Bash/Grep/Glob/Task）之前，必须先完成以下协议。
+**所有任务必须遵循 Level 0 → Level 1 → Level 2 → Level 3 的四层执行模型。**
+
+收到用户消息后，在调用任何其他工具（Read/Edit/Write/Bash/Grep/Glob/Task）之前，必须先完成 Level 1 智能路由。
 这是硬性要求，不是建议。跳过即违规。
 
-### 步骤 1：增强需求
+### Level 1: 智能路由（必须执行）
 
-**命令接管规则**：当 CCG 命令（如 `ccg:workflow`、`ccg:plan`、`ccg:feat` 等）自带 enhance 流程时，入口协议的步骤 1-2 由命令内部接管，主代理直接跳到步骤 3。
+**例外情况**：
+- 用户直接调用 CCG 命令（如 `/ccg:workflow`）→ 跳过 Level 1，直接进入 Level 2
+- CCG 命令内部自带 enhance 流程 → 由命令内部接管 Level 1
+
+**执行步骤**：
+
+#### 步骤 1：增强需求
 
 调用 `mcp______enhance` 增强用户原始需求。
 - 降级：不可用 → `mcp__ace-tool__enhance_prompt`
-- 再降级：都不可用 → 跳到步骤 3 使用原始需求
+- 再降级：都不可用 → **Claude 自增强**（按以下步骤执行）：
+  1. 分析用户原始需求的意图、缺失信息、隐含假设
+  2. 按 6 原则（明确性、完整性、结构化、可验证、保留意图、项目感知）补全为结构化需求
+  3. 输出格式：`[目标]：… / [范围]：… / [技术约束]：… / [验收标准]：…`
+  4. 将增强结果传入步骤 2 由用户确认
 
-### 步骤 2：确认需求
+**降级反馈规范**：每次降级时，必须在 `mcp______zhi` 消息中标注：
+- 当前增强模式：`深度增强` / `轻量增强` / `自增强`
+- 降级原因（一句话）
 
-调用 `mcp______zhi` 展示增强结果，等待用户选择。
+#### 步骤 2：分析任务复杂度
+
+根据增强后的需求，判定任务复杂度：
+- **简单**：单步操作、无需多阶段工作流、不涉及代码变更
+- **中等**：需要专业知识、单一领域任务、可一次性完成
+- **高**：多步骤工作流、需要阶段性确认、涉及代码变更和审查
+
+#### 步骤 3：推荐执行路径
+
+根据任务复杂度推荐执行路径：
+- **简单** → 直接使用 MCP 工具
+- **中等** → 调用 Skill
+- **高** → 执行 CCG 命令
+
+**推荐消息必须包含**：
+1. 增强后的需求（目标/范围/技术约束/验收标准）
+2. 任务复杂度判定
+3. 推荐的执行路径（1-3 个方案）
+4. 每个方案的理由和预计成本
+5. 明确的建议（推荐哪个方案）
+
+#### 步骤 4：用户确认
+
+调用 `mcp______zhi` 展示推荐方案，等待用户选择。
 - `is_markdown`: true
-- `predefined_options`: ["确认执行", "修改需求", "直接执行原始需求"]
+- `predefined_options`: ["执行推荐方案", "选择方案 2", "选择方案 3", "修改需求", "取消"]
 
-### 步骤 3：检索上下文（涉及代码修改时）
+**用户选择后**：
+- 选择执行 → 进入 Level 2（命令层执行）
+- 修改需求 → 回到步骤 1
+- 取消 → 终止
 
-调用 `mcp__ace-tool__search_context` 获取相关上下文。
+#### 步骤 5：检索上下文（涉及代码修改时）
+
+如果推荐的执行路径涉及代码修改，调用 `mcp__ace-tool__search_context` 获取相关上下文。
 - 降级：不可用 → `mcp______sou` → Grep/Glob
 
-**⚠️ 自检规则**：如果你正准备调用 Read/Edit/Write/Bash 但还没完成步骤 1-3，立即停止，回到步骤 1。
+**⚠️ 自检规则**：如果你正准备调用 Read/Edit/Write/Bash 但还没完成 Level 1，立即停止，回到步骤 1。
 
 ---
 
@@ -38,48 +80,122 @@
 
 ---
 
-## 2. 任务路由决策
+## 2. 四层执行模型（Level 0-3）
 
-**决策依据：任务复杂度 + 专业领域 + 上下文需求**
+**所有任务必须遵循 Level 0 → Level 1 → Level 2 → Level 3 的执行流程。**
 
-### 简单任务（直接使用 MCP 工具）
+**📊 完整架构文档**：查看 [.doc/framework/ccg/ARCHITECTURE-V2.md](./.doc/framework/ccg/ARCHITECTURE-V2.md)
 
-- 代码检索 → `mcp__ace-tool__search_context`
-- 用户确认 → `mcp______zhi`
-- 知识管理 → `mcp______ji`
-- 网络搜索 → `mcp__Grok_Search_Mcp__web_search`
-- 框架文档 → `mcp______context7`
+### Level 0: 用户输入层
 
-### 中等复杂度（调用 Skill）
+**输入形式**：
+- **自然语言描述**：`"帮我优化架构文档"` → 进入 Level 1（智能路由）
+- **直接命令调用**：`/ccg:workflow "优化架构"` → 跳过 Level 1，直接进入 Level 2
 
-- UI 设计系统 → `ui-ux-pro-max` Skill
-- 数据库建模 → `database-designer` Skill
-- Git 操作 → `git-workflow` Skill
-- CI/CD 配置 → `ci-cd-generator` Skill
-- 文档生成 → `documentation-writer` Skill
+### Level 1: 主代理智能路由层
 
-### 高复杂度（委托给 CCG 命令 → 代理）
+**职责**：增强需求 → 分析复杂度 → 推荐执行路径 → 用户确认
 
-| 任务类型 | 判定标准 | CCG 命令 | 执行方式 |
-|----------|----------|----------|----------|
-| 需求澄清 | 需求模糊、多目标 | `ccg:analyze` | 代理：`analyze-agent` |
-| UI/UX 设计文档 | 需要完整设计方案 | - | 代理：`ui-ux-designer` |
-| 前端开发 | 组件、页面、样式 | `ccg:frontend` | 代理：`frontend-agent` |
-| 后端开发 | API、服务、性能 | `ccg:backend` | 代理：`backend-agent` |
-| 全栈开发（轻量） | 中等复杂度、快速迭代 | `ccg:feat` | 代理：`fullstack-light-agent` |
-| 全栈开发（复杂） | 架构变更、多模块联动 | `ccg:workflow` | 代理：`fullstack-agent` |
-| 规划 | 生成实施计划 | `ccg:plan` | 代理：`planner` |
-| 执行 | 按计划实施 | `ccg:execute` | 代理：`execute-agent` |
-| 代码审查 | 需要多视角分析 | `ccg:review` | 代理：`review-agent` |
-| 调试 | 复杂缺陷定位 | `ccg:debug` | 代理：`debug-agent` |
-| 测试 | 测试计划与运行 | `ccg:test` | 代理：`test-agent` |
-| 性能优化 | 性能/成本调优 | `ccg:optimize` | 代理：`optimize-agent` |
-| Git 提交 | 生成提交信息 | `ccg:commit` | 代理：`commit-agent` |
-| 项目初始化 | 生成 CLAUDE.md 索引 | `ccg:init` | 代理：`init-architect` |
-| Prompt 增强 | 增强后确认执行 | `ccg:enhance` | 命令内执行（主代理） |
-| Git 回滚 | 安全回滚到历史版本 | `ccg:rollback` | 命令内执行（主代理） |
-| 分支清理 | 清理已合并/过期分支 | `ccg:clean-branches` | 命令内执行（主代理） |
-| Git Worktree | 管理工作树 | `ccg:worktree` | 命令内执行（主代理） |
+**执行流程**：
+1. 调用 `mcp______enhance` 增强用户需求（或降级方案）
+2. 分析任务复杂度（简单/中等/高）
+3. 推荐执行路径并说明理由
+4. 使用 `mcp______zhi` 展示推荐方案，等待用户确认
+
+**推荐策略**：
+
+#### 简单任务 → 直接使用 MCP 工具
+- **判定标准**：单步操作、无需多阶段工作流、不涉及代码变更
+- **示例**：代码检索 → `mcp__ace-tool__search_context`
+- **其他工具**：`mcp______zhi`（用户确认）、`mcp______ji`（知识管理）、`mcp__Grok_Search_Mcp__web_search`（网络搜索）、`mcp______context7`（框架文档）
+
+#### 中等复杂度 → 调用 Skill
+- **判定标准**：需要专业知识、单一领域任务、可一次性完成
+- **示例**：UI 设计系统 → `ui-ux-pro-max` Skill
+- **其他 Skills**：`database-designer`（数据库建模）、`git-workflow`（Git 操作）、`ci-cd-generator`（CI/CD 配置）、`documentation-writer`（文档生成）
+
+#### 高复杂度 → 执行 CCG 命令
+- **判定标准**：多步骤工作流、需要阶段性确认、涉及代码变更和审查
+- **示例**：添加用户认证功能 → `/ccg:feat`（智能功能开发）
+- **理由**：需要分析需求 → 设计方案 → 实施 → 测试的完整流程
+
+**推荐消息格式**：
+```markdown
+🔍 **需求分析完成**
+
+**增强后的需求**：
+- 目标：[具体目标]
+- 范围：[影响范围]
+- 技术约束：[技术限制]
+- 验收标准：[成功标准]
+
+**任务复杂度**：高/中/低
+
+**推荐执行路径**：
+1. [方案 1]（推荐）
+   - 理由：[为什么推荐]
+   - 预计成本：[成本估算]
+
+2. [方案 2]
+   - 理由：[备选理由]
+   - 预计成本：[成本估算]
+
+**建议**：选择方案 1，因为 [具体原因]
+```
+
+### Level 2: 命令层执行
+
+**职责**：注入命令文件 → 解析参数 → 路由到执行方式
+
+**执行方式分类**：
+
+#### 1. Task 调用代理（18 个命令）
+- **特征**：需要独立上下文、多阶段工作流、复杂逻辑封装
+- **示例**：`ccg:workflow` → `Task(subagent_type="fullstack-agent")`
+
+#### 2. 主代理直接执行（4 个命令）
+- **特征**：简单 Git 操作、单步工具调用、无需独立上下文
+- **命令**：`ccg:enhance`、`ccg:rollback`、`ccg:clean-branches`、`ccg:worktree`
+
+#### 3. 外部模型 + 主代理协作（4 个命令）
+- **特征**：Agent Teams 工作流、并行调用 Codex + Gemini、主代理协调
+- **命令**：`ccg:team-research`、`ccg:team-plan`、`ccg:team-exec`、`ccg:team-review`
+
+### Level 3: 代理/工具层执行
+
+**职责**：执行工作流 → 调用 MCP 工具 → 调用 Skills → 调用外部模型 → 创建 Agent Teams
+
+**执行模式**：
+- **模式 1**：单代理独立执行（如 `planner`）
+- **模式 2**：代理 + 外部模型协作（如 `fullstack-agent`）
+- **模式 3**：Agent Teams 并行执行（如 `team-exec`）
+
+**📊 完整映射表**：查看 [.doc/framework/ccg/ARCHITECTURE-VISUAL.md - 命令-代理映射矩阵](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令-代理映射矩阵)
+
+| 任务类型 | 判定标准 | CCG 命令 | 执行方式 | 架构图 |
+|----------|----------|----------|----------|--------|
+| 需求澄清 | 需求模糊、多目标 | `ccg:analyze` | 代理：`analyze-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| UI/UX 设计文档 | 需要完整设计方案 | - | 代理：`ui-ux-designer` | - |
+| 前端开发 | 组件、页面、样式 | `ccg:frontend` | 代理：`frontend-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 后端开发 | API、服务、性能 | `ccg:backend` | 代理：`backend-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 全栈开发（轻量） | 中等复杂度、快速迭代 | `ccg:feat` | 代理：`fullstack-light-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 全栈开发（复杂） | 架构变更、多模块联动 | `ccg:workflow` | 代理：`fullstack-agent` | [6阶段工作流](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#6-阶段工作流图) |
+| 规划 | 生成实施计划 | `ccg:plan` | 代理：`planner` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 执行 | 按计划实施 | `ccg:execute` | 代理：`execute-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 代码审查 | 需要多视角分析 | `ccg:review` | 代理：`review-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 调试 | 复杂缺陷定位 | `ccg:debug` | 代理：`debug-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 测试 | 测试计划与运行 | `ccg:test` | 代理：`test-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| 性能优化 | 性能/成本调优 | `ccg:optimize` | 代理：`optimize-agent` | [流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图) |
+| Git 提交 | 生成提交信息 | `ccg:commit` | 代理：`commit-agent` | - |
+| 项目初始化 | 生成 CLAUDE.md 索引 | `ccg:init` | 代理：`init-architect` | - |
+| Prompt 增强 | 增强后确认执行 | `ccg:enhance` | 命令内执行（主代理） | - |
+| Git 回滚 | 安全回滚到历史版本 | `ccg:rollback` | 命令内执行（主代理） | - |
+| 分支清理 | 清理已合并/过期分支 | `ccg:clean-branches` | 命令内执行（主代理） | - |
+| Git Worktree | 管理工作树 | `ccg:worktree` | 命令内执行（主代理） | - |
+| Agent Teams 需求研究 | 多模块复杂需求、需约束集驱动 | `ccg:team-research` | 命令内执行（主代理 + Codex/Gemini） | - |
+| Agent Teams 规划 | 需并行实施计划、多 Builder 协作 | `ccg:team-plan` | 命令内执行（主代理 + Codex/Gemini） | - |
+| Agent Teams 并行实施 | 已有计划、需并行 spawn Builder | `ccg:team-exec` | 命令内执行（主代理 + Agent Teams） | - |
+| Agent Teams 审查 | 并行实施后的交叉审查 | `ccg:team-review` | 命令内执行（主代理 + Codex/Gemini） | - |
 
 ### 工具类代理（非 CCG 命令路由）
 
@@ -87,6 +203,24 @@
 |------|------|----------|
 | `get-current-datetime` | 获取当前日期时间 | `Task(subagent_type="get-current-datetime")` |
 | `init-architect` | 项目 CLAUDE.md 初始化扫描 | 由 `ccg:init` 命令调用 |
+
+### Agent Teams 并行开发（高复杂度 + 多 Builder 并行）
+
+| 任务类型 | 判定标准 | CCG 命令 | 执行方式 |
+|----------|----------|----------|----------|
+| 需求研究 | 多模块复杂需求 | `ccg:team-research` | 主代理 + Codex/Gemini 并行探索 |
+| 并行规划 | 需产出零决策实施计划 | `ccg:team-plan` | 主代理 + Codex/Gemini 并行分析 |
+| 并行实施 | 已有计划、需 Builder 并行 | `ccg:team-exec` | 主代理 + Agent Teams spawn Builder |
+| 交叉审查 | 并行实施后验证 | `ccg:team-review` | 主代理 + Codex/Gemini 双模型审查 |
+
+**Agent Teams 工作流**：`team-research` → `team-plan` → `team-exec` → `team-review`
+
+**适用场景**：
+- 多模块并行开发（文件范围可隔离）
+- 需要多 Builder 同时写码
+- 需要 Codex + Gemini 交叉验证
+
+**与 OpenSpec 的区别**：Agent Teams 侧重并行实施效率，OpenSpec 侧重约束合规。
 
 ### OpenSpec 约束驱动开发（高复杂度 + 零决策执行）
 
@@ -109,6 +243,11 @@
 - CCG 命令是入口，负责路由到对应代理
 - 代理封装完整的执行逻辑（工作流 + Skill + MCP）
 
+**📊 系统架构可视化**：
+- [系统三层架构图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#系统三层架构图)
+- [命令调用流程图](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#命令调用流程图)
+- [代理工具集配置矩阵](./.doc/framework/ccg/ARCHITECTURE-VISUAL.md#代理工具集配置矩阵)
+
 ---
 
 ## 3. 工具选择约束
@@ -117,14 +256,53 @@
 
 | 场景       | 主工具 | 降级工具 | 禁用 |
 | ---------- | ------ | -------- | ---- |
-| 需求增强   | `mcp______enhance` | `mcp__ace-tool__enhance_prompt` | - |
-| 代码检索   | `mcp__ace-tool__search_context` | `mcp______sou` | Bash grep/find |
+| 需求增强   | `mcp______enhance`（利用项目上下文+对话历史，深度增强） | `mcp__ace-tool__enhance_prompt`（轻量增强，无项目上下文） → **Claude 自增强**（按 6 原则结构化补全） | - |
+| 代码检索   | `mcp__ace-tool__search_context`（精确检索） | `mcp______sou`（语义扩展搜索，亦可与 ace-tool 并行使用提高召回率） | Bash grep/find |
 | 网络搜索   | `mcp__Grok_Search_Mcp__web_search` | - | 内置 WebSearch |
 | 网页抓取   | `mcp__Grok_Search_Mcp__web_fetch` | - | 内置 WebFetch |
 | 用户确认   | `mcp______zhi`（Markdown） | `AskUserQuestion` | - |
 | 浏览器操作 | Chrome DevTools MCP | - | 手动测试 |
 | 知识管理   | Memory MCP（实体关系图谱） | `mcp______ji`（规范偏好键值） | - |
 | GitHub 操作 | GitHub MCP 工具 | `gh` CLI | - |
+
+### 占位符渲染协议
+
+**执行 Bash 命令前必须完成占位符渲染，确保命令中不存在 `{{...}}` 残留。**
+
+#### 渲染流程
+
+1. **调用渲染层**（概念函数）：`preRender(commandTemplate)`
+   - 读取 `.ccg/config.toml` 获取 `CCG_BIN` 路径
+   - 构建运行时变量映射
+   - 替换所有占位符
+
+2. **验证残留**：`validateNoPlaceholders()`
+   - 检测渲染后命令中是否存在 `{{...}}`
+   - 若存在残留占位符，抛出错误并拒绝执行
+
+3. **执行命令**：`executeRendered()`
+   - 仅在验证通过后执行 Bash 命令
+
+#### 占位符替换规则
+
+| 占位符 | 替换值 | 来源 |
+|--------|--------|------|
+| `{{CCG_BIN}}` | CCG 可执行文件路径 | `.ccg/config.toml` 中的 `CCG_BIN` 配置，默认 `C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe` |
+| `{{WORKDIR}}` | 当前工作目录绝对路径 | 运行时 `process.cwd()` |
+| `{{LITE_MODE_FLAG}}` | `--lite ` 或空字符串 | 环境变量 `LITE_MODE=true` 时生成 `--lite `（注意尾随空格），否则为空 |
+| `{{GEMINI_MODEL_FLAG}}` | `--gemini-model <model> ` 或空字符串 | 环境变量 `GEMINI_MODEL` 存在且非空时生成 `--gemini-model <model> `（注意尾随空格），否则为空 |
+
+#### 实现位置
+
+- 渲染层实现：`.ccg/runtime/command-renderer.cjs`
+- 单元测试：`.ccg/runtime/command-renderer.spec.cjs`
+
+#### 错误处理
+
+若渲染后仍存在残留占位符（如 `{{UNKNOWN_VAR}}`），主代理必须：
+1. 拒绝执行 Bash 命令
+2. 报错提示：`渲染失败：命令中存在残留占位符 {{UNKNOWN_VAR}}`
+3. 要求用户检查命令模板或配置
 
 ---
 
@@ -204,7 +382,24 @@
 
 **工具不可用时的处理：**
 
-- `mcp______enhance` 不可用 → 使用 `mcp__ace-tool__enhance_prompt` → 再不可用则直接使用 `mcp______zhi` 确认原始 prompt
+- `mcp______enhance` 不可用 → 使用 `mcp__ace-tool__enhance_prompt` → 再不可用则 **Claude 自增强**：分析意图/缺失信息/隐含假设，按 6 原则（明确性、完整性、结构化、可验证、保留意图、项目感知）补全为结构化需求（目标/范围/技术约束/验收标准），再通过 `mcp______zhi` 确认。**降级时必须标注当前增强模式（深度增强/轻量增强/自增强）和降级原因**
+
+  **断路器模式**：
+  - 单次失败：重试 1 次
+  - 10 分钟内连续失败 3 次：进入"Basic 模式"（跳过 enhance，直接执行原始需求）
+  - Basic 模式持续时间：10 分钟后自动恢复
+
+  **降级反馈规范**：每次降级时，必须通过 `mcp______zhi` 展示结构化状态更新：
+  ```markdown
+  🔄 **状态更新：Prompt 增强模式切换**
+  - **当前模式**：`深度增强 (mcp______enhance)` / `轻量增强 (ace-tool)` / `自增强 (Claude-native)` / `Basic 模式（已跳过增强）`
+  - **原因**：[具体失败原因，如：响应超时 (Timeout > 30s) / 连接失败 / API 限流 / 连续失败 3 次]
+  - **策略**：[当前采取的措施，如：已启用本地启发式增强 / 已跳过增强直接执行 / 将在 10 分钟后恢复]
+  - **建议**：[用户可选操作，如：若增强效果不佳，请检查网络或重试 `/ccg:enhance` / 可继续执行或手动补充需求细节]
+  ```
+  - `is_markdown`: true
+  - `predefined_options`: ["继续执行", "手动补充需求", "重试增强"]
+
 - `mcp__ace-tool__search_context` 不可用 → 使用 `mcp______sou` → 再不可用则使用 Grep/Glob
 - Grok Search 失败 → 调用 `mcp__Grok_Search_Mcp__get_config_info` 诊断配置
   - 若状态异常，调用 `switch_model` 切换模型后重试一次
@@ -280,3 +475,84 @@
 4. 涉及 GitHub 操作时，使用 `mcp______zhi` 询问用户确认
 
 **详细的集成场景、调用示例和工作流说明**：按需查阅 `.ccg/GITHUB-MCP-REFERENCE.md`
+
+---
+
+## 文件组织规范（2026-02-13 更新）
+
+### 工作流目录结构
+
+项目采用**工作流分类 + 生命周期分层**的目录结构：
+
+```
+.claude/
+├── spec/                   # OpenSpec 工作流
+│   ├── wip/               # 临时工作区（研究、分析、草稿）
+│   ├── constraints/       # 约束集（正式）
+│   ├── proposals/         # 提案（正式）
+│   ├── plans/             # 计划（正式）
+│   ├── reviews/           # 审查报告（正式）
+│   ├── progress/          # 进度追踪（正式）
+│   ├── templates/         # 模板（只读）
+│   └── archive/           # 归档
+│
+├── agent-teams/            # Agent Teams 工作流
+│   ├── wip/               # 临时工作区
+│   ├── plans/             # 计划（正式）
+│   ├── reviews/           # 审查报告（正式）
+│   └── archive/           # 归档
+│
+├── workflow/               # 六阶段工作流
+│   ├── wip/               # 临时工作区
+│   ├── plans/             # 计划（正式）
+│   ├── reviews/           # 审查报告（正式）
+│   └── archive/           # 归档
+│
+└── common/                 # 通用计划
+    ├── wip/               # 临时工作区
+    ├── plans/             # 计划（正式）
+    └── archive/           # 归档
+```
+
+### 生命周期管理
+
+| 阶段 | 目录 | 版本控制 | 清理策略 |
+|------|------|----------|----------|
+| 临时 | `wip/` | 忽略 | 自动清理（> 30 天） |
+| 正式 | `constraints/`、`proposals/`、`plans/`、`reviews/` | 跟踪 | 手动归档 |
+| 归档 | `archive/` | 跟踪 | 手动清理 |
+
+### 命名规范
+
+**临时文件（wip/ 目录）**：
+```
+YYYYMMDD-<topic>-<type>.md
+```
+
+示例：
+- `20260213-file-organization-research.md`
+- `20260213-agent-teams-analysis.md`
+
+**正式文件（plans/、reviews/ 目录）**：
+```
+YYYYMMDD-<topic>-<type>.md
+```
+
+示例：
+- `20260213-ccg-upgrade-plan.md`
+- `20260213-feature-x-review.md`
+
+### 迁移说明
+
+**已弃用的目录**：
+- `.claude/team-plan/` → 已迁移到 `.doc/agent-teams/`
+- `.claude/plan/` → 已迁移到 `.doc/common/`
+
+**迁移文档**：
+- 迁移映射表：`.doc/MIGRATION-MAP.md`
+- 迁移指南：`.doc/MIGRATION-GUIDE.md`
+
+**弃用时间表**：
+- 弃用日期：2026-02-13
+- 完全移除日期：2026-03-13（30 天后）
+

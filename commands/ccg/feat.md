@@ -8,68 +8,6 @@ $ARGUMENTS
 
 ---
 
-## 多模型调用规范
-
-**调用语法**（并行用 `run_in_background: true`，串行用 `false`）：
-
-```
-# 新会话调用
-Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> - \"$PWD\" <<'EOF'
-ROLE_FILE: <角色提示词路径>
-<TASK>
-需求：<增强后的需求（如未增强则用 $ARGUMENTS）>
-上下文：<前序阶段收集的项目上下文、计划文件内容等>
-</TASK>
-OUTPUT: 期望输出格式
-EOF",
-  run_in_background: true,
-  timeout: 3600000,
-  description: "简短描述"
-})
-
-# 复用会话调用
-Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <角色提示词路径>
-<TASK>
-需求：<增强后的需求（如未增强则用 $ARGUMENTS）>
-上下文：<前序阶段收集的项目上下文、计划文件内容等>
-</TASK>
-OUTPUT: 期望输出格式
-EOF",
-  run_in_background: true,
-  timeout: 3600000,
-  description: "简短描述"
-})
-```
-
-**角色提示词**：
-
-| 阶段 | Codex | Gemini |
-|------|-------|--------|
-| 分析 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/analyzer.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/analyzer.md` |
-| 规划 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/architect.md` |
-| 实施 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/frontend.md` |
-| 审查 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/reviewer.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/reviewer.md` |
-
-**会话复用**：每次调用返回 `SESSION_ID: xxx`，后续阶段用 `resume xxx` 复用上下文。
-
-**并行调用**：使用 `run_in_background: true` 启动，用 `TaskOutput` 等待结果。**必须等所有模型返回后才能进入下一阶段**。
-
-**等待后台任务**（使用最大超时 600000ms = 10 分钟）：
-
-```
-TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
-```
-
-**重要**：
-- 必须指定 `timeout: 600000`，否则默认只有 30 秒会导致提前超时。
-如果 10 分钟后仍未完成，继续用 `TaskOutput` 轮询，**绝对不要 Kill 进程**。
-- 若因等待时间过长跳过了等待 TaskOutput 结果，则**必须调用 `mcp______zhi` 工具询问用户选择继续等待还是 Kill Task。禁止直接 Kill Task。**
-
----
-
 ## 网络搜索规范（GrokSearch 优先）
 
 **首次需要外部信息时执行以下步骤**：
@@ -114,7 +52,7 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 
 #### 2.0 Prompt 增强
 
-**优先调用 `mcp______enhance`**（不可用时降级到 `mcp__ace-tool__enhance_prompt`），**用增强结果替代原始 $ARGUMENTS，后续调用 Codex/Gemini 时传入增强后的需求**
+**优先调用 `mcp______enhance`**（不可用时降级到 `mcp__ace-tool__enhance_prompt`；都不可用时执行 **Claude 自增强**：分析意图/缺失信息/隐含假设，按 6 原则补全为结构化需求（目标/范围/技术约束/验收标准），通过 `mcp______zhi` 确认并标注增强模式），**用增强结果替代原始 $ARGUMENTS，后续调用 Codex/Gemini 时传入增强后的需求**
 
 #### 2.1 上下文检索
 
@@ -145,16 +83,20 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 
 **前端/全栈任务**：先调用 `ui-ux-designer` agent
 ```
-执行 agent: C:/Users/Administrator/.claude/agents/ccg/ui-ux-designer.md
-输入: 项目上下文 + 用户需求 + 技术栈
-输出: UI/UX 设计方案
+Task(
+  subagent_type="ui-ux-designer",
+  prompt="项目上下文 + 用户需求 + 技术栈",
+  description="生成 UI/UX 设计方案"
+)
 ```
 
 **所有任务**：调用 `planner` agent
 ```
-执行 agent: C:/Users/Administrator/.claude/agents/ccg/planner.md
-输入: 项目上下文 + UI设计方案(如有) + 用户需求
-输出: 功能规划文档
+Task(
+  subagent_type="planner",
+  prompt="项目上下文 + UI设计方案(如有) + 用户需求",
+  description="生成功能规划文档"
+)
 ```
 
 #### 2.4 保存计划
@@ -202,17 +144,19 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 
 从计划提取任务分类：前端 / 后端 / 全栈
 
-#### 3.3 多模型路由实施
+#### 3.3 调用 fullstack-light-agent 实施
 
-按上方调用规范调用外部模型：
+调用 `fullstack-light-agent` 代理执行实施：
 
-- **前端任务**：调用 Gemini，使用实施提示词
-- **后端任务**：调用 Codex，使用实施提示词
-- **全栈任务**：并行调用 Codex + Gemini（`run_in_background: true`），用 `TaskOutput` 等待结果
+```
+Task(
+  subagent_type="fullstack-light-agent",
+  prompt="<增强后的需求> + <计划文件内容>",
+  description="智能功能开发"
+)
+```
 
-**⚠️ 强制规则：必须等待 TaskOutput 返回所有模型的完整结果后才能进入下一阶段**
-
-**务必遵循上方 `多模型调用规范` 的 `重要` 指示**
+代理内部会自动识别任务类型（前端/后端/全栈）并调用对应的外部模型（Codex/Gemini）
 
 #### 3.4 实施后验证
 

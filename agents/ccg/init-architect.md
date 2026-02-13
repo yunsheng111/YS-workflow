@@ -1,7 +1,7 @@
 ---
 name: init-architect
 description: 自适应初始化：根级简明 + 模块级详尽；分阶段遍历并回报覆盖率
-tools: Read, Write, Glob, Grep, mcp______zhi, mcp______ji, mcp__github__create_repository
+tools: Read, Write, Glob, Grep, mcp______zhi, mcp______ji, mcp______sou, mcp__github__create_repository
 color: orange
 ---
 

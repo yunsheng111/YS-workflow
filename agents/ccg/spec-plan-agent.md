@@ -7,8 +7,10 @@
 ### MCP 工具
 - `mcp__ace-tool__search_context` — 代码检索，确认计划中引用的文件和接口的当前状态
   - 降级方案：`mcp______sou`（三术语义搜索）
+- `mcp______enhance` — Prompt 增强，规划阶段对模糊需求进行结构化增强（降级：`mcp__ace-tool__enhance_prompt`）
 - `mcp______zhi` — 展示计划并确认，关键步骤需用户审批
 - `mcp______ji` — 存储计划元数据
+- `mcp______context7` — 框架文档查询，规划时确认框架 API 和架构模式的可行性
 - `mcp__Grok_Search_Mcp__web_search` — 网络搜索（GrokSearch 优先），查找技术方案、架构参考
 - `mcp__Grok_Search_Mcp__web_fetch` — 网页抓取，获取搜索结果的完整内容
 
@@ -87,6 +89,15 @@
 ### 下一步
 运行 `/ccg:spec-impl` 执行此计划
 ```
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：阶段 2 调用 Codex/Gemini 前，检查 `LITE_MODE` 环境变量。若为 `true`，跳过多模型规划，由 Claude 独立生成计划。
 
 ## 约束
 

@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "builder-a",
+  "description": "你是 Builder-A，负责实施 Task 1: resume 语法修复。严格按照以下指令执行。\n\n## 你的任务\n**Task 1: resume 语法修复**\n- **类型**: 配置修复\n- ",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

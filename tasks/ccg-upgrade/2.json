@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "builder-b",
+  "description": "你是 Builder-B，负责实施 Task 2+3: LITE_MODE + GEMINI_MODEL 补齐。严格按照以下指令执行。\n\n## 你的任务\n**Task 2+3: LITE_MODE +",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

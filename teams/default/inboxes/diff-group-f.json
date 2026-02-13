@@ -1,0 +1,8 @@
+[
+  {
+    "from": "team-lead",
+    "text": "{\"type\":\"shutdown_request\",\"requestId\":\"shutdown-1770842221356@diff-group-f\",\"from\":\"team-lead\",\"reason\":\"任务完成，请关闭\",\"timestamp\":\"2026-02-11T20:37:01.356Z\"}",
+    "timestamp": "2026-02-11T20:37:01.356Z",
+    "read": false
+  }
+]

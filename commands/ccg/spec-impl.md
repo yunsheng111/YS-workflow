@@ -1,6 +1,21 @@
 ---
 description: "Execute changes via multi-model collaboration with spec compliance"
 ---
+<!-- CCG:SPEC:IMPL:START -->
+**Core Philosophy**
+- 严格按计划执行，不允许偏离——计划就是唯一的执行指令。
+- 多模型协作审计：执行过程中通过多模型交叉验证确保合规性。
+- 遇到阻碍时报告而非自行决策，保持零决策执行的纯粹性。
+
+**Guardrails**
+- 必须使用 `spec-impl-agent` 子代理执行，主代理仅协调。
+- 严格按 `spec-plan` 产出的计划步骤执行，不允许自行添加或跳过步骤。
+- 执行前后均需使用 `mcp______zhi` 确认（执行前确认计划、执行后确认结果）。
+- 每步完成后记录进度，变更记录到 `.claude/spec/reviews/`。
+- 前置条件：`spec-plan` 已产出零决策计划。
+- 与后续命令的关系：实施结果是 `spec-review` 的审查对象。
+
+**Steps**
 
 # /ccg:spec-impl
 
@@ -72,7 +87,7 @@ description: "Execute changes via multi-model collaboration with spec compliance
 ```
 Task({
   subagent_type: "spec-impl-agent",
-  prompt: "按照零决策计划执行实施。\n\n计划路径：$ARGUMENTS\n工作目录：$PWD\n\n请执行：\n1. 读取计划并逐步实施\n2. 每步完成后记录进度\n3. 遇到阻碍时报告而非自行决策",
+  prompt: "按照零决策计划执行实施。\n\n计划路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n\n请执行：\n1. 读取计划并逐步实施\n2. 每步完成后记录进度\n3. 遇到阻碍时报告而非自行决策",
   description: "按计划实施"
 })
 ```
@@ -106,3 +121,11 @@ Task({
 1. **必须使用 Task 工具**调用 `spec-impl-agent` 子代理
 2. 严格按计划执行，不允许偏离
 3. 执行前后均需使用 zhi 确认
+
+**Exit Criteria**
+- [ ] 用户已确认执行计划
+- [ ] 所有计划步骤已按序执行完成
+- [ ] 每步执行进度已记录
+- [ ] 变更清单已写入 `.claude/spec/reviews/`
+- [ ] 实施结果已通过 zhi 展示给用户
+<!-- CCG:SPEC:IMPL:END -->

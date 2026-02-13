@@ -1,0 +1,39 @@
+[
+  {
+    "from": "diff-group-f",
+    "text": "F 组 prompts 模板文件对比完成，报告已写入 `C:/Users/Administrator/.claude/.ccg/DIFF-GROUP-F.md`。\n\n## 核心发现摘要\n\n**19 个文件对比结果**：18 个有差异，1 个完全一致（gemini/architect.md）。\n\n### 三种差异模式\n\n1. **模式 A - 中文语言要求追加**（18/19 文件）：本地版本在文件末尾统一追加了简体中文输出要求段落，内容完全相同\n2. **模式 B - 命令名称重映射**（10/19 文件）：\n   - `/ccg:dev` → `/ccg:workflow`\n   - `/ccg:bugfix` → `/ccg:debug`  \n   - `/ccg:think` → 移除（合并到 `/ccg:analyze`）\n   - `/ccg:code` → 移除（分散到 frontend/backend/workflow）\n3. **模式 C - Scoring Format 引用更新**（2/19 文件）：reviewer 中 `/ccg:bugfix` → `/ccg:debug`\n\n### 模型角色设计分析\n- Claude 定位为综合协调者（跨栈、端到端）\n- Codex 定位为后端专家（DB、算法、安全）\n- Gemini 定位为前端专家（UI/UX、a11y、设计系统）\n- 每个角色都有明确的 \"Unique Value\" 互补定位\n- Gemini 独有 frontend.md 角色\n\n### 潜在问题\n- gemini/architect.md 是唯一缺少中文语言要求的文件，可能是遗漏\n\n**无功能性代码差异**，所有改动都是命令引用和语言要求的本地化定制。",
+    "summary": "F 组 19 个 prompts 文件对比完成",
+    "timestamp": "2026-02-11T20:15:05.560Z",
+    "color": "green",
+    "read": false
+  },
+  {
+    "from": "diff-group-f",
+    "text": "{\"type\":\"idle_notification\",\"from\":\"diff-group-f\",\"timestamp\":\"2026-02-11T20:15:12.406Z\",\"idleReason\":\"available\"}",
+    "timestamp": "2026-02-11T20:15:12.406Z",
+    "color": "green",
+    "read": false
+  },
+  {
+    "from": "diff-group-e",
+    "text": "E 组代理文件对比报告已完成，写入 `C:/Users/Administrator/.claude/.ccg/DIFF-GROUP-E.md`。\n\n## 核心发现\n\n### 共有文件（4 个）\n| 文件 | 差异程度 |\n|------|----------|\n| get-current-datetime.md | 完全一致 |\n| init-architect.md | 本地新增 `zhi`/`ji`/GitHub MCP 工具 + 2 个新章节（+1,250B） |\n| planner.md | 模板变量实例化 + 记忆/确认系统集成（+837B） |\n| ui-ux-designer.md | 大幅扩充：12 个 MCP 工具 + Chrome DevTools 8 步验证 + 降级策略（+4,443B） |\n\n**一致的差异模式**：本地统一在上游基础上新增了记忆系统（`ji`）、用户确认（`zhi`）、降级策略三大能力，上游内容 100% 保留。\n\n### 本地独有文件（16 个）\n- **通用开发代理 11 个**：覆盖完整生命周期（analyze → plan → frontend/backend/fullstack → test → review → debug → optimize → commit）\n- **OpenSpec 代理 5 个**：约束驱动开发闭环（init → research → plan → impl → review），包含：\n  - Core Philosophy: 约束驱动/零决策/多模型协作/可追溯性均有具体实现\n  - Guardrails: Critical 零容忍、约束不遗漏、审批门控、二次验证\n  - 多模型并行: 4/5 个代理使用 Codex+Gemini 并行 + TaskOutput 等待\n  - Exit Criteria: 每个代理均有明确退出条件和检查点\n\n报告包含完整的 diff 详情、16 个独有文件的角色定位与工作流概要、5 个 spec 代理的深度特性分析矩阵。",
+    "summary": "E 组 20 个代理文件对比报告已完成",
+    "timestamp": "2026-02-11T20:19:43.031Z",
+    "color": "blue",
+    "read": false
+  },
+  {
+    "from": "diff-group-g",
+    "text": "{\"type\":\"idle_notification\",\"from\":\"diff-group-g\",\"timestamp\":\"2026-02-11T20:22:08.190Z\",\"idleReason\":\"available\"}",
+    "timestamp": "2026-02-11T20:22:08.190Z",
+    "color": "yellow",
+    "read": false
+  },
+  {
+    "from": "diff-group-e",
+    "text": "{\"type\":\"idle_notification\",\"from\":\"diff-group-e\",\"timestamp\":\"2026-02-11T20:22:23.694Z\",\"idleReason\":\"available\"}",
+    "timestamp": "2026-02-11T20:22:23.694Z",
+    "color": "blue",
+    "read": false
+  }
+]

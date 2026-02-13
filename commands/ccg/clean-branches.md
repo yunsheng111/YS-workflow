@@ -120,3 +120,4 @@ git config --get-all branch.cleanup.protected
 3. **谨慎 --force** – 除非确定无用
 4. **团队协作** – 清理远程分支前先通知
 5. **定期运行** – 每月/季度一次保持清爽
+6. **归档清理记录** – 清理执行后调用 `mcp______ji` 归档（`action`: "记忆"，`category`: "context"，`content`: "branch-cleanup|基准:<base>|已删除:<N>个|保留:<M>个"），供后续审计追溯

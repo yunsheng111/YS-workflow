@@ -1,6 +1,21 @@
 ---
 description: "Refine proposals into zero-decision executable plans"
 ---
+<!-- CCG:SPEC:PLAN:START -->
+**Core Philosophy**
+- 计划必须"零决策"——每步可直接机械执行，无需人工判断或临时决策。
+- 约束驱动规划：所有计划步骤必须可追溯到 `spec-research` 产出的约束集。
+- 消除歧义是核心任务：通过多模型分析将所有模糊点转化为明确指令。
+
+**Guardrails**
+- 仅写入 `.claude/spec/` 目录，不修改项目源代码。
+- 必须使用 `spec-plan-agent` 子代理执行，主代理仅协调。
+- 计划中每个步骤必须包含精确的文件路径、操作类型和预期结果。
+- 计划完成后必须使用 `mcp______zhi` 展示摘要并确认。
+- 前置条件：`spec-research` 已产出约束集和提案。
+- 与后续命令的关系：计划是 `spec-impl` 的直接输入，impl 阶段严格按计划执行。
+
+**Steps**
 
 # /ccg:spec-plan
 
@@ -49,7 +64,7 @@ description: "Refine proposals into zero-decision executable plans"
 ```
 Task({
   subagent_type: "spec-plan-agent",
-  prompt: "将提案转化为零决策可执行计划。\n\n提案路径：$ARGUMENTS\n工作目录：$PWD\n约束目录：.claude/spec/constraints/\n计划目录：.claude/spec/plans/\n\n请执行：\n1. 读取提案和约束集\n2. 多模型分析消除歧义\n3. 生成零决策计划（每步无需人工决策即可执行）",
+  prompt: "将提案转化为零决策可执行计划。\n\n提案路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.claude/spec/constraints/\n计划目录：.claude/spec/plans/\n\n请执行：\n1. 读取提案和约束集\n2. 多模型分析消除歧义\n3. 生成零决策计划（每步无需人工决策即可执行）",
   description: "零决策规划"
 })
 ```
@@ -89,3 +104,11 @@ Task({
 2. 仅写入 `.claude/spec/` 目录，不修改项目源代码
 3. 计划必须"零决策"——每步可直接执行，无需人工判断
 4. 计划完成后必须使用 zhi 确认
+
+**Exit Criteria**
+- [ ] 提案和约束集已读取并分析
+- [ ] 所有歧义点已通过多模型分析消除
+- [ ] 零决策计划已生成（每步无需人工决策即可执行）
+- [ ] 计划文件已写入 `.claude/spec/plans/`
+- [ ] 计划摘要已通过 zhi 展示给用户
+<!-- CCG:SPEC:PLAN:END -->

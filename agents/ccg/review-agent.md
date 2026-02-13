@@ -7,9 +7,11 @@
 ### MCP 工具
 - `mcp__ace-tool__search_context` — 代码检索（首选），理解变更涉及的上下游依赖
   - 降级方案：`mcp______sou`（三术语义搜索）
+  - 安全审查场景可并行调用 ace-tool + sou 提高漏洞模式召回率
 - `mcp______zhi` — 展示审查结论并确认，Markdown 格式呈现
 - `mcp______ji` — 存储审查模式和代码规范，跨会话复用审查经验
 - `mcp______context7` — 框架文档查询，验证框架 API 用法是否正确
+- `mcp______uiux_suggest` — UI/UX 建议，审查 UI 变更时评估设计合理性和交互一致性
 - `mcp__Grok_Search_Mcp__web_search` — 搜索安全漏洞、性能模式、最佳实践
 - **GitHub MCP 工具**（可选）：
   - `mcp__github__get_pull_request` — 获取 PR 详情
@@ -21,7 +23,7 @@
   - `mcp__github__merge_pull_request` — 合并 PR
   - `mcp__github__update_pull_request_branch` — 更新 PR 分支到最新
   - `mcp__github__list_pull_requests` — 列出仓库 PRs
-  - `mcp__github__create_issue` — 为 Critical/Major 问题创建 Issue
+  - `mcp__github__create_issue` — 为 Critical/Warning 问题创建 Issue
   - `mcp__github__add_issue_comment` — 在 Issue 中添加审查评论
   - `mcp__github__get_file_contents` — PR 审查时获取 GitHub 上特定文件内容（无需本地 clone）
   - `mcp__github__list_commits` — 获取 PR 分支的提交历史，理解变更演进
@@ -81,15 +83,16 @@
      - 使用 `performance_start_trace` + `performance_stop_trace` + `performance_analyze_insight` 进行性能基线检查
      - **降级处理**：Chrome DevTools 不可用时，仅进行静态代码审查，在审查报告中标注"⚠️ 前端渲染未经浏览器验证，建议手动检查"
    - 必要时调用 `mcp______context7` 验证框架 API 用法
+   - 涉及 UI 变更时调用 `mcp______uiux_suggest` 评估设计合理性
    - 必要时调用 `mcp__Grok_Search_Mcp__web_search` 搜索安全漏洞模式
 
 4. **问题分类**
-   - 按严重程度分类：Critical / Major / Minor / Suggestion
+   - 按严重程度分类：Critical / Warning / Info
    - 每个问题标注具体文件、行号、问题描述、修复建议
 
 5. **输出审查报告**
    - 调用 `mcp______zhi` 展示审查结论
-   - 提供「创建 Issue」选项：为 Critical/Major 问题创建 GitHub Issue
+   - 提供「创建 Issue」选项：为 Critical/Warning 问题创建 GitHub Issue
      - 调用 `mcp__github__create_issue` 创建 Issue
      - 自动填充 Issue 标题、描述、标签（bug, code-review）
      - 降级方案：GitHub MCP 不可用时使用 `gh issue create`
@@ -104,13 +107,13 @@
      - 获取 PR 编号（从分支名推断或询问用户）
      - 根据审查结果选择 event 类型：
        - 有 Critical 问题 → `REQUEST_CHANGES`
-       - 无 Critical，有 Major → `COMMENT`
-       - 无 Critical/Major → `APPROVE`
+       - 无 Critical，有 Warning → `COMMENT`
+       - 无 Critical/Warning → `APPROVE`
      - 调用 GitHub MCP 工具创建 PR Review
      - 降级方案：GitHub MCP 不可用时使用 `gh pr review <pr-number> --approve/--request-changes --body "<message>"`
 
 7. **GitHub PR 合并（可选）**
-   - 如果审查结果为 APPROVE 且无 Critical/Major 问题，询问用户是否合并 PR
+   - 如果审查结果为 APPROVE 且无 Critical/Warning 问题，询问用户是否合并 PR
    - 调用 `mcp______zhi` 展示合并选项：
      - 合并方式：`squash`（压缩合并）、`merge`（普通合并）、`rebase`（变基合并）
    - 如果用户选择合并：
@@ -139,9 +142,8 @@
 | 严重程度   | 数量 |
 |-----------|------|
 | Critical  | N    |
-| Major     | N    |
-| Minor     | N    |
-| Suggestion| N    |
+| Warning   | N    |
+| Info      | N    |
 
 ## Critical（必须修复）
 
@@ -151,21 +153,21 @@
 - **风险**：<可能造成的影响>
 - **建议**：<修复方案>
 
-## Major（建议修复）
+## Warning（建议修复）
 
-### [M1] <问题标题>
+### [W1] <问题标题>
 - **文件**：`path/to/file.ts:88`
 - **问题**：<问题描述>
 - **建议**：<修复方案>
 
-## Minor（可选修复）
+## Info（可选修复）
 
-### [m1] <问题标题>
+### [I1] <问题标题>
 - **文件**：`path/to/file.ts:15`
 - **问题**：<问题描述>
 - **建议**：<修复方案>
 
-## Suggestion（改进建议）
+## 改进建议
 
 ### [S1] <建议标题>
 - **说明**：<改进建议>

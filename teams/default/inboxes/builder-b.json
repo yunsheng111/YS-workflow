@@ -1,0 +1,22 @@
+[
+  {
+    "from": "team-lead",
+    "text": "Layer 1 完成出色。现在请继续执行 Task 8: enhance.md + prompts 引用。\n\n## Task 8 详细说明\n\n**依赖**: T2/T3 已完成（LITE_MODE + GEMINI_MODEL 占位符已添加）\n\n**文件范围**:\n- `commands/ccg/enhance.md`\n- `.ccg/prompts/**/*.md` (19 个 prompts 文件)\n\n**修改内容**:\n1. enhance.md: 补回\"增强原则\"段落（如果缺失）\n2. 所有 prompts 文件: 统一命令引用格式，确保与 T2/T3 的占位符一致\n\n**实施步骤**:\n1. 读取 enhance.md，检查是否有\"增强原则\"段落\n2. 如果缺失，添加该段落\n3. 使用 Glob 找到所有 .ccg/prompts/**/*.md 文件\n4. 逐个检查命令引用格式\n5. 确保引用的命令与 T2/T3 修改后的格式一致\n\n**验收标准**:\n- enhance.md 包含完整的\"增强原则\"段落\n- 所有 prompts 文件的命令引用格式统一\n\n完成后标记任务为 completed。",
+    "summary": "分配 Task 8: enhance.md + prompts 引用",
+    "timestamp": "2026-02-12T10:25:49.624Z",
+    "read": false
+  },
+  {
+    "from": "team-lead",
+    "text": "Layer 1 完成出色。现在请继续执行 Task 8: enhance.md + prompts 引用。\n\n## Task 8 详细说明\n\n**依赖**: T2/T3 已完成（LITE_MODE + GEMINI_MODEL 已添加）\n\n**文件范围**:\n- `commands/ccg/enhance.md`\n- `.ccg/prompts/` 目录下的所有 .md 文件（约 19 个）\n\n**修改内容**:\n1. **enhance.md**: 补回\"增强原则\"段落（如果缺失）\n2. **prompts 文件**: 统一命令引用格式，确保与新的环境变量配置一致\n\n**实施步骤**:\n1. 读取 `commands/ccg/enhance.md`，检查是否有\"增强原则\"段落\n2. 如果缺失，添加增强原则说明\n3. 使用 Glob 查找 `.ccg/prompts/**/*.md` 所有 prompts 文件\n4. 检查这些文件中的命令引用是否与新的配置一致\n5. 如有需要，更新引用格式\n\n**验收标准**:\n- enhance.md 包含完整的增强原则说明\n- 所有 prompts 文件的命令引用格式统一且正确\n\n完成后标记任务为 completed。",
+    "summary": "分配 Task 8: enhance.md + prompts 引用",
+    "timestamp": "2026-02-12T10:33:48.472Z",
+    "read": false
+  },
+  {
+    "from": "team-lead",
+    "text": "{\"type\":\"shutdown_request\",\"requestId\":\"shutdown-1770894700872@builder-b\",\"from\":\"team-lead\",\"reason\":\"所有任务已完成，感谢你的出色工作。现在可以安全关闭了。\",\"timestamp\":\"2026-02-12T11:11:40.872Z\"}",
+    "timestamp": "2026-02-12T11:11:40.872Z",
+    "read": false
+  }
+]

@@ -127,3 +127,4 @@ parent-directory/
 - Worktree 共享 `.git` 目录，节省磁盘空间
 - 迁移仅限未提交改动，已提交内容用 `git cherry-pick`
 - 支持 Windows、macOS、Linux
+- 创建/迁移/删除操作完成后，调用 `mcp______ji` 归档 worktree 操作记录（`action`: "记忆"，`category`: "context"，`content`: "worktree|操作:<add/migrate/remove>|分支:<branch>|路径:<path>"），供后续会话查询 worktree 历史

@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "diff-group-f",
+  "description": "你是文件对比专家。请对比 prompts 模板文件。\n\n## 上游 prompts（19 个文件）\n路径：D:/Program Files/nvm/node_global/node_modules/c",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

@@ -38,9 +38,8 @@
 ### 阶段 3：交叉验证
 7. 整合双方审查结果，按严重程度分类：
    - **Critical**：违反硬约束 → 必须修复
-   - **Major**：违反软约束或风险防护不足 → 建议修复
-   - **Minor**：代码质量改进 → 可选修复
-   - **Suggestion**：优化建议 → 记录备查
+   - **Warning**：违反软约束或风险防护不足 → 建议修复
+   - **Info**：代码质量改进 → 可选修复
 8. 逐条核对约束覆盖情况
 
 ### 阶段 4：合规裁决
@@ -71,9 +70,8 @@
 | 级别 | 数量 | Codex | Gemini | 共识 |
 |------|------|-------|--------|------|
 | Critical | N | N | N | N |
-| Major | N | N | N | N |
-| Minor | N | N | N | N |
-| Suggestion | N | N | N | N |
+| Warning | N | N | N | N |
+| Info | N | N | N | N |
 
 ### Critical 问题（必须修复）
 | # | 描述 | 违反约束 | 来源 | 修复方案 |
@@ -94,6 +92,15 @@
 - 归档路径：`.claude/spec/archive/<timestamp>/`
 - 包含文件：约束集、提案、计划、实施报告、审查报告
 ```
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：阶段 2 调用 Codex/Gemini 审查前，检查 `LITE_MODE` 环境变量。若为 `true`，跳过双模型交叉审查，由 Claude 独立审查。
 
 ## 约束
 

@@ -18,61 +18,22 @@ $ARGUMENTS
 
 ---
 
-## 多模型调用规范
+## 多模型调用规范（由 planner 代理内部处理）
 
-**调用语法**（并行用 `run_in_background: true`）：
+planner 代理内部会自动处理多模型调用，使用占位符渲染层提供的以下占位符：
 
-```
-Bash({
-  command: "C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe --backend <codex|gemini> - \"$PWD\" <<'EOF'
-ROLE_FILE: <角色提示词路径>
-<TASK>
-需求：<增强后的需求>
-上下文：<检索到的项目上下文>
-</TASK>
-OUTPUT: Step-by-step implementation plan with pseudo-code. DO NOT modify any files.
-EOF",
-  run_in_background: true,
-  timeout: 3600000,
-  description: "简短描述"
-})
-```
+- `{{CCG_BIN}}` - codeagent-wrapper 路径
+- `{{WORKDIR}}` - 当前工作目录
+- `{{LITE_MODE_FLAG}}` - --lite 标志（如果 LITE_MODE=true）
+- `{{GEMINI_MODEL_FLAG}}` - --gemini-model 标志
 
-**角色提示词**：
-
-| 阶段 | Codex | Gemini |
-|------|-------|--------|
-| 分析 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/analyzer.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/analyzer.md` |
-| 规划 | `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md` | `C:/Users/Administrator/.claude/.ccg/prompts/gemini/architect.md` |
-
-**会话复用**：每次调用返回 `SESSION_ID: xxx`（通常由 wrapper 输出），**必须保存**以供后续 `/ccg:execute` 使用。
-
-**等待后台任务**（最大超时 600000ms = 10 分钟）：
-
-```
-TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
-```
-
-**重要**：
-- 必须指定 `timeout: 600000`，否则默认只有 30 秒会导致提前超时
-- 若 10 分钟后仍未完成，继续用 `TaskOutput` 轮询，**绝对不要 Kill 进程**
-- 若因等待时间过长跳过了等待，**必须调用 `mcp______zhi` 询问用户选择继续等待还是 Kill Task**
+主代理无需关心这些细节，只需调用 Task 工具启动 planner 代理即可
 
 ---
 
-## 网络搜索规范（GrokSearch 优先）
+## 网络搜索规范（由 planner 代理内部处理）
 
-**首次需要外部信息时执行以下步骤**：
-
-1. 调用 `mcp__Grok_Search_Mcp__get_config_info` 做可用性检查
-2. 调用 `mcp__Grok_Search_Mcp__toggle_builtin_tools`，`action: "off"`，确保禁用内置 WebSearch/WebFetch
-3. 使用 `mcp__Grok_Search_Mcp__web_search` 进行搜索；需要全文时再调用 `mcp__Grok_Search_Mcp__web_fetch`
-4. 若搜索失败或结果不足，执行降级步骤：
-   - 调用 `get_config_info` 获取状态
-   - 若状态异常，调用 `switch_model` 切换模型后重试一次
-   - 仍失败则使用 `mcp______context7` 获取框架/库官方文档
-   - 若仍不足，提示用户提供权威来源
-5. 关键结论与来源需通过 `mcp______ji` 记录，便于后续复用与审计
+planner 代理内部会自动处理网络搜索需求，包括 GrokSearch 调用和降级策略。主代理无需关心这些细节
 
 ---
 
@@ -80,216 +41,52 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 
 **规划任务**：$ARGUMENTS
 
-**规划初始化**：
-1. 调用 `mcp______ji` 回忆项目历史规划模式、架构约束和技术决策
-2. 如有历史规划经验，在后续阶段中参考使用
-
-### 🔍 Phase 1：上下文全量检索
-
-`[模式：研究]`
-
-#### 1.1 Prompt 增强（必须首先执行）
-
-**⚠️ 优先调用 `mcp______enhance` 工具**（不可用时降级到 `mcp__ace-tool__enhance_prompt`）：
+调用 planner 代理执行完整的规划流程：
 
 ```
-mcp______enhance({
+Task({
+  subagent_type: "planner",
   prompt: "$ARGUMENTS",
-  conversation_history: "<最近5-10轮对话历史>",
-  project_root_path: "$PWD"
+  description: "WBS 任务分解与实施计划生成"
 })
 ```
 
-等待返回增强后的 prompt，**用增强结果替代原始 $ARGUMENTS** 用于后续所有阶段。
+planner 代理将自动完成以下流程：
+1. Prompt 增强（使用 `mcp______enhance` 或降级方案）
+2. 上下文检索（使用 `mcp__ace-tool__search_context` 或降级方案）
+3. 多模型协作分析（Codex + Gemini 并行调用）
+4. 生成实施计划并保存到 `.claude/plan/<功能名>.md`
+5. 通过 `mcp______zhi` 向用户展示计划并等待确认
 
-#### 1.2 上下文检索
+**重要**：planner 代理内部会自动处理占位符渲染和多模型调用，主代理无需关心具体实现细节
 
-**调用 `mcp__ace-tool__search_context` 工具**：
+### 计划交付
 
-```
-mcp__ace-tool__search_context({
-  query: "<基于增强后需求构建的语义查询>",
-  project_root_path: "$PWD"
-})
-```
+planner 代理完成后，会自动：
+1. 将计划保存至 `.claude/plan/<功能名>.md`
+2. 通过 `mcp______zhi` 向用户展示计划摘要
+3. 等待用户选择下一步操作
 
-- 使用自然语言构建语义查询（Where/What/How）
-- **禁止基于假设回答**
-- 若 `search_context` 不可用：优先调用 `mcp______sou` 语义搜索；再不可用则回退到 Glob + Grep
-
-#### 1.3 完整性检查
-
-- 必须获取相关类、函数、变量的**完整定义与签名**
-- 若上下文不足，触发**递归检索**
-- 优先输出：入口文件 + 行号 + 关键符号名；必要时补充最小代码片段（仅用于消除歧义）
-
-#### 1.4 需求对齐
-
-- 若需求仍有模糊空间，**必须**向用户输出引导性问题列表
-- 直至需求边界清晰（无遗漏、无冗余）
-
-### 💡 Phase 2：多模型协作分析
-
-`[模式：分析]`
-
-#### 2.1 分发输入
-
-**并行调用** Codex 和 Gemini（`run_in_background: true`）：
-
-将**原始需求**（不带预设观点）分发给两个模型：
-
-1. **Codex 后端分析**：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/analyzer.md`
-   - 关注：技术可行性、架构影响、性能考量、潜在风险
-   - OUTPUT: 多角度解决方案 + 优劣势分析
-
-2. **Gemini 前端分析**：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/gemini/analyzer.md`
-   - 关注：UI/UX 影响、用户体验、视觉设计
-   - OUTPUT: 多角度解决方案 + 优劣势分析
-
-用 `TaskOutput` 等待两个模型的完整结果。**📌 保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
-
-#### 2.2 交叉验证
-
-整合各方思路，进行迭代优化：
-
-1. **识别一致观点**（强信号）
-2. **识别分歧点**（需权衡）
-3. **互补优势**：后端逻辑以 Codex 为准，前端设计以 Gemini 为准
-4. **逻辑推演**：消除方案中的逻辑漏洞
-
-#### 2.3（可选但推荐）双模型产出“计划草案”
-
-为降低 Claude 合成计划的遗漏风险，可并行让两个模型输出“计划草案”（仍然**不允许**修改文件）：
-
-1. **Codex 计划草案**（后端权威）：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/codex/architect.md`
-   - OUTPUT: Step-by-step plan + pseudo-code（重点：数据流/边界条件/错误处理/测试策略）
-
-2. **Gemini 计划草案**（前端权威）：
-   - ROLE_FILE: `C:/Users/Administrator/.claude/.ccg/prompts/gemini/architect.md`
-   - OUTPUT: Step-by-step plan + pseudo-code（重点：信息架构/交互/可访问性/视觉一致性）
-
-用 `TaskOutput` 等待两个模型的完整结果，并记录其建议的关键差异点。
-
-#### 2.4 生成实施计划（Claude 最终版）
-
-综合双方分析，生成 **Step-by-step 实施计划**：
-
-```markdown
-## 📋 实施计划：<任务名称>
-
-### 任务类型
-- [ ] 前端 (→ Gemini)
-- [ ] 后端 (→ Codex)
-- [ ] 全栈 (→ 并行)
-
-### 技术方案
-<综合 Codex + Gemini 分析的最优方案>
-
-### 实施步骤
-1. <步骤 1> - 预期产物
-2. <步骤 2> - 预期产物
-...
-
-### 关键文件
-| 文件 | 操作 | 说明 |
-|------|------|------|
-| path/to/file.ts:L10-L50 | 修改 | 描述 |
-
-### 风险与缓解
-| 风险 | 缓解措施 |
-|------|----------|
-
-### SESSION_ID（供 /ccg:execute 使用）
-- CODEX_SESSION: <session_id>
-- GEMINI_SESSION: <session_id>
-```
-
-### ⛔ Phase 2 结束：计划交付（非执行）
-
-**`/ccg:plan` 的职责到此结束，必须执行以下动作**：
-
-1. 将计划保存至 `.claude/plan/<功能名>.md`（功能名从需求中提取，如 `user-auth`、`payment-module` 等）
-
-2. **调用三术(zhi)确认**：
-
-调用 `mcp______zhi` 工具展示计划并获取用户确认：
-- `message`:
-  ```
-  ## 📋 实施计划已生成
-
-  ### 计划文件
-  `.claude/plan/<实际功能名>.md`
-
-  ### 计划摘要
-  <计划的关键步骤摘要，3-5 条>
-
-  ### 下一步操作
-  - **执行计划**：`/ccg:execute .claude/plan/<实际功能名>.md`
-  - **修改计划**：告诉我需要调整的部分
-
-  请选择操作：
-  ```
-- `is_markdown`: true
-- `predefined_options`: ["查看完整计划", "执行计划", "修改计划", "稍后处理"]
-
-3. 根据用户选择：
-   - 「查看完整计划」→ 输出完整计划内容
-   - 「执行计划」→ 提示用户在新会话执行 `/ccg:execute .claude/plan/<功能名>.md`
-   - 「修改计划」→ 进入计划修改流程
-   - 「稍后处理」→ 终止当前回复
-
-4. **立即终止当前回复**（Stop here. No more tool calls.）
-
-**⚠️ 绝对禁止**：
-- ❌ 问用户 "Y/N" 然后自动执行（执行是 `/ccg:execute` 的职责）
-- ❌ 对产品代码进行任何写操作
-- ❌ 自动调用 `/ccg:execute` 或任何实施动作
-- ❌ 在用户未明确要求修改时继续触发模型调用
+主代理无需额外处理，planner 代理会处理所有交互
 
 ---
 
-## 计划保存
+## 计划保存（由 planner 代理内部处理）
 
-规划完成后，将计划保存至：
-
-- **首次规划**：`.claude/plan/<功能名>.md`
-- **迭代版本**：`.claude/plan/<功能名>-v2.md`、`.claude/plan/<功能名>-v3.md`...
-
-计划文件写入应在向用户展示计划前完成。
+planner 代理会自动将计划保存至 `.claude/plan/<功能名>.md`，主代理无需额外处理。
 
 ---
 
-## 计划修改流程
+## 计划修改流程（由 planner 代理内部处理）
 
-如果用户要求修改计划：
-
-1. 根据用户反馈调整计划内容
-2. 更新 `.claude/plan/<功能名>.md` 文件
-3. 重新展示修改后的计划
-4. 再次提示用户审查或执行
-
----
-
-## 后续步骤
-
-用户审查满意后，**手动**执行：
-
-```bash
-/ccg:execute .claude/plan/<功能名>.md
-```
-
-**规划结束**：
-调用 `mcp______ji` 存储本次规划的关键决策、架构方案和实施路径，供后续会话复用。
+planner 代理会自动处理用户的计划修改请求，主代理无需额外处理
 
 ---
 
 ## 关键规则
 
 1. **仅规划不实施** – 本命令不执行任何代码变更
-2. **不问 Y/N** – 只展示计划，让用户决定下一步
-3. **信任规则** – 后端以 Codex 为准，前端以 Gemini 为准
-4. 外部模型对文件系统**零写入权限**
-5. **SESSION_ID 交接** – 计划末尾必须包含 `CODEX_SESSION` / `GEMINI_SESSION`（供 `/ccg:execute resume <SESSION_ID>` 使用）
+2. **委托给 planner 代理** – 主代理只需调用 Task 工具，所有规划逻辑由 planner 代理处理
+3. **占位符渲染** – planner 代理内部使用占位符（{{CCG_BIN}}、{{WORKDIR}} 等），由渲染层自动处理
+4. **多模型并行** – planner 代理会自动并行调用 Codex 和 Gemini 进行分析
+5. **SESSION_ID 交接** – planner 代理会在计划中包含 SESSION_ID，供后续 `/ccg:execute` 使用

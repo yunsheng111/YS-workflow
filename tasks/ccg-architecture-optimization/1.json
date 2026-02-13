@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "builder-task1",
+  "description": "你是 Builder，负责实施一个子任务。严格按照以下指令执行。\n\n## 你的任务\n### Task 1: 占位符渲染层实现（HC-5）\n- **类型**: 基础设施\n- **文件范围**:\n  - ",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

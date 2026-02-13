@@ -1,0 +1,11 @@
+{
+  "id": "12",
+  "subject": "builder-task11",
+  "description": "你是 Builder，负责实施一个子任务。严格按照以下指令执行。\n\n## 你的任务\n### Task 11: 清理硬编码路径（HC-4）\n- **类型**: 全栈\n- **文件范围**:\n  - `c",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}

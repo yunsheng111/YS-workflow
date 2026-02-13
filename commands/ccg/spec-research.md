@@ -1,6 +1,21 @@
 ---
 description: "Transform requirements into constraint sets via parallel exploration"
 ---
+<!-- CCG:SPEC:RESEARCH:START -->
+**Core Philosophy**
+- 研究产出的是**约束集**，不是信息堆砌。每条约束缩小解决方案空间。
+- 并行探索是强制的：通过多维度同时分析需求，发现硬约束、软约束、依赖和风险。
+- 不做架构决策——只发现约束，为 `spec-plan` 阶段产出零决策计划提供基础。
+
+**Guardrails**
+- 仅写入 `.claude/spec/` 目录，不修改项目源代码。
+- 必须使用 `spec-research-agent` 子代理执行，主代理仅协调。
+- 约束集必须分类清晰：硬约束 / 软约束 / 依赖关系 / 风险。
+- 研究完成后必须使用 `mcp______zhi` 展示约束摘要并确认。
+- 前置条件：`spec-init` 已完成环境初始化。
+- 与后续命令的关系：约束集和提案是 `spec-plan` 的输入。
+
+**Steps**
 
 # /ccg:spec-research
 
@@ -49,7 +64,7 @@ description: "Transform requirements into constraint sets via parallel explorati
 ```
 Task({
   subagent_type: "spec-research-agent",
-  prompt: "将以下需求转化为约束集。\n\n需求：$ARGUMENTS\n工作目录：$PWD\n约束目录：.claude/spec/constraints/\n提案目录：.claude/spec/proposals/\n\n请执行：\n1. 增强需求（enhance）\n2. 检索项目上下文\n3. 识别硬约束、软约束、依赖关系、风险\n4. 生成约束集文件和提案",
+  prompt: "将以下需求转化为约束集。\n\n需求：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.claude/spec/constraints/\n提案目录：.claude/spec/proposals/\n\n请执行：\n1. 增强需求（enhance）\n2. 检索项目上下文\n3. 识别硬约束、软约束、依赖关系、风险\n4. 生成约束集文件和提案",
   description: "约束集研究"
 })
 ```
@@ -90,3 +105,11 @@ Task({
 1. **必须使用 Task 工具**调用 `spec-research-agent` 子代理
 2. 仅写入 `.claude/spec/` 目录，不修改项目源代码
 3. 约束集完成后必须使用 zhi 确认
+
+**Exit Criteria**
+- [ ] 需求已增强并确认
+- [ ] 硬约束、软约束、依赖关系、风险已分类识别
+- [ ] 约束集文件已写入 `.claude/spec/constraints/`
+- [ ] 提案文件已写入 `.claude/spec/proposals/`
+- [ ] 约束摘要已通过 zhi 展示给用户
+<!-- CCG:SPEC:RESEARCH:END -->

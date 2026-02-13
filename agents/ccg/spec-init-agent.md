@@ -73,6 +73,15 @@
 运行 `/ccg:spec-research` 开始约束集研究
 ```
 
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：阶段 1 验证 codeagent-wrapper 可用性时，若 `LITE_MODE=true`，标记为"已跳过（LITE_MODE）"而非"不可用"。
+
 ## 约束
 
 - 使用简体中文输出所有内容

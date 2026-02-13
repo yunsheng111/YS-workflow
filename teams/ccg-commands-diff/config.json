@@ -1,0 +1,75 @@
+{
+  "name": "ccg-commands-diff",
+  "description": "并行对比上游 ccg-workflow 与本地 26 个命令文件差异",
+  "createdAt": 1770834907213,
+  "leadAgentId": "team-lead@ccg-commands-diff",
+  "leadSessionId": "c1ca3391-329d-4cfa-903f-f9ee2bed78bc",
+  "members": [
+    {
+      "agentId": "team-lead@ccg-commands-diff",
+      "name": "team-lead",
+      "agentType": "coordinator",
+      "model": "claude-sonnet-4-5-20250929",
+      "joinedAt": 1770834907213,
+      "tmuxPaneId": "",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": []
+    },
+    {
+      "agentId": "group-a-agent@ccg-commands-diff",
+      "name": "group-a-agent",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是 CCG 命令文件对比分析专家。请逐一详细对比以下 5 对命令文件的差异。\n\n## 对比文件清单（A 组：spec-* 命令）\n\n| # | 上游文件 | 本地文件 |\n|---|---------|---------|\n| 1 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/spec-init.md | C:/Users/Administrator/.claude/commands/ccg/spec-init.md |\n| 2 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/spec-research.md | C:/Users/Administrator/.claude/commands/ccg/spec-research.md |\n| 3 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/spec-plan.md | C:/Users/Administrator/.claude/commands/ccg/spec-plan.md |\n| 4 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/spec-impl.md | C:/Users/Administrator/.claude/commands/ccg/spec-impl.md |\n| 5 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/spec-review.md | C:/Users/Administrator/.claude/commands/ccg/spec-review.md |\n\n## 对比维度（每个文件都要覆盖）\n\n1. **模板占位符 vs 硬编码路径**：上游使用 `{{WORKDIR}}`, `{{GEMINI_MODEL_FLAG}}`, `{{LITE_MODE_FLAG}}`, `{{MCP_SEARCH_TOOL}}` 等占位符，本地是否替换为硬编码值？具体替换了什么？\n2. **MCP 工具替换**：上游用 `AskUserQuestion` 的地方，本地是否替换为 `mcp______zhi`？搜索工具是否替换为 `mcp__ace-tool__search_context` 或 `mcp______sou`？\n3. **缺失的上游功能**：本地是否缺少 `--gemini-model gemini-3-pro-preview` 参数、`LITE_MODE_FLAG` 轻量模式、多工作区检测（`/add-dir`）？\n4. **本地新增功能**：本地是否新增了 `mcp______ji`（知识管理）、`mcp__Grok_Search_Mcp__web_search`（网络搜索）、`mcp______enhance`（增强）、GitHub MCP 工具、Chrome DevTools MCP？\n5. **架构差异**：执行方式是否不同（子代理委托 vs 内联执行）？codeagent-wrapper 调用语法是否一致？\n6. **内容差异**：具体的文本差异、段落增删、流程步骤变化\n\n## 输出格式\n\n对每个文件输出：\n\n```\n### 文件 N：<文件名>\n- 上游大小：XXX 字节 | 本地大小：XXX 字节 | 差异：+XX%\n- **占位符差异**：<具体列出>\n- **MCP 工具替换**：<具体列出>\n- **缺失上游功能**：<具体列出>\n- **本地新增功能**：<具体列出>\n- **架构差异**：<具体列出>\n- **其他差异**：<具体列出>\n- **同步建议**：<需要从上游同步什么>\n```\n\n请先读取每对文件的完整内容，然后逐一对比。务必详细、准确，不要遗漏任何差异。",
+      "color": "blue",
+      "planModeRequired": false,
+      "joinedAt": 1770834955417,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    },
+    {
+      "agentId": "group-b-agent@ccg-commands-diff",
+      "name": "group-b-agent",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是 CCG 命令文件对比分析专家。请逐一详细对比以下 5 对命令文件的差异。\n\n## 对比文件清单（B 组：增强命令）\n\n| # | 上游文件 | 本地文件 |\n|---|---------|---------|\n| 1 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/workflow.md | C:/Users/Administrator/.claude/commands/ccg/workflow.md |\n| 2 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/review.md | C:/Users/Administrator/.claude/commands/ccg/review.md |\n| 3 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/commit.md | C:/Users/Administrator/.claude/commands/ccg/commit.md |\n| 4 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/debug.md | C:/Users/Administrator/.claude/commands/ccg/debug.md |\n| 5 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/frontend.md | C:/Users/Administrator/.claude/commands/ccg/frontend.md |\n\n## 对比维度（每个文件都要覆盖）\n\n1. **模板占位符 vs 硬编码路径**：上游使用 `{{WORKDIR}}`, `{{GEMINI_MODEL_FLAG}}`, `{{LITE_MODE_FLAG}}`, `{{MCP_SEARCH_TOOL}}` 等占位符，本地是否替换为硬编码值？具体替换了什么？\n2. **MCP 工具替换**：上游用 `AskUserQuestion` 的地方，本地是否替换为 `mcp______zhi`？搜索工具是否替换为 `mcp__ace-tool__search_context` 或 `mcp______sou`？\n3. **缺失的上游功能**：本地是否缺少 `--gemini-model gemini-3-pro-preview` 参数、`LITE_MODE_FLAG` 轻量模式、多工作区检测（`/add-dir`）？\n4. **本地新增功能**：本地是否新增了 `mcp______ji`（知识管理）、`mcp__Grok_Search_Mcp__web_search`（网络搜索）、`mcp______enhance`（增强）、GitHub MCP 工具、Chrome DevTools MCP？\n5. **架构差异**：执行方式是否不同（子代理委托 vs 内联执行）？codeagent-wrapper 调用语法是否一致？\n6. **内容差异**：具体的文本差异、段落增删、流程步骤变化\n\n## 输出格式\n\n对每个文件输出：\n\n```\n### 文件 N：<文件名>\n- 上游大小：XXX 字节 | 本地大小：XXX 字节 | 差异：+XX%\n- **占位符差异**：<具体列出>\n- **MCP 工具替换**：<具体列出>\n- **缺失上游功能**：<具体列出>\n- **本地新增功能**：<具体列出>\n- **架构差异**：<具体列出>\n- **其他差异**：<具体列出>\n- **同步建议**：<需要从上游同步什么>\n```\n\n请先读取每对文件的完整内容，然后逐一对比。务必详细、准确，不要遗漏任何差异。",
+      "color": "green",
+      "planModeRequired": false,
+      "joinedAt": 1770834955425,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    },
+    {
+      "agentId": "group-c-agent@ccg-commands-diff",
+      "name": "group-c-agent",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是 CCG 命令文件对比分析专家。请逐一详细对比以下 12 对命令文件的差异。\n\n## 对比文件清单（C 组：轻量增强命令）\n\n| # | 上游文件 | 本地文件 |\n|---|---------|---------|\n| 1 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/analyze.md | C:/Users/Administrator/.claude/commands/ccg/analyze.md |\n| 2 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/backend.md | C:/Users/Administrator/.claude/commands/ccg/backend.md |\n| 3 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/execute.md | C:/Users/Administrator/.claude/commands/ccg/execute.md |\n| 4 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/enhance.md | C:/Users/Administrator/.claude/commands/ccg/enhance.md |\n| 5 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/feat.md | C:/Users/Administrator/.claude/commands/ccg/feat.md |\n| 6 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/init.md | C:/Users/Administrator/.claude/commands/ccg/init.md |\n| 7 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/optimize.md | C:/Users/Administrator/.claude/commands/ccg/optimize.md |\n| 8 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/plan.md | C:/Users/Administrator/.claude/commands/ccg/plan.md |\n| 9 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/rollback.md | C:/Users/Administrator/.claude/commands/ccg/rollback.md |\n| 10 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/clean-branches.md | C:/Users/Administrator/.claude/commands/ccg/clean-branches.md |\n| 11 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/worktree.md | C:/Users/Administrator/.claude/commands/ccg/worktree.md |\n| 12 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/test.md | C:/Users/Administrator/.claude/commands/ccg/test.md |\n\n## 对比维度（每个文件都要覆盖）\n\n1. **模板占位符 vs 硬编码路径**：上游使用 `{{WORKDIR}}`, `{{GEMINI_MODEL_FLAG}}`, `{{LITE_MODE_FLAG}}`, `{{MCP_SEARCH_TOOL}}` 等占位符，本地是否替换为硬编码值？具体替换了什么？\n2. **MCP 工具替换**：上游用 `AskUserQuestion` 的地方，本地是否替换为 `mcp______zhi`？搜索工具是否替换为 `mcp__ace-tool__search_context` 或 `mcp______sou`？\n3. **缺失的上游功能**：本地是否缺少 `--gemini-model gemini-3-pro-preview` 参数、`LITE_MODE_FLAG` 轻量模式、多工作区检测（`/add-dir`）？\n4. **本地新增功能**：本地是否新增了 `mcp______ji`（知识管理）、`mcp__Grok_Search_Mcp__web_search`（网络搜索）、`mcp______enhance`（增强）、GitHub MCP 工具、Chrome DevTools MCP？\n5. **架构差异**：执行方式是否不同（子代理委托 vs 内联执行）？codeagent-wrapper 调用语法是否一致？\n6. **内容差异**：具体的文本差异、段落增删、流程步骤变化\n\n## 输出格式\n\n对每个文件输出：\n\n```\n### 文件 N：<文件名>\n- 上游大小：XXX 字节 | 本地大小：XXX 字节 | 差异：+XX%\n- **占位符差异**：<具体列出>\n- **MCP 工具替换**：<具体列出>\n- **缺失上游功能**：<具体列出>\n- **本地新增功能**：<具体列出>\n- **架构差异**：<具体列出>\n- **其他差异**：<具体列出>\n- **同步建议**：<需要从上游同步什么>\n```\n\n请先读取每对文件的完整内容，然后逐一对比。务必详细、准确，不要遗漏任何差异。",
+      "color": "yellow",
+      "planModeRequired": false,
+      "joinedAt": 1770834955432,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    },
+    {
+      "agentId": "group-d-agent@ccg-commands-diff",
+      "name": "group-d-agent",
+      "agentType": "general-purpose",
+      "model": "claude-opus-4-6",
+      "prompt": "你是 CCG 命令文件对比分析专家。请逐一详细对比以下 4 对命令文件的差异。\n\n## 对比文件清单（D 组：team-* 命令）\n\n| # | 上游文件 | 本地文件 |\n|---|---------|---------|\n| 1 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/team-exec.md | C:/Users/Administrator/.claude/commands/ccg/team-exec.md |\n| 2 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/team-plan.md | C:/Users/Administrator/.claude/commands/ccg/team-plan.md |\n| 3 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/team-research.md | C:/Users/Administrator/.claude/commands/ccg/team-research.md |\n| 4 | D:/Program Files/nvm/node_global/node_modules/ccg-workflow/templates/commands/team-review.md | C:/Users/Administrator/.claude/commands/ccg/team-review.md |\n\n## 对比维度（每个文件都要覆盖）\n\n1. **模板占位符 vs 硬编码路径**：上游使用 `{{WORKDIR}}`, `{{GEMINI_MODEL_FLAG}}`, `{{LITE_MODE_FLAG}}`, `{{MCP_SEARCH_TOOL}}` 等占位符，本地是否替换为硬编码值？具体替换了什么？\n2. **MCP 工具替换**：上游用 `AskUserQuestion` 的地方，本地是否替换为 `mcp______zhi`？搜索工具是否替换为 `mcp__ace-tool__search_context` 或 `mcp______sou`？\n3. **缺失的上游功能**：本地是否缺少 `--gemini-model gemini-3-pro-preview` 参数、`LITE_MODE_FLAG` 轻量模式、多工作区检测（`/add-dir`）？\n4. **本地新增功能**：本地是否新增了 `mcp______ji`（知识管理）、`mcp__Grok_Search_Mcp__web_search`（网络搜索）、`mcp______enhance`（增强）、GitHub MCP 工具、Chrome DevTools MCP？\n5. **架构差异**：执行方式是否不同（子代理委托 vs 内联执行）？codeagent-wrapper 调用语法是否一致？\n6. **内容差异**：具体的文本差异、段落增删、流程步骤变化\n\n## 输出格式\n\n对每个文件输出：\n\n```\n### 文件 N：<文件名>\n- 上游大小：XXX 字节 | 本地大小：XXX 字节 | 差异：+XX%\n- **占位符差异**：<具体列出>\n- **MCP 工具替换**：<具体列出>\n- **缺失上游功能**：<具体列出>\n- **本地新增功能**：<具体列出>\n- **架构差异**：<具体列出>\n- **其他差异**：<具体列出>\n- **同步建议**：<需要从上游同步什么>\n```\n\n请先读取每对文件的完整内容，然后逐一对比。务必详细、准确，不要遗漏任何差异。",
+      "color": "purple",
+      "planModeRequired": false,
+      "joinedAt": 1770834955438,
+      "tmuxPaneId": "in-process",
+      "cwd": "C:\\Users\\Administrator\\.claude",
+      "subscriptions": [],
+      "backendType": "in-process"
+    }
+  ]
+}

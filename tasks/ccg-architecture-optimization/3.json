@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "builder-task14",
+  "description": "你是 Builder，负责实施一个子任务。严格按照以下指令执行。\n\n## 你的任务\n### Task 14: enhance 工具可靠性改进（SC-1/SC-2）\n- **类型**: 全栈\n- **文",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "_internal": true
+  }
+}
