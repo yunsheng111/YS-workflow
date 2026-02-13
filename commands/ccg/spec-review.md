@@ -40,6 +40,36 @@ description: "Multi-model compliance review before archiving"
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`spec-review-agent`（`agents/ccg/spec-review-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "spec-review-agent",
+  prompt: "$ARGUMENTS",
+  description: "合规审查"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 网络搜索：Grok Search MCP → `mcp______context7`
+- 外部模型：Codex + Gemini（双模型交叉审查）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 网络搜索规范（GrokSearch 优先）
 
 **首次需要外部信息时执行以下步骤**：

@@ -14,6 +14,29 @@ description: 'Agent Teams 需求研究 - 并行探索代码库，产出约束集
 - 不做架构决策——只发现约束。
 - 使用 `mcp______zhi` 解决任何歧义，绝不假设。
 
+---
+
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行 + 外部模型协作
+
+**工作流**：8 个阶段（Prompt 增强 → 代码库评估 → 定义探索边界 → 多模型并行探索 → 聚合与综合 → 歧义消解 → 写入研究文件 → 归档研究成果）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- Prompt 增强：`mcp______enhance` → `mcp__ace-tool__enhance_prompt` → Claude 自增强
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex + Gemini（并行探索不同上下文边界）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 **Steps**
 0. **MANDATORY: Prompt 增强**
    - **立即执行，不可跳过。**

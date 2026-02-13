@@ -22,6 +22,37 @@ description: '前端专项工作流 - 智能分流到设计方案或开发实施
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：主代理路由到子代理
+
+**路由决策**：
+- 设计方案类 → `ui-ux-designer` 代理
+- 开发实施类 → `frontend-agent` 代理
+
+**调用示例**：
+```
+Task({
+  subagent_type: "ui-ux-designer",  // 或 "frontend-agent"
+  prompt: "$ARGUMENTS"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Gemini（前端开发）
+- UI/UX Skill：`ui-ux-pro-max`（设计方案）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 执行流程
 
 ### 步骤 1：需求分析与分流决策

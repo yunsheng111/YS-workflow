@@ -30,6 +30,12 @@ teams/
 file-history/
 plan/
 
+# 工作流临时目录
+.doc/spec/wip/
+.doc/agent-teams/wip/
+.doc/workflow/wip/
+.doc/common/wip/
+
 # IDE 锁文件
 ide/*.lock
 

@@ -27,6 +27,35 @@ description: '后端专项工作流（研究→构思→计划→执行→优化
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`backend-agent`（`agents/ccg/backend-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "backend-agent",
+  prompt: "$ARGUMENTS",
+  description: "后端专项开发"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex（后端权威）+ Gemini（辅助参考）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 执行工作流
 
 **后端任务**：$ARGUMENTS

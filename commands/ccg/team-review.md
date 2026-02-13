@@ -12,6 +12,31 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
 - 审查范围限于 `git diff` 的变更，不做范围蔓延。
 - Lead 可以直接修复 Critical 问题（审查阶段允许写代码）。
 
+---
+
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行 + 外部模型协作
+
+**工作流**：7 个阶段（收集变更产物 → 多模型审查 → 综合发现 → 输出审查报告 → 决策门 → 归档审查结果 → 上下文检查点）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- Git 操作：Bash（git diff）
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 计划读取：Read 工具
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 代码修复：Read/Edit/Write 工具（修复 Critical 问题时）
+- 外部模型：Codex + Gemini（双模型交叉审查）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 **Steps**
 1. **收集变更产物**
    - 运行 `git diff` 获取变更摘要。

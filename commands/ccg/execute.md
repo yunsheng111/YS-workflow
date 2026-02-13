@@ -8,6 +8,36 @@ $ARGUMENTS
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`execute-agent`（`agents/ccg/execute-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "execute-agent",
+  prompt: "$ARGUMENTS",
+  description: "多模型协作执行"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex（后端实施）+ Gemini（前端实施）
+- 文件操作：Read/Write/Edit
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 核心协议
 
 - **语言协议**：与工具/模型交互用**英语**，与用户交互用**中文**

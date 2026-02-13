@@ -41,6 +41,36 @@ description: "Initialize OpenSpec environment with multi-model MCP validation"
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`spec-init-agent`（`agents/ccg/spec-init-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "spec-init-agent",
+  prompt: "$ARGUMENTS",
+  description: "初始化 OpenSpec 环境"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- MCP 验证：`mcp______enhance`、`mcp______zhi`、`mcp______ji`、`mcp__ace-tool__search_context`、Grok Search MCP
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Glob/Grep
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex + Gemini（可用性检查）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 网络搜索规范（GrokSearch 优先）
 
 **首次需要外部信息时执行以下步骤**：

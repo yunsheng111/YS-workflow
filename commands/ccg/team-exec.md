@@ -13,6 +13,33 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
 - Lead 绝不直接修改产品代码。
 - 每个 Builder 只能修改分配给它的文件。
 
+---
+
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行 + Agent Teams 并行协作
+
+**工作流**：5 个阶段（前置检查 → 解析计划 → 创建 Team + spawn Builders → 监控进度 → 汇总 + 清理）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- 计划读取：Read 工具
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- Agent Teams：TeamCreate + Task（spawn Builder teammates）+ SendMessage
+- Git 操作：Bash（git diff, git checkout）
+
+**Builder teammates 调用的工具**：
+- 代码修改：Read/Edit/Write 工具
+- 代码验证：Bash（lint, typecheck）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 **Steps**
 1. **前置检查**
    - 检测 Agent Teams 是否可用。

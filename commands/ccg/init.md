@@ -24,6 +24,35 @@ description: '初始化项目 AI 上下文：生成根级与模块级 CLAUDE.md 
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`init-architect`（`agents/ccg/init-architect.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "init-architect",
+  prompt: "$ARGUMENTS",
+  description: "初始化项目文档"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 时间戳获取：`get-current-datetime` 子代理
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Glob/Grep
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## MCP 工具集成
 
 | 场景 | 工具 | 降级方案 |

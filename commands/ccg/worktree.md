@@ -36,6 +36,25 @@ description: '管理 Git Worktree：在 ../.ccg/项目名/ 目录创建，支持
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行
+
+**工作流**：根据子命令执行不同流程（add/list/remove/prune/migrate）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- Git 操作：Bash（git worktree add/list/remove/prune）
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 目录结构
 
 ```

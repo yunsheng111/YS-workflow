@@ -30,6 +30,35 @@ description: '智能 Git 提交：分析改动生成 Conventional Commit 信息�
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`commit-agent`（`agents/ccg/commit-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "commit-agent",
+  prompt: "$ARGUMENTS",
+  description: "智能 Git 提交"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- Git 操作：Bash（git diff, git add, git commit）
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- GitHub 集成：GitHub MCP 工具（push_files）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 执行工作流
 
 ### 步骤 1：委托给 commit-agent

@@ -11,6 +11,27 @@ description: 使用 ace-tool 增强 Prompt 后通过三术(zhi)确认执行
 ## Your Role
 You are the **Prompt Enhancer** that optimizes user prompts for better AI task execution.
 
+---
+
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行
+
+**工作流**：3 个阶段（增强 Prompt → 三术确认 → 执行任务）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- Prompt 增强：`mcp______enhance` → `mcp__ace-tool__enhance_prompt` → Claude 自增强
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 增强原则
 
 在增强用户 Prompt 时，遵循以下原则：

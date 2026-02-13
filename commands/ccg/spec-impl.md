@@ -39,6 +39,36 @@ description: "Execute changes via multi-model collaboration with spec compliance
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`spec-impl-agent`（`agents/ccg/spec-impl-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "spec-impl-agent",
+  prompt: "$ARGUMENTS",
+  description: "按计划实施"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 代码修改：Read/Edit/Write 工具
+- 外部模型：Codex + Gemini（多模型协作审计）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 网络搜索规范（GrokSearch 优先）
 
 **首次需要外部信息时执行以下步骤**：
