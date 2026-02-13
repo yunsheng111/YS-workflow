@@ -19,11 +19,22 @@ history.jsonl
 # 三术记忆
 .sanshu-memory/
 
-# 所有工作流的临时文件（新增）
+# 所有工作流的临时文件
 .doc/*/wip/
+
+# 临时工作目录（不上传到远程）
+.claude/
+tasks/
+teams/
+file-history/
+plan/
 
 # IDE 锁文件
 ide/*.lock
 
 # 敏感配置（包含 API Token）
 settings.json
+config.json
+
+# 二进制文件
+bin/

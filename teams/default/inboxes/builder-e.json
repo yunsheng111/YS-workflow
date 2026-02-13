@@ -1,8 +1,0 @@
-[
-  {
-    "from": "team-lead",
-    "text": "{\"type\":\"shutdown_request\",\"requestId\":\"shutdown-1770894700889@builder-e\",\"from\":\"team-lead\",\"reason\":\"所有任务已完成，感谢你的出色工作。现在可以安全关闭了。\",\"timestamp\":\"2026-02-12T11:11:40.889Z\"}",
-    "timestamp": "2026-02-12T11:11:40.889Z",
-    "read": false
-  }
-]
