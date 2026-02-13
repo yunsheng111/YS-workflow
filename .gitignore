@@ -19,8 +19,9 @@ history.jsonl
 # 三术记忆
 .sanshu-memory/
 
-# 所有工作流的临时文件
-.doc/*/wip/
+# .doc 目录下的所有文件（只保留目录结构）
+.doc/**/*
+!.doc/**/.gitkeep
 
 # 临时工作目录（不上传到远程）
 .claude/
