@@ -21,6 +21,36 @@ description: '多视角代码审查：从安全性、性能、可维护性三个
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`review-agent`（`agents/ccg/review-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "review-agent",
+  prompt: "$ARGUMENTS",
+  description: "多视角代码审查"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex（后端审查）+ Gemini（前端审查）
+- GitHub 集成：GitHub MCP 工具（PR Review）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 执行工作流
 
 ### 步骤 1：委托给 review-agent

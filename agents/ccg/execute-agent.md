@@ -335,11 +335,11 @@ mcp__ace-tool__search_context({
   请选择下一步操作：
   ```
 - `is_markdown`: true
-- `predefined_options`: ["运行测试", "提交代码", "查看详细变更", "更新 Issue", "完成"]
+- `predefined_options`: ["运行测试", "运行 /ccg:commit 提交代码", "查看详细变更", "更新 Issue", "完成"]
 
 根据用户选择：
 - 「运行测试」→ 执行项目测试命令
-- 「提交代码」→ 提示用户执行 `/ccg:commit`
+- 「运行 /ccg:commit 提交代码」→ 提示用户执行 `/ccg:commit`
 - 「查看详细变更」→ 执行 `git diff` 展示完整变更
 - 「更新 Issue」→ 执行 Issue 更新流程
 - 「完成」→ 终止当前回复

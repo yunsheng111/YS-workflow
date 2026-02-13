@@ -121,7 +121,7 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
    ### 后续建议
    1. 运行完整测试验证集成：`npm test` / `pnpm test`
    2. 检查各模块间的集成是否正常
-   3. 提交代码：`git add -A && git commit`
+   3. 提交代码：运行 `/ccg:commit` 命令进行规范提交
    ```
 
    - **归档实施记录**：

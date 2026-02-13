@@ -8,6 +8,27 @@ $ARGUMENTS
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：主代理直接执行
+
+**工作流**：3 个阶段（输入类型判断 → 需求规划 → 执行实施）
+
+---
+
+## Level 3: 工具层执行
+
+**主代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- Prompt 增强：`mcp______enhance` → `mcp__ace-tool__enhance_prompt` → Claude 自增强
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 子代理：`ui-ux-designer`（前端设计）、`planner`（规划）、`fullstack-light-agent`（实施）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 网络搜索规范（GrokSearch 优先）
 
 **首次需要外部信息时执行以下步骤**：

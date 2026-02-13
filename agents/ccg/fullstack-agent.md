@@ -414,11 +414,11 @@ EOF
   工作流已完成，请确认：
   ```
 - `is_markdown`: true
-- `predefined_options`: ["确认完成", "提交代码", "查看完整报告", "创建 GitHub PR"]
+- `predefined_options`: ["确认完成", "运行 /ccg:commit 提交代码", "查看完整报告", "创建 GitHub PR"]
 
 根据用户选择：
 - 「确认完成」→ 工作流结束，调用 `mcp______ji` 存储经验
-- 「提交代码」→ 调用 `ccg:commit` 命令
+- 「运行 /ccg:commit 提交代码」→ 提示用户执行 `/ccg:commit` 命令
 - 「查看完整报告」→ 展示完整的工作流报告
 - 「创建 GitHub PR」→ 进入阶段 7
 

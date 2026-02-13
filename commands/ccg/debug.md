@@ -18,6 +18,35 @@ description: '复杂缺陷定位：假设驱动调试，系统化定位根因并
 
 ---
 
+## Level 2: 命令层执行
+
+**执行方式**：Task 调用代理
+
+**代理**：`debug-agent`（`agents/ccg/debug-agent.md`）
+
+**调用**：
+```
+Task({
+  subagent_type: "debug-agent",
+  prompt: "$ARGUMENTS",
+  description: "复杂缺陷定位与修复"
+})
+```
+
+---
+
+## Level 3: 工具层执行
+
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
+- 用户确认：`mcp______zhi` → `AskUserQuestion`
+- 知识存储：`mcp______ji` → 本地文件
+- 外部模型：Codex（后端调试）+ Gemini（前端调试）
+
+**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+
+---
+
 ## 执行工作流
 
 **问题描述**：$ARGUMENTS

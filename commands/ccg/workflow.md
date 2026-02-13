@@ -78,7 +78,7 @@ fullstack-agent 代理将自动完成以下流程：
 fullstack-agent 代理完成后，会自动：
 1. 将计划保存至 `.claude/plan/<任务名>.md`
 2. 通过 `mcp______zhi` 向用户展示最终成果
-3. 等待用户选择下一步操作（确认完成/提交代码/创建 PR）
+3. 等待用户选择下一步操作（确认完成/运行 `/ccg:commit` 提交代码/创建 PR）
 
 主代理无需额外处理，fullstack-agent 代理会处理所有交互
 
