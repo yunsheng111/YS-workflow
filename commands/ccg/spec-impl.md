@@ -1,23 +1,8 @@
 ---
 description: "Execute changes via multi-model collaboration with spec compliance"
 ---
-<!-- CCG:SPEC:IMPL:START -->
-**Core Philosophy**
-- 严格按计划执行，不允许偏离——计划就是唯一的执行指令。
-- 多模型协作审计：执行过程中通过多模型交叉验证确保合规性。
-- 遇到阻碍时报告而非自行决策，保持零决策执行的纯粹性。
 
-**Guardrails**
-- 必须使用 `spec-impl-agent` 子代理执行，主代理仅协调。
-- 严格按 `spec-plan` 产出的计划步骤执行，不允许自行添加或跳过步骤。
-- 执行前后均需使用 `mcp______zhi` 确认（执行前确认计划、执行后确认结果）。
-- 每步完成后记录进度，变更记录到 `.doc/spec/reviews/`。
-- 前置条件：`spec-plan` 已产出零决策计划。
-- 与后续命令的关系：实施结果是 `spec-review` 的审查对象。
-
-**Steps**
-
-# /ccg:spec-impl
+# Spec Impl - OpenSpec 实施
 
 按零决策计划执行实施，多模型协作确保合规性。
 
@@ -26,16 +11,6 @@ description: "Execute changes via multi-model collaboration with spec compliance
 ```bash
 /ccg:spec-impl [计划路径]
 ```
-
-## 上下文
-
-- 计划路径：$ARGUMENTS（默认读取最新 `.doc/spec/plans/` 文件）
-- 严格遵循计划步骤，不允许偏离
-- 执行完成后记录变更到 `.doc/spec/reviews/`
-
-## 你的角色
-
-你是**协调者**，负责调用子代理按计划执行实施。
 
 ---
 
@@ -60,89 +35,20 @@ Task({
 
 **代理调用的工具**：
 - 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
-- 用户确认：`mcp______zhi` → `AskUserQuestion`
-- 知识存储：`mcp______ji` → 本地文件
+- 用户确认：`mcp______zhi`
+- 知识存储：`mcp______ji`
 - 代码修改：Read/Edit/Write 工具
 - 外部模型：Codex + Gemini（多模型协作审计）
 
-**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+**详细说明**：参考 [spec-impl-agent.md](../../agents/ccg/spec-impl-agent.md)
 
 ---
 
-## 网络搜索规范（GrokSearch 优先）
+## 执行流程
 
-**首次需要外部信息时执行以下步骤**：
-
-1. 调用 `mcp__Grok_Search_Mcp__get_config_info` 做可用性检查
-2. 调用 `mcp__Grok_Search_Mcp__toggle_builtin_tools`，`action: "off"`，确保禁用内置 WebSearch/WebFetch
-3. 使用 `mcp__Grok_Search_Mcp__web_search` 进行搜索；需要全文时再调用 `mcp__Grok_Search_Mcp__web_fetch`
-4. 若搜索失败或结果不足，执行降级步骤：
-   - 调用 `get_config_info` 获取状态
-   - 若状态异常，调用 `switch_model` 切换模型后重试一次
-   - 仍失败则使用 `mcp______context7` 获取框架/库官方文档
-   - 若仍不足，提示用户提供权威来源
-5. 关键结论与来源需通过 `mcp______ji` 记录，便于后续复用与审计
-
----
-
-## 执行工作流
-
-### 步骤 1：确认执行（使用三术 zhi）
-
-调用 `mcp______zhi` 工具确认执行计划：
-- `message`:
-  ```
-  ## ⚡ 即将按计划执行实施
-
-  ### 计划文件
-  <计划路径>
-
-  ### 计划摘要
-  <关键步骤列表>
-
-  确认开始执行？
-  ```
-- `is_markdown`: true
-- `predefined_options`: ["确认执行", "查看计划详情", "取消"]
-
-根据用户选择：
-- 「确认执行」→ 进入步骤 2
-- 「查看计划详情」→ 展示完整计划内容后再次确认
-- 「取消」→ 终止执行
-
-### 步骤 2：调用实施代理
-
-用户确认后，**使用 `spec-impl-agent` 子代理执行实施**：
-
-```
-Task({
-  subagent_type: "spec-impl-agent",
-  prompt: "按照零决策计划执行实施。\n\n计划路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n\n请执行：\n1. 读取计划并逐步实施\n2. 每步完成后记录进度\n3. 遇到阻碍时报告而非自行决策",
-  description: "按计划实施"
-})
-```
-
-### 步骤 3：确认结果（使用三术 zhi）
-
-子代理完成后，调用 `mcp______zhi` 工具展示实施结果：
-- `message`:
-  ```
-  ## ✅ 实施完成
-
-  ### 执行摘要
-  - 已完成步骤：<N>/<总数>
-  - 变更文件：<N> 个
-
-  ### 变更清单
-  | 文件 | 操作 | 说明 |
-  |------|------|------|
-  | ... | ... | ... |
-
-  ### 下一步
-  运行 `/ccg:spec-review` 进行合规审查
-  ```
-- `is_markdown`: true
-- `predefined_options`: ["进入 spec-review", "查看变更详情", "回滚变更", "完成"]
+1. **确认执行** — 通过 zhi 确认执行计划
+2. **调用实施代理** — Task 调用 `spec-impl-agent`
+3. **确认结果** — 通过 zhi 展示实施结果
 
 ---
 
@@ -158,4 +64,3 @@ Task({
 - [ ] 每步执行进度已记录
 - [ ] 变更清单已写入 `.doc/spec/reviews/`
 - [ ] 实施结果已通过 zhi 展示给用户
-<!-- CCG:SPEC:IMPL:END -->

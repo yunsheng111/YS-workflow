@@ -45,3 +45,4 @@ config.json
 
 # 二进制文件
 bin/
+ccline/
