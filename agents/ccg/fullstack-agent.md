@@ -1,3 +1,10 @@
+---
+name: fullstack-agent
+description: "🏗️ 全栈复杂开发 - 架构变更和多模块联动，6 阶段结构化工作流"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__github__create_pull_request, mcp__github__create_branch
+color: cyan
+---
+
 # 全栈复杂开发代理（Fullstack Agent）
 
 全栈复杂开发代理，负责涉及架构变更和多模块联动的大型功能开发，采用 6 阶段结构化工作流。

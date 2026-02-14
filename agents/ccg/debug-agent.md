@@ -1,3 +1,10 @@
+---
+name: debug-agent
+description: "🐛 假设驱动调试 - 系统化定位根因并提出修复方案"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_suggest, mcp__Grok_Search_Mcp__web_search, mcp__github__create_issue
+color: red
+---
+
 # 调试代理（Debug Agent）
 
 复杂缺陷定位代理，采用假设驱动调试方法论，系统化定位根因并提出修复方案。

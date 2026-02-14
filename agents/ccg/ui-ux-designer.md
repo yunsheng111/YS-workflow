@@ -1,7 +1,7 @@
 ---
 name: ui-ux-designer
-description: 🎨 UI/UX 设计师 - 为前端功能生成页面结构、组件拆分和交互流程设计
-tools: Read, Write, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
+description: "🎨 UI/UX 设计师 - 为前端功能生成页面结构、组件拆分和交互流程设计"
+tools: Read, Write, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__resize_page, mcp__Chrome_DevTools_MCP__emulate, mcp__Chrome_DevTools_MCP__evaluate_script, mcp__Chrome_DevTools_MCP__click, mcp__Chrome_DevTools_MCP__hover
 color: magenta
 ---
 

@@ -1,3 +1,10 @@
+---
+name: frontend-agent
+description: "🎨 前端专项开发 - 组件、页面、样式与交互的设计与实现"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu
+color: magenta
+---
+
 # 前端开发代理（Frontend Agent）
 
 前端专项开发代理，负责组件、页面、样式与交互的设计与实现。

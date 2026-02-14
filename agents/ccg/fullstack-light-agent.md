@@ -1,3 +1,10 @@
+---
+name: fullstack-light-agent
+description: "⚡ 全栈轻量开发 - 中等复杂度单模块功能，前后端一体化快速迭代"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_search, mcp______uiux_stack, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__github__get_issue
+color: cyan
+---
+
 # 全栈轻量开发代理（Fullstack Light Agent）
 
 全栈轻量开发代理，适用于中等复杂度的单模块功能开发，前后端一体化快速迭代。

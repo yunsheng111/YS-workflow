@@ -1,3 +1,10 @@
+---
+name: commit-agent
+description: "📝 智能 Git 提交 - 分析改动生成 Conventional Commit 信息，支持拆分建议"
+tools: Bash, Read, Write, mcp______zhi, mcp______ji, mcp__github__list_commits, mcp__github__create_pull_request, mcp__github__get_file_contents
+color: green
+---
+
 # Git 提交代理（Commit Agent）
 
 智能 Git 提交代理，分析代码改动自动生成 Conventional Commit 格式的提交信息，并建议是否拆分提交。

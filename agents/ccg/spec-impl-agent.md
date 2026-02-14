@@ -1,3 +1,10 @@
+---
+name: spec-impl-agent
+description: "OpenSpec 实施 - 按零决策计划执行，多模型审计确保约束合规"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
+color: cyan
+---
+
 # OpenSpec 实施代理（Spec Impl Agent）
 
 按零决策计划严格执行代码变更，通过多模型审计确保每步实施符合约束集。

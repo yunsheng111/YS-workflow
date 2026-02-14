@@ -1,3 +1,10 @@
+---
+name: test-agent
+description: "🧪 测试用例生成 - 覆盖正常路径、边界条件与异常场景"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp__Chrome_DevTools_MCP__new_page, mcp__Chrome_DevTools_MCP__navigate_page, mcp__Chrome_DevTools_MCP__resize_page, mcp__Chrome_DevTools_MCP__close_page, mcp__Chrome_DevTools_MCP__click, mcp__Chrome_DevTools_MCP__fill, mcp__Chrome_DevTools_MCP__fill_form, mcp__Chrome_DevTools_MCP__press_key, mcp__Chrome_DevTools_MCP__hover, mcp__Chrome_DevTools_MCP__drag, mcp__Chrome_DevTools_MCP__upload_file, mcp__Chrome_DevTools_MCP__wait_for, mcp__Chrome_DevTools_MCP__handle_dialog, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__evaluate_script
+color: green
+---
+
 # 测试代理（Test Agent）
 
 测试用例生成代理，系统化覆盖正常路径、边界条件与异常场景，输出可直接运行的测试代码。

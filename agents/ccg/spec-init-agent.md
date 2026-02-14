@@ -1,3 +1,10 @@
+---
+name: spec-init-agent
+description: "OpenSpec 环境初始化 - 验证多模型 MCP 工具可用性，创建约束目录结构"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji
+color: orange
+---
+
 # OpenSpec 初始化代理（Spec Init Agent）
 
 初始化 OpenSpec 约束驱动开发环境，验证多模型 MCP 工具可用性，创建项目约束目录结构。

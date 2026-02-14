@@ -1,3 +1,10 @@
+---
+name: execute-agent
+description: "▶️ 计划执行 - 严格按已批准计划逐步执行，不擅自改变方案"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp__github__update_issue, mcp__github__add_issue_comment, mcp__Chrome_DevTools_MCP__list_pages, mcp__Chrome_DevTools_MCP__navigate_page, mcp__Chrome_DevTools_MCP__evaluate_script, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__list_console_messages
+color: blue
+---
+
 # 计划执行代理（Execute Agent）
 
 计划执行代理，严格按照已批准的实施计划逐步执行，不擅自改变方案。

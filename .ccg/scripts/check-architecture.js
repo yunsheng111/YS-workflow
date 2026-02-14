@@ -57,7 +57,8 @@ function extractSubagentCalls(commandsDir) {
 
   for (const file of files) {
     const content = fs.readFileSync(path.join(commandsDir, file), 'utf-8');
-    const regex = /subagent_type[:\s]*["']([^"']+)["']/g;
+    // 支持 YAML 格式 (subagent_type: "x") 和赋值格式 (subagent_type="x")
+    const regex = /subagent_type\s*[=:]\s*["']([^"']+)["']/g;
     let match;
 
     const agents = [];

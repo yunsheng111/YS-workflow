@@ -1,3 +1,10 @@
+---
+name: backend-agent
+description: "⚙️ 后端专项开发 - API 设计、服务实现、数据库操作与性能优化"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search
+color: green
+---
+
 # 后端开发代理（Backend Agent）
 
 后端专项开发代理，负责 API 设计、服务实现、数据库操作与性能优化。

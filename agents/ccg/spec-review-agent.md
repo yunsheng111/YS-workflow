@@ -1,3 +1,10 @@
+---
+name: spec-review-agent
+description: "OpenSpec 合规审查 - 双模型交叉审查，Critical 必须修复后归档"
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
+color: red
+---
+
 # OpenSpec 合规审查代理（Spec Review Agent）
 
 双模型交叉审查实施结果，确保所有约束合规，Critical 问题必须修复后才允许归档。
