@@ -12,82 +12,55 @@ description: '多模型协作开发工作流（研究→构思→计划→执行
 /workflow <任务描述>
 ```
 
-## 上下文
-
-- 要开发的任务：$ARGUMENTS
-- 带质量把关的结构化 6 阶段工作流
-- 多模型协作：Codex（后端）+ Gemini（前端）+ Claude（编排）
-- MCP 服务集成（ace-tool）以增强功能
-
-## 核心协议
-
-- **语言协议**：与工具/模型交互用**英语**，与用户交互用**中文**
-- **强制并行**：Codex/Gemini 调用必须使用 `run_in_background: true`（包含单模型调用，避免阻塞主线程）
-- **代码主权**：外部模型对文件系统**零写入权限**，所有修改由 Claude 执行
-- **止损机制**：当前阶段输出通过验证前，不进入下一阶段
-- **Enhance 说明**：Level 1 已完成需求增强，代理内部不再重复 enhance
-
 ---
 
-## 多模型调用规范（由 fullstack-agent 代理内部处理）
+## Level 2: 命令层执行
 
-fullstack-agent 代理内部会自动处理多模型调用，使用占位符渲染层提供的以下占位符：
+**执行方式**：Task 调用代理
 
-- `{{CCG_BIN}}` - codeagent-wrapper 路径
-- `{{WORKDIR}}` - 当前工作目录
-- `{{LITE_MODE_FLAG}}` - --lite 标志（如果 LITE_MODE=true）
-- `{{GEMINI_MODEL_FLAG}}` - --gemini-model 标志
+**代理**：`fullstack-agent`
 
-主代理无需关心这些细节，只需调用 Task 工具启动 fullstack-agent 代理即可
-
----
-
-## 网络搜索规范（由 fullstack-agent 代理内部处理）
-
-fullstack-agent 代理内部会自动处理网络搜索需求，包括 GrokSearch 调用和降级策略。主代理无需关心这些细节
-
----
-
-## 执行工作流
-
-**任务描述**：$ARGUMENTS
-
-调用 fullstack-agent 代理执行完整的 6 阶段工作流：
-
+**调用**：
 ```
 Task({
   subagent_type: "fullstack-agent",
   prompt: "$ARGUMENTS",
-  description: "6 阶段全栈开发（研究→构思→规划→实施→审查→验收）"
+  description: "6 阶段全栈开发"
 })
 ```
 
-fullstack-agent 代理将自动完成以下流程：
-1. 阶段 1：研究与分析（Prompt 增强 + 上下文检索 + 需求评分）
-2. 阶段 2：方案构思（多模型并行分析 + 方案对比）
-3. 阶段 3：详细规划（多模型协作规划 + 用户确认）
-4. 阶段 4：实施（代码开发 + Chrome DevTools 验证）
-5. 阶段 5：审查与修复（多模型并行审查 + 问题修复）
-6. 阶段 6：验收（最终评估 + 用户确认）
-7. 阶段 7（可选）：GitHub PR 创建
+---
 
-**重要**：fullstack-agent 代理内部会自动处理占位符渲染和多模型调用，主代理无需关心具体实现细节
+## Level 3: 工具层执行
 
-### 工作流交付
+**代理调用的工具**：
+- 代码检索：`mcp__ace-tool__search_context`
+- 多模型调用：Codex（后端）+ Gemini（前端）
+- 用户确认：`mcp______zhi`
+- 知识存储：`mcp______ji`
+- 浏览器验证：Chrome DevTools MCP
 
-fullstack-agent 代理完成后，会自动：
-1. 将计划保存至 `.doc/workflow/plans/<task-name>.md`
-2. 通过 `mcp______zhi` 向用户展示最终成果
-3. 等待用户选择下一步操作（确认完成/运行 `/ccg:commit` 提交代码/创建 PR）
+**详细说明**：参考 [fullstack-agent.md](../../agents/ccg/fullstack-agent.md)
 
-主代理无需额外处理，fullstack-agent 代理会处理所有交互
+---
+
+## 执行流程（概述）
+
+fullstack-agent 将执行以下 6 阶段工作流：
+
+1. **研究与分析** — Prompt 增强 + 上下文检索 + 需求评分
+2. **方案构思** — 多模型并行分析 + 方案对比
+3. **详细规划** — 多模型协作规划 + 用户确认
+4. **实施** — 代码开发 + Chrome DevTools 验证
+5. **审查与修复** — 多模型并行审查 + 问题修复
+6. **验收** — 最终评估 + 用户确认
+7. **GitHub PR**（可选）— 创建 Pull Request
 
 ---
 
 ## 关键规则
 
-1. **委托给 fullstack-agent 代理** – 主代理只需调用 Task 工具，所有工作流逻辑由 fullstack-agent 代理处理
-2. **占位符渲染** – fullstack-agent 代理内部使用占位符（{{CCG_BIN}}、{{WORKDIR}} 等），由渲染层自动处理
-3. **多模型并行** – fullstack-agent 代理会自动并行调用 Codex 和 Gemini 进行分析
-4. **SESSION_ID 交接** – fullstack-agent 代理会在计划中包含 SESSION_ID，供后续使用
-5. **阶段顺序不可跳过** – fullstack-agent 代理严格执行 6 阶段工作流（除非用户明确指令）
+1. **委托给 fullstack-agent** — 主代理只需调用 Task 工具
+2. **代码主权** — 外部模型零写入权限，所有修改由 Claude 执行
+3. **止损机制** — 当前阶段输出通过验证前，不进入下一阶段
+4. **阶段顺序不可跳过** — 严格执行 6 阶段工作流

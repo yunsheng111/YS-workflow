@@ -4,26 +4,13 @@ description: '后端专项工作流（研究→构思→计划→执行→优化
 
 # Backend - 后端专项开发
 
+后端专项开发，Codex 主导分析和审查。
+
 ## 使用方法
 
 ```bash
 /backend <后端任务描述>
 ```
-
-## 上下文
-
-- 后端任务：$ARGUMENTS
-- Codex 主导，Gemini 辅助参考
-- 适用：API 设计、算法实现、数据库优化、业务逻辑
-
-## 你的角色
-
-你是**后端编排者**，负责将用户的后端开发需求委托给 `backend-agent` 代理执行。
-
-**协作模型**：
-- **Codex** – 后端逻辑、算法（**后端权威，可信赖**）
-- **Gemini** – 前端视角（**后端意见仅供参考**）
-- **Claude (自己)** – 编排、计划、执行、交付
 
 ---
 
@@ -31,7 +18,7 @@ description: '后端专项工作流（研究→构思→计划→执行→优化
 
 **执行方式**：Task 调用代理
 
-**代理**：`backend-agent`（`agents/ccg/backend-agent.md`）
+**代理**：`backend-agent`
 
 **调用**：
 ```
@@ -47,47 +34,25 @@ Task({
 ## Level 3: 工具层执行
 
 **代理调用的工具**：
-- 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
-- 用户确认：`mcp______zhi` → `AskUserQuestion`
-- 知识存储：`mcp______ji` → 本地文件
+- 代码检索：`mcp__ace-tool__search_context`
 - 外部模型：Codex（后端权威）+ Gemini（辅助参考）
+- 用户确认：`mcp______zhi`
+- 知识存储：`mcp______ji`
 
-**详细说明**：参考 [架构文档 - 工具调用优先级](./.doc/framework/ccg/ARCHITECTURE.md#工具调用优先级)
+**详细说明**：参考 [backend-agent.md](../../agents/ccg/backend-agent.md)
 
 ---
 
-## 执行工作流
+## 执行流程（概述）
 
-**后端任务**：$ARGUMENTS
+backend-agent 将执行以下 6 阶段工作流：
 
-### 步骤 1：委托给 backend-agent
-
-调用 Task 工具启动 backend-agent 代理，传入用户需求。
-
-```
-Task({
-  subagent_type: "backend-agent",
-  prompt: "$ARGUMENTS",
-  description: "后端专项开发（Codex 主导）"
-})
-```
-
-backend-agent 将自动执行以下流程：
-1. 增强需求（可选）
-2. 检索代码上下文
-3. 调用 Codex 进行技术分析和架构规划
-4. 实施代码变更
-5. Codex 审查优化
-6. 最终评审
-
-### 步骤 2：等待代理完成
-
-backend-agent 完成后会返回完整的后端实施报告，包含：
-- API 接口清单
-- 数据模型变更
-- 变更文件清单
-- 测试覆盖
-- 关键设计决策
+1. **增强需求**（可选）— 结构化技术需求
+2. **检索上下文** — 获取相关代码和配置
+3. **Codex 分析** — 技术分析和架构规划
+4. **实施** — 代码开发
+5. **Codex 审查** — 代码审查和优化
+6. **评审** — 最终评估
 
 ---
 
@@ -100,13 +65,11 @@ backend-agent 完成后会返回完整的后端实施报告，包含：
 | 业务逻辑 | "实现支付流程" |
 | 性能优化 | "优化查询性能" |
 
+---
+
 ## 关键规则
 
 1. **Codex 后端意见可信赖**
 2. **Gemini 后端意见仅供参考**
 3. 外部模型对文件系统**零写入权限**
 4. Claude 负责所有代码写入和文件操作
-
-## 知识存储
-
-工作流完成后，调用 `mcp______ji` 存储本次后端开发的 API 设计规范和架构决策，供后续会话复用。
