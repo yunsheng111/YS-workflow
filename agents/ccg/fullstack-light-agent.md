@@ -33,16 +33,25 @@ color: cyan
 
 - `ui-ux-pro-max` — UI/UX 设计系统，组件规范、交互模式
 - `database-designer` — 数据库建模，表结构设计、迁移脚本
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
 
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -88,78 +97,42 @@ color: cyan
 
 #### Route A: 前端任务 → Gemini
 
-**门禁检查（调用前）**：
-- 检查 `geminiCalled` 标志位
-- 若 `!geminiCalled`，触发降级流程
-
-调用 Gemini（`run_in_background: true`，语法见共享规范）：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/frontend.md
-<TASK>
-需求：<增强后的需求>
-计划：<计划文件内容>
-上下文：<项目上下文>
-</TASK>
-OUTPUT: 实施报告（变更文件清单 + 关键代码片段）
-EOF
+**调用 collab Skill**：
+```
+/collab backend=gemini role=developer task="<增强后的需求>，计划：<计划文件内容>"
 ```
 
-用 `TaskOutput` 等待结果（超时 30s）。**保存 SESSION_ID**（`GEMINI_SESSION`）。
-
-**门禁检查（收敛后）**：
-- 检查 `geminiSession` 是否成功获取
-- 若 `!geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 启动 Gemini（前端组件、交互、视觉一致性）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`GEMINI_SESSION`）
+- 进度汇报
 
 #### Route B: 后端任务 → Codex
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 标志位
-- 若 `!codexCalled`，触发降级流程
-
-调用 Codex（`run_in_background: true`，语法见共享规范）：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/architect.md
-<TASK>
-需求：<增强后的需求>
-计划：<计划文件内容>
-上下文：<项目上下文>
-</TASK>
-OUTPUT: 实施报告（变更文件清单 + 关键代码片段）
-EOF
+**调用 collab Skill**：
+```
+/collab backend=codex role=developer task="<增强后的需求>，计划：<计划文件内容>"
 ```
 
-用 `TaskOutput` 等待结果（超时 30s）。**保存 SESSION_ID**（`CODEX_SESSION`）。
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 是否成功获取
-- 若 `!codexSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 启动 Codex（后端逻辑、数据流、错误处理）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION`）
+- 进度汇报
 
 #### Route C: 全栈任务 → Codex ∥ Gemini
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
+**调用 collab Skill**：
+```
+/collab backend=both role=developer task="<增强后的需求>，计划：<计划文件内容>"
+```
 
-**并行调用**（`run_in_background: true`，语法见共享规范）：
-- **Codex**：ROLE_FILE `~/.claude/.ccg/prompts/codex/architect.md`，关注后端逻辑、数据流、错误处理
-- **Gemini**：ROLE_FILE `~/.claude/.ccg/prompts/gemini/frontend.md`，关注前端组件、交互、视觉一致性
-
-用 `TaskOutput` 等待结果（超时 30s）。**保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
-
-**占位符说明**：
-- `{{CCG_BIN}}`：codeagent-wrapper 路径
-- `{{WORKDIR}}`：当前工作目录
-- `{{LITE_MODE_FLAG}}`：`--lite ` 或空字符串（环境变量 `LITE_MODE=true` 时生成）
-- `{{GEMINI_MODEL_FLAG}}`：`--gemini-model <model> ` 或空字符串
+collab Skill 自动处理：
+- 并行启动 Codex（后端逻辑、数据流、错误处理）和 Gemini（前端组件、交互、视觉一致性）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- 进度汇报
 
 **实施步骤**：
 10. **数据层**：实现数据模型和迁移脚本（如需要）
@@ -231,6 +204,7 @@ UI → [组件] → API 调用 → [路由] → [服务] → [数据库]
 - 实现完成后必须验证完整数据流（端到端）
 - 计划文件写入 `.doc/common/plans/` 目录
 - 如发现任务复杂度超出轻量范围（涉及多模块联动、架构变更），应建议升级为 `fullstack-agent`
-- 多模型调用必须并行执行（`run_in_background: true`），等待所有返回后再整合
+- 多模型调用通过 collab Skill 自动处理并行执行、门禁校验和降级策略
 - 外部模型对文件系统**零写入权限**，所有修改由本代理执行
 - 必须保存并在报告中包含 SESSION_ID，供后续使用
+

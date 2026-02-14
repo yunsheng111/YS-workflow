@@ -27,17 +27,25 @@ color: cyan
 
 ## Skills
 
-无特定 Skill 依赖。
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
 
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -62,22 +70,22 @@ color: cyan
 6. 在计划文件中标记每步的实施状态和实际变更
 
 ### 阶段 3：多模型审计（关键里程碑）
-7. **门禁检查（调用前）**：
-   - 检查 `codexCalled` 和 `geminiCalled` 标志位
-   - 若 `!codexCalled || !geminiCalled`，触发降级流程
 
-8. 每完成一组关联步骤后，并行调用 Codex 和 Gemini 审计：
-   - **Codex**（reviewer 角色）：后端变更是否符合约束、有无安全/性能问题
-   - **Gemini**（reviewer 角色）：前端变更是否符合约束、有无 UI/可访问性问题
-9. 用 `TaskOutput` 等待审计结果
+每完成一组关联步骤后，调用 collab Skill 进行审计：
 
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+**调用 collab Skill**：
+```
+/collab backend=both role=reviewer task="审计已实施的变更：后端（约束合规、安全、性能）和前端（约束合规、UI、可访问性）"
+```
 
-10. 审计发现 Critical 问题 → 立即暂停，调用 `mcp______zhi` 报告并等待指示
-11. 审计发现 Info 问题 → 记录并继续，在最终报告中汇总
+collab Skill 自动处理：
+- 并行启动 Codex（后端审计）和 Gemini（前端审计）
+- 门禁校验和超时处理
+- SESSION_ID 提取
+- 进度汇报（通过 zhi 展示双模型状态）
+
+审计发现 Critical 问题 → 立即暂停，调用 `mcp______zhi` 报告并等待指示
+审计发现 Info 问题 → 记录并继续，在最终报告中汇总
 
 ### 阶段 4：阻碍处理
 11. 遇到以下情况时**立即暂停**：

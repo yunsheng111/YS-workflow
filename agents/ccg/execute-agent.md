@@ -39,7 +39,25 @@ color: blue
 
 ## Skills
 
-无特定 Skill 依赖。执行代理是通用执行器，根据计划内容调用相应工具。
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+
+## 双模型调用规范
+
+**引用**：`.doc/standards-agent/dual-model-orchestration.md`
+
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -93,61 +111,53 @@ color: blue
 
 ### 阶段 3：原型生成
 
-**根据任务类型路由**：
+**根据任务类型路由到 collab Skill**：
 
 #### Route A: 前端/UI/样式 → Gemini
 
-**门禁检查（调用前）**：
-- 检查 `geminiCalled` 标志位
-- 若 `!geminiCalled`，触发降级流程
+**调用 collab Skill**：
+```
+/collab backend=gemini role=developer task="根据计划生成前端原型（Unified Diff Patch）" resume=<GEMINI_SESSION>
+```
 
-调用 Gemini（语法见共享规范）：
-- ROLE_FILE：`~/.claude/.ccg/prompts/gemini/frontend.md`
+collab Skill 自动处理：
+- 调用 Gemini（ROLE_FILE: `~/.claude/.ccg/prompts/gemini/frontend.md`）
 - 输入：计划内容 + 检索到的上下文 + 目标文件
 - OUTPUT：`Unified Diff Patch ONLY. Strictly prohibit any actual modifications.`
 - **Gemini 是前端设计的权威，其 CSS/React/Vue 原型为最终视觉基准**
-- 若计划包含 `GEMINI_SESSION`：优先 `resume <GEMINI_SESSION>`
-- **限制**：上下文 < 32k tokens
-
-**门禁检查（收敛后）**：
-- 检查 `geminiSession` 是否成功获取
-- 若 `!geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+- 会话复用（若计划包含 `GEMINI_SESSION`）
+- 门禁校验、超时处理、降级策略
+- 进度汇报（通过 zhi 展示状态）
 
 #### Route B: 后端/逻辑/算法 → Codex
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 标志位
-- 若 `!codexCalled`，触发降级流程
+**调用 collab Skill**：
+```
+/collab backend=codex role=developer task="根据计划生成后端原型（Unified Diff Patch）" resume=<CODEX_SESSION>
+```
 
-调用 Codex（语法见共享规范）：
-- ROLE_FILE：`~/.claude/.ccg/prompts/codex/architect.md`
+collab Skill 自动处理：
+- 调用 Codex（ROLE_FILE: `~/.claude/.ccg/prompts/codex/architect.md`）
 - 输入：计划内容 + 检索到的上下文 + 目标文件
 - OUTPUT：`Unified Diff Patch ONLY. Strictly prohibit any actual modifications.`
 - **Codex 是后端逻辑的权威，利用其逻辑运算与 Debug 能力**
-- 若计划包含 `CODEX_SESSION`：优先 `resume <CODEX_SESSION>`
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 是否成功获取
-- 若 `!codexSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+- 会话复用（若计划包含 `CODEX_SESSION`）
+- 门禁校验、超时处理、降级策略
+- 进度汇报（通过 zhi 展示状态）
 
 #### Route C: 全栈 → 并行调用
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
+**调用 collab Skill**：
+```
+/collab backend=both role=developer task="根据计划生成全栈原型（Unified Diff Patch）" parallel=true resume=<CODEX_SESSION>,<GEMINI_SESSION>
+```
 
-1. **并行调用**（`run_in_background: true`）：
-   - Gemini：处理前端部分
-   - Codex：处理后端部分
-2. 用 `TaskOutput` 等待两个模型的完整结果（超时与轮询规则见共享规范）
-3. 各自使用计划中对应的 `SESSION_ID` 进行 `resume`（若缺失则创建新会话）
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（后端部分）和 Gemini（前端部分）
+- 各自使用计划中对应的 `SESSION_ID` 进行 `resume`（若缺失则创建新会话）
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略（3 级降级）
+- 进度汇报（通过 zhi 展示双模型状态）
 
 ### 阶段 4：编码实施
 
@@ -164,29 +174,18 @@ color: blue
 
 #### 5.1 自动审计
 
-**门禁检查（阶段切换前）**：
-- 检查阶段 3 是否成功获取至少一个 SESSION_ID（`CODEX_SESSION` 或 `GEMINI_SESSION`）
-- 若两者都未获取，触发降级流程
+**调用 collab Skill 进行双模型审查**：
+```
+/collab backend=both role=reviewer task="审查变更代码" resume=<CODEX_SESSION>,<GEMINI_SESSION>
+```
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
-
-**变更生效后，强制立即并行调用** Codex 和 Gemini 进行 Code Review（`run_in_background: true`）：
-
-- **Codex 审查**：
-  - ROLE_FILE：`~/.claude/.ccg/prompts/codex/reviewer.md`
-  - 关注：安全性、性能、错误处理、逻辑正确性
-- **Gemini 审查**：
-  - ROLE_FILE：`~/.claude/.ccg/prompts/gemini/reviewer.md`
-  - 关注：可访问性、设计一致性、用户体验
-
-优先复用阶段 3 的会话（`resume <SESSION_ID>`）以保持上下文一致。
-
-**门禁检查（收敛后）**：
-- 检查两个模型是否都成功返回审查结果
-- 若任一模型失败，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行调用 Codex 和 Gemini 进行 Code Review
+- **Codex 审查**（ROLE_FILE: `~/.claude/.ccg/prompts/codex/reviewer.md`）：关注安全性、性能、错误处理、逻辑正确性
+- **Gemini 审查**（ROLE_FILE: `~/.claude/.ccg/prompts/gemini/reviewer.md`）：关注可访问性、设计一致性、用户体验
+- 优先复用阶段 3 的会话（`resume <SESSION_ID>`）以保持上下文一致
+- 门禁校验、超时处理、降级策略
+- 进度汇报（通过 zhi 展示双模型审查状态）
 
 #### 5.2 整合修复
 

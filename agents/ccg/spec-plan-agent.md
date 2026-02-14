@@ -29,17 +29,25 @@ color: blue
 
 ## Skills
 
-无特定 Skill 依赖。
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
 
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -56,19 +64,17 @@ color: blue
 3. 调用 `mcp__ace-tool__search_context` 确认涉及文件的当前状态
 
 ### 阶段 2：多模型规划
-4. **门禁检查（调用前）**：
-   - 检查 `codexCalled` 和 `geminiCalled` 标志位
-   - 若 `!codexCalled || !geminiCalled`，触发降级流程
 
-5. 并行调用 Codex 和 Gemini 进行架构规划：
-   - **Codex**（architect 角色）：后端实施步骤 — 数据模型、API、服务层、迁移
-   - **Gemini**（architect 角色）：前端实施步骤 — 组件、状态、路由、样式
-6. 用 `TaskOutput` 等待所有模型返回
+**调用 collab Skill**：
+```
+/collab backend=both role=architect task="基于提案和约束集生成零决策实施计划：后端（数据模型、API、服务层、迁移）和前端（组件、状态、路由、样式）"
+```
 
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（后端实施步骤）和 Gemini（前端实施步骤）
+- 门禁校验和超时处理
+- SESSION_ID 提取
+- 进度汇报（通过 zhi 展示双模型状态）
 
 ### 阶段 3：消除歧义
 6. 检查双方规划中的冲突和歧义点

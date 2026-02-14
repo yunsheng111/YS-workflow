@@ -1,0 +1,173 @@
+# collab Skill
+
+双模型（Codex + Gemini）协作调用 Skill，封装 codeagent-wrapper 的并行调用、状态管理和进度汇报。
+
+## 触发条件
+
+当用户需要同时调用 Codex 和 Gemini 进行技术分析、架构规划或代码审查时使用。
+
+触发关键词：
+- "双模型分析"、"多模型协作"
+- "Codex + Gemini"、"后端 + 前端视角"
+- 显式调用 `/collab`
+
+## 输入参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `backend` | string | 否 | `both` | 调用后端：`codex`、`gemini`、`both` |
+| `role` | string | 是 | - | 角色：`architect`、`analyzer`、`reviewer`、`developer` |
+| `task` | string | 是 | - | 任务描述（自然语言） |
+| `parallel` | boolean | 否 | `true` | 是否并行调用（仅 `backend=both` 时有效） |
+| `timeout` | number | 否 | `600000` | 超时时间（毫秒） |
+| `resume` | string | 否 | - | 复用的 SESSION_ID（用于会话续接） |
+| `progress_callback` | boolean | 否 | `true` | 是否启用进度回调 |
+| `progress_interval` | number | 否 | `30000` | 进度汇报间隔（毫秒） |
+| `stream` | boolean | 否 | `false` | 是否启用流式输出 |
+
+## 输出格式
+
+```json
+{
+  "status": "success" | "degraded" | "failed",
+  "codex_session": "uuid-string | null",
+  "gemini_session": "uuid-string | null",
+  "codex_output": "string | null",
+  "gemini_output": "string | null",
+  "duration_ms": 12345,
+  "degraded_reason": "string | null"
+}
+```
+
+## 信任规则
+
+- **后端领域**（API、数据库、性能、安全）：**Codex 为准**
+- **前端领域**（UI、交互、可访问性、设计）：**Gemini 为准**
+- **冲突时**：通过 `mcp______zhi` 展示双方观点，由用户决策
+
+## 状态机
+
+```
+INIT → RUNNING → SUCCESS
+              ↓
+         DEGRADED → SUCCESS
+              ↓
+          FAILED
+```
+
+### 状态说明
+
+| 状态 | 说明 |
+|------|------|
+| `INIT` | 初始化，准备调用 |
+| `RUNNING` | 模型正在执行 |
+| `SUCCESS` | 双模型均成功返回 |
+| `DEGRADED` | 单模型成功，另一模型失败或超时 |
+| `FAILED` | 双模型均失败 |
+
+## 降级策略
+
+| 级别 | 触发条件 | 处理方式 |
+|------|----------|----------|
+| Level 1 | 单模型超时 | 重试 1 次（timeout/2） |
+| Level 2 | 重试失败 | 使用成功的单模型结果，标记 `degraded` |
+| Level 3 | 双模型均失败 | 回退到主代理直接处理，标记 `failed` |
+
+## 执行流程
+
+### 1. 初始化阶段
+
+```markdown
+1. 读取 `.ccg/config.toml` 获取 CCG_BIN 路径
+2. 读取环境变量（LITE_MODE, GEMINI_MODEL）
+3. 渲染命令模板，替换占位符
+4. 验证无残留占位符
+```
+
+### 2. 调用阶段
+
+```markdown
+1. 根据 `backend` 参数决定调用目标
+2. 使用 Bash 工具 + `run_in_background: true` 启动进程
+3. 记录 task_id 用于后续轮询
+```
+
+### 3. 等待阶段
+
+```markdown
+1. 使用 TaskOutput 轮询结果
+2. 每 progress_interval 通过 zhi 汇报进度
+3. 超时后触发降级策略
+```
+
+### 4. 结果处理阶段
+
+```markdown
+1. 提取 SESSION_ID（正则：`SESSION_ID:\s*([a-f0-9-]+)`）
+2. 根据信任规则整合结果
+3. 通过 zhi 展示最终输出
+```
+
+## 命令模板
+
+### Codex 调用
+
+```bash
+{{CCG_BIN}} --backend codex {{LITE_MODE_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+```
+
+### Gemini 调用
+
+```bash
+{{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+```
+
+## 进度汇报格式
+
+通过 `mcp______zhi` 推送的进度消息：
+
+```markdown
+## collab 执行状态
+
+| 模型 | 状态 | 耗时 |
+|------|------|------|
+| Codex | 🟢 运行中 | 45s |
+| Gemini | 🟡 等待中 | - |
+
+**当前阶段**：execution
+**进度**：▓▓▓▓▓▓░░░░ 65%
+```
+
+## 使用示例
+
+### 基础调用
+
+```
+/collab role=architect task="分析用户认证模块的架构设计"
+```
+
+### 指定单模型
+
+```
+/collab backend=codex role=reviewer task="审查 API 安全性"
+```
+
+### 会话复用
+
+```
+/collab role=developer task="继续实现上次的方案" resume=abc-123-def
+```
+
+## 依赖模块
+
+- `renderer.md` - 占位符渲染
+- `executor.md` - 并行调用执行
+- `state-machine.md` - 状态管理
+- `reporter.md` - 进度汇报
+
+## 注意事项
+
+1. **不要直接执行 Bash 命令**：必须通过本 Skill 封装调用
+2. **SESSION_ID 必须提取**：用于后续会话复用
+3. **超时不等于失败**：区分"等待超时"和"任务失败"
+4. **降级时通知用户**：通过 zhi 说明降级原因

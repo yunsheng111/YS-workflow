@@ -4,6 +4,43 @@
 
 ---
 
+## 推荐方式：collab Skill
+
+**推荐使用 `/collab` Skill 封装双模型调用**，无需手动实现以下模板。
+
+### 调用示例
+
+```
+/collab backend=both role=analyzer task="分析用户认证模块的架构设计"
+```
+
+### collab Skill 自动处理
+
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+### 会话复用
+
+```
+/collab backend=both role=architect task="基于分析生成计划" resume=<CODEX_SESSION>
+```
+
+### Skill 文档
+
+详见 `~/.claude/skills/collab/SKILL.md`
+
+---
+
+## 底层实现（collab Skill 内部使用）
+
+以下内容描述 collab Skill 的底层实现机制，通常无需直接使用。
+
+---
+
 ## 1. 状态机定义
 
 双模型编排任务的生命周期状态：

@@ -1,5 +1,40 @@
 # YS-workflow 版本历史
 
+## v1.0.1 (2026-02-15)
+
+### ♻️ 重构：collab Skill 封装
+
+**提交哈希**：e3a4a59
+
+**核心改进**：
+- 新增 collab Skill（5 个文件）：
+  - SKILL.md：Skill 入口和使用指南
+  - executor.md：双模型并行调用执行器
+  - renderer.md：占位符渲染和命令构建
+  - reporter.md：进度汇报和状态追踪
+  - state-machine.md：调用状态机和降级策略
+
+- 重构 12 个代理文件：
+  - 移除手动编排的双模型调用逻辑
+  - 统一使用 collab Skill 调用接口
+  - 简化代理层代码，提升一致性
+
+- 更新共享规范文档：
+  - dual-model-orchestration.md：添加 collab Skill 使用说明
+  - model-calling.md：补充 Skill 调用示例
+
+**架构改进**：
+- 代码复用：12 个代理共享同一套双模型调用逻辑
+- 可维护性：集中管理降级策略和进度汇报
+- 一致性：统一调用接口和错误处理
+- 净减少：56 行代码（-521 + 465 = -56）
+
+**修改文件**：19 个（+1515 行，-521 行）
+
+**Co-Authored-By**: Claude Opus 4.6 <noreply@anthropic.com>
+
+---
+
 ## v1.0.0 (2026-02-13)
 
 ### ♻️ 重构：CCG 架构优化

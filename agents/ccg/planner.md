@@ -16,15 +16,27 @@ color: blue
 4. **工作量估算**：使用"任务点"为单位（1点 ≈ 1-2小时）
 5. **知识复用**：通过 `mcp______ji` 回忆项目历史规划模式
 
+## Skills
+
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -49,46 +61,18 @@ color: blue
 
 #### 0.3 并行调用 Codex 和 Gemini
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
-
-使用占位符语法并行调用两个模型进行分析：
-
-**Codex 后端分析**（`run_in_background: true`）：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/analyzer.md
-<TASK>
-需求：<增强后的需求>
-上下文：<检索到的项目上下文>
-</TASK>
-OUTPUT: Multi-perspective analysis focusing on technical feasibility, architecture impact, performance considerations, and potential risks.
-EOF
+**调用 collab Skill**：
+```
+/collab backend=both role=analyzer task="<增强后的需求描述>"
 ```
 
-**Gemini 前端分析**（`run_in_background: true`）：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/analyzer.md
-<TASK>
-需求：<增强后的需求>
-上下文：<检索到的项目上下文>
-</TASK>
-OUTPUT: Multi-perspective analysis focusing on UI/UX impact, user experience, and visual design.
-EOF
-```
+collab Skill 自动处理：
+- 并行启动 Codex（技术可行性、架构影响、性能考量、潜在风险）和 Gemini（UI/UX 影响、用户体验、视觉设计）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- 进度汇报（通过 zhi 展示双模型状态）
 
-#### 0.4 等待并整合结果
-
-使用 `TaskOutput` 等待两个后台任务完成（`timeout: 600000`），保存 SESSION_ID：
-- `CODEX_SESSION` - 用于后续 Codex 调用
-- `GEMINI_SESSION` - 用于后续 Gemini 调用
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+#### 0.4 整合结果
 
 整合两个模型的分析结果：
 1. 识别一致观点（强信号）
@@ -97,37 +81,17 @@ EOF
 
 #### 0.5（可选）双模型计划草案
 
-**门禁检查（阶段切换前）**：
-- 检查阶段 0.3 是否成功获取 `CODEX_SESSION` 和 `GEMINI_SESSION`
-- 若 `!codexSession || !geminiSession`，触发降级流程
-
 为降低遗漏风险，可并行让两个模型输出计划草案：
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
-
-**Codex 计划草案**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex {{GEMINI_MODEL_FLAG}}--session {{CODEX_SESSION}} - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/architect.md
-<TASK>
-基于前面的分析，生成实施计划草案
-</TASK>
-OUTPUT: Step-by-step plan with pseudo-code (focus: data flow, edge cases, error handling, testing strategy)
-EOF
+**调用 collab Skill**（复用会话）：
+```
+/collab backend=both role=architect task="基于前面的分析，生成实施计划草案" resume=<CODEX_SESSION>
 ```
 
-**Gemini 计划草案**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}--session {{GEMINI_SESSION}} - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/architect.md
-<TASK>
-基于前面的分析，生成实施计划草案
-</TASK>
-OUTPUT: Step-by-step plan with pseudo-code (focus: information architecture, interaction, accessibility, visual consistency)
-EOF
-```
+collab Skill 自动处理：
+- 复用阶段 0.3 的会话（Codex 关注数据流、边界情况、错误处理、测试策略；Gemini 关注信息架构、交互、可访问性、视觉一致性）
+- 门禁校验和超时处理
+- 进度汇报
 
 ### 步骤 1：理解需求
 
@@ -327,39 +291,8 @@ Phase 2 可考虑的增强：
 4. **可追溯性**：每个任务都要有明确的输入、输出、验收标准
 5. **风险前置**：提前识别技术风险并提供缓解方案
 6. **多模型协作**：利用 Codex 和 Gemini 的互补优势，后端以 Codex 为准，前端以 Gemini 为准
-7. **占位符使用**：在调用外部模型时使用占位符（{{CCG_BIN}}、{{WORKDIR}} 等），由渲染层自动处理
+7. **collab Skill 调用**：通过 `/collab` Skill 封装双模型调用，自动处理占位符渲染、门禁校验、超时处理和降级策略
 8. **SESSION_ID 交接**：必须保存并在计划中包含 SESSION_ID，供后续 `/ccg:execute` 使用
-
----
-
-## 占位符规范
-
-在调用外部模型时，使用以下占位符（由渲染层自动处理）：
-
-- `{{CCG_BIN}}` - codeagent-wrapper 可执行文件路径
-- `{{WORKDIR}}` - 当前工作目录
-- `{{LITE_MODE_FLAG}}` - 如果 LITE_MODE=true，渲染为 `--lite `；否则为空字符串
-- `{{GEMINI_MODEL_FLAG}}` - 如果设置了 GEMINI_MODEL 环境变量，渲染为 `--gemini-model <model> `；否则为空字符串
-
-**调用示例**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/analyzer.md
-<TASK>
-需求：<增强后的需求>
-</TASK>
-OUTPUT: Analysis result
-EOF
-```
-
-**TaskOutput 等待**：
-```
-TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
-```
-
-- 必须指定 `timeout: 600000`（10 分钟）
-- 若超时仍未完成，继续轮询，不要 Kill 进程
-- 若等待时间过长，调用 `mcp______zhi` 询问用户是否继续等待
 
 ---
 

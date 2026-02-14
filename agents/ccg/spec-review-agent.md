@@ -27,17 +27,25 @@ color: red
 
 ## Skills
 
-无特定 Skill 依赖。
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
 
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -55,19 +63,17 @@ color: red
 4. 调用 `mcp__ace-tool__search_context` 检索已变更的代码文件
 
 ### 阶段 2：双模型交叉审查
-5. **门禁检查（调用前）**：
-   - 检查 `codexCalled` 和 `geminiCalled` 标志位
-   - 若 `!codexCalled || !geminiCalled`，触发降级流程
 
-6. 并行调用 Codex 和 Gemini 进行合规审查：
-   - **Codex**（reviewer 角色）：约束合规性、安全性、性能、错误处理
-   - **Gemini**（reviewer 角色）：约束合规性、可访问性、设计一致性、用户体验
-7. 用 `TaskOutput` 等待所有模型返回
+**调用 collab Skill**：
+```
+/collab backend=both role=reviewer task="审查实施结果的约束合规性：后端（安全性、性能、错误处理）和前端（可访问性、设计一致性、用户体验）"
+```
 
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（后端合规审查）和 Gemini（前端合规审查）
+- 门禁校验和超时处理
+- SESSION_ID 提取
+- 进度汇报（通过 zhi 展示双模型状态）
 
 ### 阶段 3：交叉验证
 7. 整合双方审查结果，按严重程度分类：

@@ -30,17 +30,25 @@ color: yellow
 
 ## Skills
 
-无特定 Skill 依赖。
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
 
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -75,21 +83,16 @@ color: yellow
 
 `[模式：分析]`
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
+**调用 collab Skill**：
+```
+/collab backend=both role=analyzer task="<增强后的需求描述>"
+```
 
-**并行调用**（`run_in_background: true`，语法见共享规范）：
-
-- **Codex**：ROLE_FILE `~/.claude/.ccg/prompts/codex/analyzer.md`，关注技术可行性、架构影响、性能考量
-- **Gemini**：ROLE_FILE `~/.claude/.ccg/prompts/gemini/analyzer.md`，关注 UI/UX 影响、用户体验、视觉设计考量
-
-用 `TaskOutput` 等待两个模型的完整结果。**保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（技术可行性、架构影响、性能考量）和 Gemini（UI/UX 影响、用户体验、视觉设计考量）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- 进度汇报（通过 zhi 展示双模型状态）
 
 **必须等所有模型返回后才能进入下一阶段**。
 

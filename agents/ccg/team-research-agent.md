@@ -31,6 +31,28 @@ color: blue
 - Glob / Grep — 文件搜索
 - Bash — 调用 codeagent-wrapper 进行多模型探索
 
+## Skills
+
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+
+## 双模型调用规范
+
+**引用**：`.doc/standards-agent/dual-model-orchestration.md`
+
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
+
 ## 共享规范
 
 > **[指令]** 执行前必须读取以下规范，确保调用逻辑正确：
@@ -59,55 +81,17 @@ color: blue
 
 ### 阶段 4：多模型并行探索
 
-**门禁检查（调用前）**：
-- 检查 `codexCalled` 和 `geminiCalled` 标志位
-- 若 `!codexCalled || !geminiCalled`，触发降级流程
-
-8. **并行调用** Codex 和 Gemini（`run_in_background: true`）：
-
-**Codex 后端探索**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/analyzer.md
-<TASK>
-需求：<增强后的需求>
-探索范围：后端相关上下文边界
-</TASK>
-OUTPUT (JSON):
-{
-  "module_name": "探索的上下文边界",
-  "existing_structures": ["发现的关键模式"],
-  "constraints_discovered": ["限制解决方案空间的硬约束"],
-  "open_questions": ["需要用户确认的歧义"],
-  "risks": ["潜在阻碍"],
-  "success_criteria_hints": ["可观测的成功行为"]
-}
-EOF
+**调用 collab Skill**：
+```
+/collab backend=both role=analyzer task="<增强后的需求>，探索范围：后端（服务、数据模型、API）和前端（组件、路由、状态管理）"
 ```
 
-**Gemini 前端探索**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/analyzer.md
-<TASK>
-需求：<增强后的需求>
-探索范围：前端相关上下文边界
-</TASK>
-OUTPUT (JSON): <同上格式>
-EOF
-```
-
-9. 用 `TaskOutput` 等待结果（`timeout: 600000`）。**保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
-
-**降级策略**（3 级）：
-- **Level 1: 重试** - 首次失败后重试 1 次
-- **Level 2: 单模型模式** - 两次失败后使用单模型（Codex 优先）
-- **Level 3: 主代理模式** - 都不可用时由 Claude 独立探索
+collab Skill 自动处理：
+- 并行启动 Codex（后端上下文边界探索）和 Gemini（前端上下文边界探索）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- 进度汇报（通过 zhi 展示双模型状态）
+- 3 级降级策略（重试 → 单模型 → 主代理）
 
 ### 阶段 5：聚合与综合
 10. 合并探索输出为统一约束集：

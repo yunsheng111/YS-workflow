@@ -4,6 +4,46 @@ version: v1.0.0
 
 # 多模型调用规范
 
+## collab Skill（推荐）
+
+**推荐使用 `/collab` Skill 封装双模型调用**，自动处理占位符渲染、状态机管理、SESSION_ID 提取、门禁校验、超时处理和进度汇报。
+
+### 调用语法
+
+```
+/collab backend=both role=analyzer task="<任务描述>"
+```
+
+### 参数说明
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `backend` | string | 否 | `both` | 调用后端：`codex`、`gemini`、`both` |
+| `role` | string | 是 | - | 角色：`architect`、`analyzer`、`reviewer`、`developer` |
+| `task` | string | 是 | - | 任务描述（自然语言） |
+| `resume` | string | 否 | - | 复用的 SESSION_ID（用于会话续接） |
+
+### 会话复用
+
+```
+/collab backend=both role=architect task="基于分析生成计划" resume=<CODEX_SESSION>
+```
+
+### 输出格式
+
+collab Skill 返回：
+- `codex_session`: Codex 会话 ID
+- `gemini_session`: Gemini 会话 ID
+- `status`: `success` / `degraded` / `failed`
+- `codex_output`: Codex 输出内容
+- `gemini_output`: Gemini 输出内容
+
+---
+
+## 底层机制（collab Skill 内部实现）
+
+以下内容描述 collab Skill 的底层实现，通常无需直接使用。
+
 ## 占位符
 
 | 占位符 | 替换值 | 来源 |
@@ -129,6 +169,7 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 - `execute-agent`（阶段 3/5）
 - `team-plan-agent`（阶段 2）
 - `team-review-agent`（阶段 2）
+- `team-research-agent`（阶段 2）
 - `spec-research-agent`（阶段 2）
 - `spec-plan-agent`（阶段 2）
 - `spec-review-agent`（阶段 2）

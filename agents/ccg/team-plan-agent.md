@@ -28,15 +28,27 @@ color: blue
 - Glob / Grep — 文件搜索
 - Bash — 调用 codeagent-wrapper 进行多模型分析
 
+## Skills
+
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -53,50 +65,17 @@ color: blue
 2. 整理出：技术栈、目录结构、关键文件、现有模式
 
 ### 阶段 2：多模型并行分析
-3. **门禁检查（调用前）**：
-   - 检查 `codexCalled` 和 `geminiCalled` 标志位
-   - 若 `!codexCalled || !geminiCalled`，触发降级流程
 
-4. **并行调用** Codex 和 Gemini（`run_in_background: true`）：
-
-**Codex 后端分析**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/analyzer.md
-<TASK>
-需求：$ARGUMENTS
-上下文：<项目结构和关键代码>
-</TASK>
-OUTPUT:
-1) 技术可行性评估
-2) 推荐架构方案（精确到文件和函数）
-3) 详细实施步骤
-4) 风险评估
-EOF
+**调用 collab Skill**：
+```
+/collab backend=both role=architect task="<需求描述和项目上下文>"
 ```
 
-**Gemini 前端分析**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/analyzer.md
-<TASK>
-需求：$ARGUMENTS
-上下文：<项目结构和关键代码>
-</TASK>
-OUTPUT:
-1) UI/UX 方案
-2) 组件拆分建议（精确到文件和函数）
-3) 详细实施步骤
-4) 交互设计要点
-EOF
-```
-
-4. 用 `TaskOutput` 等待结果（`timeout: 600000`）
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（技术可行性、架构方案、实施步骤、风险评估）和 Gemini（UI/UX 方案、组件拆分、交互设计）
+- 门禁校验和超时处理
+- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- 进度汇报（通过 zhi 展示双模型状态）
 
 ### 阶段 3：综合分析 + 任务拆分
 5. 后端方案以 Codex 为准，前端方案以 Gemini 为准

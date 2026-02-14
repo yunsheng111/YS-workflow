@@ -28,15 +28,27 @@ color: red
 - Glob / Grep — 文件搜索
 - Bash — Git 操作、调用 codeagent-wrapper 进行双模型审查
 
+## Skills
+
+- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+
 ## 双模型调用规范
 
 **引用**：`.doc/standards-agent/dual-model-orchestration.md`
 
-使用共享模板实现：
-- 状态机管理
-- SESSION_ID 提取
-- 门禁校验（使用 `||` 逻辑）
-- 超时处理（区分超时与失败）
+**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
+- 占位符渲染和命令执行
+- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
+- SESSION_ID 提取和会话复用
+- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
+- 超时处理和降级策略
+- 进度汇报（通过 zhi 展示双模型状态）
+
+**collab Skill 参数**：
+- `backend`: `both`（默认）、`codex`、`gemini`
+- `role`: `architect`、`analyzer`、`reviewer`、`developer`
+- `task`: 任务描述
+- `resume`: SESSION_ID（会话复用）
 
 ## 共享规范
 
@@ -58,56 +70,17 @@ color: red
    - 使用 `mcp______zhi` 展示越界列表，让用户判断是否接受
 
 ### 阶段 2：多模型审查
-5. **门禁检查（调用前）**：
-   - 检查 `codexCalled` 和 `geminiCalled` 标志位
-   - 若 `!codexCalled || !geminiCalled`，触发降级流程
 
-6. **并行调用** Codex 和 Gemini（`run_in_background: true`）：
-
-**Codex 后端审查**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend codex - "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/codex/reviewer.md
-<TASK>
-审查以下变更：
-<git diff 输出或变更文件列表>
-</TASK>
-OUTPUT (JSON):
-{
-  "findings": [
-    {
-      "severity": "Critical|Warning|Info",
-      "dimension": "logic|security|performance|error_handling",
-      "file": "path/to/file",
-      "line": 42,
-      "description": "问题描述",
-      "fix_suggestion": "修复建议"
-    }
-  ],
-  "passed_checks": ["已验证的检查项"],
-  "summary": "总体评估"
-}
-EOF
+**调用 collab Skill**：
+```
+/collab backend=both role=reviewer task="审查以下变更：<git diff 输出或变更文件列表>"
 ```
 
-**Gemini 前端审查**：
-```bash
-{{CCG_BIN}} {{LITE_MODE_FLAG}}--backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}" <<'EOF'
-ROLE_FILE: ~/.claude/.ccg/prompts/gemini/reviewer.md
-<TASK>
-审查以下变更：
-<git diff 输出或变更文件列表>
-</TASK>
-OUTPUT (JSON): <同上格式，dimension 为 patterns|maintainability|accessibility|ux|frontend_security>
-EOF
-```
-
-6. 用 `TaskOutput` 等待结果（`timeout: 600000`）
-
-**门禁检查（收敛后）**：
-- 检查 `codexSession` 和 `geminiSession` 是否成功获取
-- 若 `!codexSession || !geminiSession`，触发降级流程
-- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
+collab Skill 自动处理：
+- 并行启动 Codex（逻辑、安全、性能、错误处理）和 Gemini（模式、可维护性、可访问性、UX、前端安全）
+- 门禁校验和超时处理
+- SESSION_ID 提取
+- 进度汇报（通过 zhi 展示双模型状态）
 
 ### 阶段 3：综合发现
 7. **双模型交叉验证**：
