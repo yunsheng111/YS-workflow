@@ -9,7 +9,7 @@ description: '前端专项工作流 - 智能分流到设计方案或开发实施
 ## 使用方法
 
 ```bash
-/frontend <UI任务描述>
+/ccg:frontend <UI任务描述>
 ```
 
 ---
@@ -40,7 +40,9 @@ Task({
 - 用户确认：`mcp______zhi`
 - UI/UX Skill：`ui-ux-pro-max`
 
-**详细说明**：参考 [frontend-agent.md](../../agents/ccg/frontend-agent.md)
+**详细说明**：参考 [frontend-agent.md](../../agents/ccg/frontend-agent.md) | [ui-ux-designer.md](../../agents/ccg/ui-ux-designer.md)
+
+> 仅列关键工具，完整清单见对应代理文件
 
 ---
 

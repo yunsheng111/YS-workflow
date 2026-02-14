@@ -41,6 +41,8 @@ Task({
 
 **详细说明**：参考 [backend-agent.md](../../agents/ccg/backend-agent.md)
 
+> 仅列关键工具，完整清单见代理文件
+
 ---
 
 ## 执行流程（概述）

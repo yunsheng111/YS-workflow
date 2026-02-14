@@ -42,6 +42,8 @@ Task({
 
 **详细说明**：参考 [fullstack-agent.md](../../agents/ccg/fullstack-agent.md)
 
+> 仅列关键工具，完整清单见代理文件
+
 ---
 
 ## 执行流程（概述）
@@ -54,7 +56,8 @@ fullstack-agent 将执行以下 6 阶段工作流：
 4. **实施** — 代码开发 + Chrome DevTools 验证
 5. **审查与修复** — 多模型并行审查 + 问题修复
 6. **验收** — 最终评估 + 用户确认
-7. **GitHub PR**（可选）— 创建 Pull Request
+
+**可选后续动作**：创建 GitHub PR
 
 ---
 
