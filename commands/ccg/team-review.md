@@ -40,7 +40,7 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
 **Steps**
 1. **收集变更产物**
    - 运行 `git diff` 获取变更摘要。
-   - 如果有 `.claude/team-plan/` 下的计划文件，读取约束和成功判据作为审查基准。
+   - 如果有 `.doc/agent-teams/plans/` 下的计划文件，读取约束和成功判据作为审查基准。
    - 如需检索相关上下文（如原始实现代码），优先使用 `mcp__ace-tool__search_context`，降级到 `mcp______sou`。
    - 列出所有被修改的文件。
    - **与 team-exec 产出的对接**：
@@ -108,7 +108,7 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
    - 如果 Critical 问题有可靠的现有防护（如框架自动转义），可降级为 Warning（需说明理由）。
 
 4. **输出审查报告**
-   - 路径：`.claude/team-plan/<任务名>-review.md`
+   - 路径：`.doc/agent-teams/reviews/<task-name>-review.md`
    - 同时在终端输出摘要。
    - 格式：
 
@@ -185,15 +185,25 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
      * 存储审查报告文件路径
    - 归档格式：`key: "team-review:<任务名>"`，`value: "<审查摘要 + 合规状态>"`
 
-7. **上下文检查点**
+7. **提交确认**
+   - 审查通过后（Critical = 0），调用 `mcp______zhi` 确认是否提交：
+     * `message`: `## ✅ 审查通过\n\n代码审查已完成，是否提交代码？`
+     * `is_markdown`: true
+     * `predefined_options`: ["提交代码", "暂不提交"]
+   - 用户选择「提交代码」→ **强制调用** `/ccg:commit`：
+     ```
+     Skill({ skill: "ccg:commit" })
+     ```
+   - 用户选择「暂不提交」→ 完成工作流
+
+8. **上下文检查点**
    - 报告当前上下文使用量。
-   - 审查通过后提示：`审查完成，建议运行 /ccg:commit 提交代码`
 
 **Exit Criteria**
 - [ ] Codex + Gemini 审查完成
 - [ ] 所有发现已综合分级
 - [ ] Critical = 0（已修复或用户确认跳过）
-- [ ] 审查报告已写入 `.claude/team-plan/<任务名>-review.md`
+- [ ] 审查报告已写入 `.doc/agent-teams/reviews/<task-name>-review.md`
 - [ ] 约束合规检查全部 PASS（或已说明理由）
 - [ ] 成功判据验证全部 PASS（或已说明理由）
 <!-- CCG:TEAM:REVIEW:END -->

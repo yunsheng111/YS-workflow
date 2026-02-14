@@ -8,7 +8,7 @@ description: "Initialize OpenSpec environment with multi-model MCP validation"
 - 初始化结果必须可审计，为后续约束研究提供可靠的环境基线。
 
 **Guardrails**
-- 不修改项目源代码，仅操作 `.claude/spec/` 目录。
+- 不修改项目源代码，仅操作 `.doc/spec/` 目录。
 - 必须验证 MCP 工具（enhance、zhi、ji、搜索）和多模型（Codex/Gemini）可用性。
 - 工具不可用时记录降级状态，不阻塞初始化流程：
   - `mcp______enhance` 不可用 → 降级到 `mcp__ace-tool__enhance_prompt` → 再不可用则标记为"自增强模式"（后续命令将使用 Claude 自增强）
@@ -32,7 +32,7 @@ description: "Initialize OpenSpec environment with multi-model MCP validation"
 ## 上下文
 
 - 项目摘要：$ARGUMENTS
-- 初始化 `.claude/spec/` 目录结构
+- 初始化 `.doc/spec/` 目录结构
 - 验证 MCP 工具和多模型可用性
 
 ## 你的角色
@@ -96,7 +96,7 @@ Task({
 ```
 Task({
   subagent_type: "spec-init-agent",
-  prompt: "初始化 OpenSpec 环境。\n\n项目摘要：$ARGUMENTS\n工作目录：{{WORKDIR}}\n\n请执行：\n1. 验证 MCP 工具可用性\n2. 扫描项目结构和技术栈\n3. 创建 .claude/spec/ 目录结构\n4. 生成初始化报告",
+  prompt: "初始化 OpenSpec 环境。\n\n项目摘要：$ARGUMENTS\n工作目录：{{WORKDIR}}\n\n请执行：\n1. 验证 MCP 工具可用性\n2. 扫描项目结构和技术栈\n3. 创建 .doc/spec/ 目录结构\n4. 生成初始化报告",
   description: "初始化 OpenSpec 环境"
 })
 ```
@@ -116,7 +116,7 @@ Task({
   - 技术栈：<识别到的技术栈>
 
   ### 目录结构
-  已创建 `.claude/spec/` 及子目录
+  已创建 `.doc/spec/` 及子目录
 
   ### 下一步
   运行 `/ccg:spec-research <需求描述>` 开始约束集研究
@@ -134,13 +134,13 @@ Task({
 ## 关键规则
 
 1. **必须使用 Task 工具**调用 `spec-init-agent` 子代理
-2. 不修改项目源代码，仅操作 `.claude/spec/` 目录
+2. 不修改项目源代码，仅操作 `.doc/spec/` 目录
 3. 初始化完成后必须使用 zhi 确认
 
 **Exit Criteria**
 - [ ] MCP 工具可用性已验证并记录
 - [ ] 多模型（Codex/Gemini）可用性已检查
-- [ ] `.claude/spec/` 目录结构已创建
+- [ ] `.doc/spec/` 目录结构已创建
 - [ ] 项目技术栈已识别
 - [ ] 初始化报告已通过 zhi 展示给用户
 <!-- CCG:SPEC:INIT:END -->

@@ -5,7 +5,7 @@ description: 'Agent Teams 需求研究 - 并行探索代码库，产出约束集
 **Core Philosophy**
 - Research 产出的是**约束集**，不是信息堆砌。每条约束缩小解决方案空间。
 - 约束告诉后续阶段"不要考虑这个方向"，使 plan 阶段能产出零决策计划。
-- 输出：约束集合 + 可验证的成功判据，写入 `.claude/team-plan/<任务名>-research.md`。
+- 输出：约束集合 + 可验证的成功判据，写入 `.doc/agent-teams/research/<task-name>-research.md`。
 
 **Guardrails**
 - **STOP! BEFORE ANY OTHER ACTION**: 必须先做 Prompt 增强。
@@ -120,7 +120,7 @@ description: 'Agent Teams 需求研究 - 并行探索代码库，产出约束集
    - 将用户回答转化为额外约束。
 
 6. **写入研究文件**
-   - 路径：`.claude/team-plan/<任务名>-research.md`
+   - 路径：`.doc/agent-teams/research/<task-name>-research.md`
    - 格式：
 
    ```markdown
@@ -175,12 +175,12 @@ description: 'Agent Teams 需求研究 - 并行探索代码库，产出约束集
 
 8. **上下文检查点**
    - 报告当前上下文使用量。
-   - 提示：`研究完成，运行 /clear 后执行 /ccg:team-plan <任务名> 开始规划`
+   - 提示：`研究完成，运行 /clear 后执行 /ccg:team-plan <task-name> 开始规划`
 
 **与 team-plan 的衔接**
 
-研究文件 `<任务名>-research.md` 是 team-plan 阶段的唯一输入。衔接要求：
-- **文件命名**：研究文件 `<任务名>-research.md` 与计划文件 `<任务名>.md` 共用同一 `<任务名>`。
+研究文件 `<task-name>-research.md` 是 team-plan 阶段的唯一输入。衔接要求：
+- **文件命名**：研究文件 `<task-name>-research.md` 与计划文件 `<task-name>.md` 共用同一 `<task-name>`。
 - **约束传递**：team-plan 必须读取研究文件中的全部约束，不得遗漏。每条硬约束必须在计划的子任务中体现为具体的实施约束或验收标准。
 - **成功判据映射**：研究阶段的 `OK-*` 判据在 team-plan 中转化为子任务的验收标准。team-plan 阶段不应新增判据，只能细化。
 - **依赖关系继承**：`DEP-*` 依赖直接影响 team-plan 的并行分组（Layer 划分）。

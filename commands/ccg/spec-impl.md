@@ -11,7 +11,7 @@ description: "Execute changes via multi-model collaboration with spec compliance
 - 必须使用 `spec-impl-agent` 子代理执行，主代理仅协调。
 - 严格按 `spec-plan` 产出的计划步骤执行，不允许自行添加或跳过步骤。
 - 执行前后均需使用 `mcp______zhi` 确认（执行前确认计划、执行后确认结果）。
-- 每步完成后记录进度，变更记录到 `.claude/spec/reviews/`。
+- 每步完成后记录进度，变更记录到 `.doc/spec/reviews/`。
 - 前置条件：`spec-plan` 已产出零决策计划。
 - 与后续命令的关系：实施结果是 `spec-review` 的审查对象。
 
@@ -29,9 +29,9 @@ description: "Execute changes via multi-model collaboration with spec compliance
 
 ## 上下文
 
-- 计划路径：$ARGUMENTS（默认读取最新 `.claude/spec/plans/` 文件）
+- 计划路径：$ARGUMENTS（默认读取最新 `.doc/spec/plans/` 文件）
 - 严格遵循计划步骤，不允许偏离
-- 执行完成后记录变更到 `.claude/spec/reviews/`
+- 执行完成后记录变更到 `.doc/spec/reviews/`
 
 ## 你的角色
 
@@ -156,6 +156,6 @@ Task({
 - [ ] 用户已确认执行计划
 - [ ] 所有计划步骤已按序执行完成
 - [ ] 每步执行进度已记录
-- [ ] 变更清单已写入 `.claude/spec/reviews/`
+- [ ] 变更清单已写入 `.doc/spec/reviews/`
 - [ ] 实施结果已通过 zhi 展示给用户
 <!-- CCG:SPEC:IMPL:END -->

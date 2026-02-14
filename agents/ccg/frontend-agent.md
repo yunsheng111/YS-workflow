@@ -171,7 +171,7 @@ EOF",
 })
 ```
 
-Claude 综合规划，请求用户批准后存入 `.claude/plan/任务名.md`
+Claude 综合规划，请求用户批准后存入 `.doc/common/plans/<task-name>.md`
 
 ### ⚡ 阶段 4：执行
 

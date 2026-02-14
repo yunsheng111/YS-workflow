@@ -26,8 +26,8 @@
 ## 工作流
 
 ### 阶段 1：输入读取
-1. 读取 `.claude/spec/proposals/` 下的最新提案文件
-2. 读取 `.claude/spec/constraints/` 下的约束集（如已独立存储）
+1. 读取 `.doc/spec/proposals/` 下的最新提案文件
+2. 读取 `.doc/spec/constraints/` 下的约束集（如已独立存储）
 3. 调用 `mcp__ace-tool__search_context` 确认涉及文件的当前状态
 
 ### 阶段 2：多模型规划
@@ -47,7 +47,7 @@
 8. 标注步骤间的**依赖关系**和**执行顺序**
 
 ### 阶段 4：计划输出
-9. 将零决策计划写入 `.claude/spec/plans/` 目录
+9. 将零决策计划写入 `.doc/spec/plans/` 目录
 10. 调用 `mcp______zhi` 展示计划摘要，请用户审批
 11. 调用 `mcp______ji` 存储计划关键信息
 
@@ -57,7 +57,7 @@
 ## OpenSpec 零决策计划
 
 ### 计划元信息
-- 提案来源：`.claude/spec/proposals/<filename>`
+- 提案来源：`.doc/spec/proposals/<filename>`
 - 总步骤数：<N>
 - 关联约束：<约束编号列表>
 
@@ -106,6 +106,6 @@
 - 每个步骤必须关联至少一个约束编号
 - 所有约束必须被至少一个步骤覆盖，未覆盖的约束需标注原因
 - 步骤间的依赖关系必须显式标注
-- 计划文件写入 `.claude/spec/plans/` 目录
+- 计划文件写入 `.doc/spec/plans/` 目录
 - 计划审批前不得进入实施阶段
 - 多模型调用必须并行执行，等待所有返回后再整合

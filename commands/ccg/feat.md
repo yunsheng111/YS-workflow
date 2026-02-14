@@ -123,8 +123,8 @@ Task(
 #### 2.4 保存计划
 
 **文件命名规则**：
-- 首次规划：`.claude/plan/功能名.md`
-- 迭代版本：`.claude/plan/功能名-1.md`、`.claude/plan/功能名-2.md`...
+- 首次规划：`.doc/common/plans/<feature-name>.md`
+- 迭代版本：`.doc/common/plans/<feature-name>-1.md`、`.doc/common/plans/<feature-name>-2.md`...
 
 #### 2.5 交互确认（使用三术 zhi）
 
@@ -134,7 +134,7 @@ Task(
   ## 📋 功能规划完成
 
   ### 计划文件
-  `.claude/plan/<功能名>.md`
+  `.doc/common/plans/<feature-name>.md`
 
   ### 规划摘要
   <计划的关键步骤摘要，3-5 条>

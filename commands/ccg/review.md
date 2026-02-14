@@ -298,7 +298,7 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 根据用户选择：
 - 「自动修复问题」→ 根据审查意见自动修复 Critical/Warning 问题
 - 「查看详细分析」→ 展示 Codex/Gemini 的完整审查输出
-- 「导出报告」→ 将报告保存至 `.claude/review-report.md`
+- 「导出报告」→ 将报告保存至 `.doc/common/reviews/review-report.md`
 - 「创建 Issue」→ 为 Critical/Warning 问题创建 GitHub Issue（执行 Issue 创建流程）
 - 「完成审查」→ 进入阶段 5（GitHub PR 审查）
 
@@ -379,7 +379,34 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
    - GitHub MCP 不可用 → 使用 `gh pr review <pr-number> --approve/--request-changes --body "<message>"`
    - PR 编号未知 → 提示用户手动创建审查
 
-### 🎯 阶段 6：GitHub PR 合并（可选）
+### 🎯 阶段 6：本地提交确认（非 PR 审查时）
+
+`[模式：提交]`
+
+**仅当审查的是本地变更（非 PR 审查）且 Critical = 0 时执行此阶段。**
+
+调用 `mcp______zhi` 工具：
+- `message`:
+  ```
+  ## ✅ 审查通过
+
+  本地代码审查已完成，是否提交代码？
+  ```
+- `is_markdown`: true
+- `predefined_options`: ["提交代码", "暂不提交"]
+
+根据用户选择：
+- 「提交代码」→ **强制调用** `/ccg:commit` 提交命令
+- 「暂不提交」→ 完成工作流
+
+**提交流程**：
+```
+Skill({ skill: "ccg:commit" })
+```
+
+---
+
+### 🎯 阶段 7：GitHub PR 合并（可选）
 
 `[模式：合并]`
 

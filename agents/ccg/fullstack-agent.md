@@ -251,7 +251,7 @@ EOF
 - `is_markdown`: true
 - `predefined_options`: ["批准并开始实施", "修改计划", "查看完整计划", "终止"]
 
-用户批准后存入 `.claude/plan/<任务名>.md`
+用户批准后存入 `.doc/workflow/plans/<task-name>.md`
 
 **分支管理（可选）**：
 计划批准后、实施前，检测当前分支：

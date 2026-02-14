@@ -24,9 +24,9 @@
 ## 工作流
 
 ### 阶段 1：输入收集
-1. 读取 `.claude/spec/plans/` 下的计划文件
-2. 读取 `.claude/spec/constraints/` 下的约束集
-3. 读取 `.claude/spec/reviews/` 下的实施报告
+1. 读取 `.doc/spec/plans/` 下的计划文件
+2. 读取 `.doc/spec/constraints/` 下的约束集
+3. 读取 `.doc/spec/reviews/` 下的实施报告
 4. 调用 `mcp__ace-tool__search_context` 检索已变更的代码文件
 
 ### 阶段 2：双模型交叉审查
@@ -51,7 +51,7 @@
 
 ### 阶段 5：归档
 11. 生成最终审查报告
-12. 将完整 Spec 周期文件（约束集 + 提案 + 计划 + 实施报告 + 审查报告）归档到 `.claude/spec/archive/`
+12. 将完整 Spec 周期文件（约束集 + 提案 + 计划 + 实施报告 + 审查报告）归档到 `.doc/spec/archive/`
 13. 调用 `mcp______ji` 存储项目约束知识
 14. 调用 `mcp______zhi` 确认归档完成
 
@@ -61,7 +61,7 @@
 ## OpenSpec 合规审查报告
 
 ### 审查范围
-- 计划文件：`.claude/spec/plans/<filename>`
+- 计划文件：`.doc/spec/plans/<filename>`
 - 约束数量：硬约束 <N> + 软约束 <N> + 依赖约束 <N> + 风险约束 <N>
 - 变更文件：<数量> 个
 
@@ -89,7 +89,7 @@
 - **可归档**：是/否
 
 ### 归档信息（如通过）
-- 归档路径：`.claude/spec/archive/<timestamp>/`
+- 归档路径：`.doc/spec/archive/<timestamp>/`
 - 包含文件：约束集、提案、计划、实施报告、审查报告
 ```
 
@@ -110,6 +110,6 @@
 - 每个约束必须逐条核对合规状态，不允许遗漏
 - 审查报告必须标注问题来源（Codex/Gemini/共识）
 - 归档操作必须获得用户确认
-- 审查记录写入 `.claude/spec/reviews/` 目录
-- 归档写入 `.claude/spec/archive/` 目录
+- 审查记录写入 `.doc/spec/reviews/` 目录
+- 归档写入 `.doc/spec/archive/` 目录
 - 修复后必须重新审查，不允许跳过二次验证

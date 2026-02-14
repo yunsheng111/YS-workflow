@@ -109,7 +109,7 @@ description: 'Agent Teams 规划 - Lead 调用 Codex/Gemini 并行分析，产�
    - 按依赖关系分 Layer：同 Layer 可并行，跨 Layer 串行。
 
 4. **写入计划文件**
-   - 路径：`.claude/team-plan/<任务名>.md`（英文短横线命名）
+   - 路径：`.doc/agent-teams/plans/<task-name>.md`（英文短横线命名）
    - **计划文件格式规范**：
      * 文件名：全小写英文 + 短横线分隔，如 `user-auth-module.md`
      * 编码：UTF-8 无 BOM
@@ -186,6 +186,6 @@ description: 'Agent Teams 规划 - Lead 调用 Codex/Gemini 并行分析，产�
 **Exit Criteria**
 - [ ] Codex + Gemini 分析完成
 - [ ] 子任务文件范围无冲突
-- [ ] 计划文件已写入 `.claude/team-plan/`
+- [ ] 计划文件已写入 `.doc/agent-teams/plans/`
 - [ ] 用户已确认计划
 <!-- CCG:TEAM:PLAN:END -->

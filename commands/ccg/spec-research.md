@@ -8,7 +8,7 @@ description: "Transform requirements into constraint sets via parallel explorati
 - 不做架构决策——只发现约束，为 `spec-plan` 阶段产出零决策计划提供基础。
 
 **Guardrails**
-- 仅写入 `.claude/spec/` 目录，不修改项目源代码。
+- 仅写入 `.doc/spec/` 目录，不修改项目源代码。
 - 必须使用 `spec-research-agent` 子代理执行，主代理仅协调。
 - 约束集必须分类清晰：硬约束 / 软约束 / 依赖关系 / 风险。
 - 研究完成后必须使用 `mcp______zhi` 展示约束摘要并确认。
@@ -30,8 +30,8 @@ description: "Transform requirements into constraint sets via parallel explorati
 ## 上下文
 
 - 需求描述：$ARGUMENTS
-- 输出约束集到 `.claude/spec/constraints/`
-- 生成提案到 `.claude/spec/proposals/`
+- 输出约束集到 `.doc/spec/constraints/`
+- 生成提案到 `.doc/spec/proposals/`
 
 ## 你的角色
 
@@ -95,7 +95,7 @@ Task({
 ```
 Task({
   subagent_type: "spec-research-agent",
-  prompt: "将以下需求转化为约束集。\n\n需求：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.claude/spec/constraints/\n提案目录：.claude/spec/proposals/\n\n请执行：\n1. 增强需求（enhance）\n2. 检索项目上下文\n3. 识别硬约束、软约束、依赖关系、风险\n4. 生成约束集文件和提案",
+  prompt: "将以下需求转化为约束集。\n\n需求：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.doc/spec/constraints/\n提案目录：.doc/spec/proposals/\n\n请执行：\n1. 增强需求（enhance）\n2. 检索项目上下文\n3. 识别硬约束、软约束、依赖关系、风险\n4. 生成约束集文件和提案",
   description: "约束集研究"
 })
 ```
@@ -114,8 +114,8 @@ Task({
   - 风险项：<N> 条
 
   ### 生成文件
-  - 约束集：`.claude/spec/constraints/<name>.md`
-  - 提案：`.claude/spec/proposals/<name>.md`
+  - 约束集：`.doc/spec/constraints/<name>.md`
+  - 提案：`.doc/spec/proposals/<name>.md`
 
   ### 下一步
   运行 `/ccg:spec-plan` 将提案转化为零决策计划
@@ -134,13 +134,13 @@ Task({
 ## 关键规则
 
 1. **必须使用 Task 工具**调用 `spec-research-agent` 子代理
-2. 仅写入 `.claude/spec/` 目录，不修改项目源代码
+2. 仅写入 `.doc/spec/` 目录，不修改项目源代码
 3. 约束集完成后必须使用 zhi 确认
 
 **Exit Criteria**
 - [ ] 需求已增强并确认
 - [ ] 硬约束、软约束、依赖关系、风险已分类识别
-- [ ] 约束集文件已写入 `.claude/spec/constraints/`
-- [ ] 提案文件已写入 `.claude/spec/proposals/`
+- [ ] 约束集文件已写入 `.doc/spec/constraints/`
+- [ ] 提案文件已写入 `.doc/spec/proposals/`
 - [ ] 约束摘要已通过 zhi 展示给用户
 <!-- CCG:SPEC:RESEARCH:END -->

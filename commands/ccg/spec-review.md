@@ -30,7 +30,7 @@ description: "Multi-model compliance review before archiving"
 
 ## 上下文
 
-- 计划路径：$ARGUMENTS（默认读取最新 `.claude/spec/plans/` 文件）
+- 计划路径：$ARGUMENTS（默认读取最新 `.doc/spec/plans/` 文件）
 - 审查实施结果是否符合约束集
 - Critical 问题必须修复才能归档
 
@@ -95,7 +95,7 @@ Task({
 ```
 Task({
   subagent_type: "spec-review-agent",
-  prompt: "审查实施结果是否符合计划和约束集。\n\n计划路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.claude/spec/constraints/\n审查目录：.claude/spec/reviews/\n\n请执行：\n1. 对照计划检查完成情况\n2. 对照约束集验证合规性\n3. 多模型交叉审查\n4. 分类问题（Critical/Warning/Info）",
+  prompt: "审查实施结果是否符合计划和约束集。\n\n计划路径：$ARGUMENTS\n工作目录：{{WORKDIR}}\n约束目录：.doc/spec/constraints/\n审查目录：.doc/spec/reviews/\n\n请执行：\n1. 对照计划检查完成情况\n2. 对照约束集验证合规性\n3. 多模型交叉审查\n4. 分类问题（Critical/Warning/Info）",
   description: "合规审查"
 })
 ```
@@ -116,16 +116,22 @@ Task({
   <通过 / 需修复>
 
   ### 审查文件
-  `.claude/spec/reviews/<name>.md`
+  `.doc/spec/reviews/<name>.md`
   ```
 - `is_markdown`: true
-- `predefined_options`: ["修复 Critical 问题", "归档完成", "查看详细审查", "完成"]
+- `predefined_options`: ["修复 Critical 问题", "提交代码", "归档完成", "查看详细审查", "完成"]
 
 根据用户选择：
 - 「修复 Critical 问题」→ 列出 Critical 问题清单，提示用户执行 `/ccg:spec-impl` 进行修复
-- 「归档完成」→ 将相关文件移入 `.claude/spec/archive/`
+- 「提交代码」→ **强制调用** `/ccg:commit`：
+  ```
+  Skill({ skill: "ccg:commit" })
+  ```
+- 「归档完成」→ 将相关文件移入 `.doc/spec/archive/`
 - 「查看详细审查」→ 展示完整审查报告
 - 「完成」→ 终止当前回复
+
+**注意**：仅当 Critical = 0 时才显示「提交代码」选项。
 
 ---
 
@@ -140,7 +146,7 @@ Task({
 - [ ] 双模型交叉审查已完成
 - [ ] 问题已分级：Critical / Warning / Info
 - [ ] Critical 问题已全部修复（或无 Critical 问题）
-- [ ] 审查报告已写入 `.claude/spec/reviews/`
+- [ ] 审查报告已写入 `.doc/spec/reviews/`
 - [ ] 审查结果已通过 zhi 展示给用户
 - [ ] 归档完成后约束经验已通过 ji 记录
 <!-- CCG:SPEC:REVIEW:END -->

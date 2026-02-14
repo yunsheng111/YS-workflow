@@ -8,7 +8,7 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
 - Builder teammates 并行实施，文件范围严格隔离。
 
 **Guardrails**
-- **前置条件**：`.claude/team-plan/` 下必须有计划文件。没有则终止，提示先运行 `/ccg:team-plan`。
+- **前置条件**：`.doc/agent-teams/plans/` 下必须有计划文件。没有则终止，提示先运行 `/ccg:team-plan`。
 - **Agent Teams 必须启用**：需要 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`。
 - Lead 绝不直接修改产品代码。
 - 每个 Builder 只能修改分配给它的文件。
@@ -49,7 +49,7 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
      在 settings.json 中添加：
      { "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }
      ```
-   - 读取 `.claude/team-plan/` 下最新的计划文件。
+   - 读取 `.doc/agent-teams/plans/` 下最新的计划文件。
    - 若无计划文件，提示：`请先运行 /ccg:team-plan <任务描述> 生成计划`，终止。
 
 2. **解析计划**

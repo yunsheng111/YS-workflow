@@ -25,7 +25,7 @@ description: '多模型协作开发工作流（研究→构思→计划→执行
 - **强制并行**：Codex/Gemini 调用必须使用 `run_in_background: true`（包含单模型调用，避免阻塞主线程）
 - **代码主权**：外部模型对文件系统**零写入权限**，所有修改由 Claude 执行
 - **止损机制**：当前阶段输出通过验证前，不进入下一阶段
-- **Enhance 接管**：本命令自带 enhance 流程（阶段 1），全局入口协议的步骤 1-2 由此接管
+- **Enhance 说明**：Level 1 已完成需求增强，代理内部不再重复 enhance
 
 ---
 
@@ -76,7 +76,7 @@ fullstack-agent 代理将自动完成以下流程：
 ### 工作流交付
 
 fullstack-agent 代理完成后，会自动：
-1. 将计划保存至 `.claude/plan/<任务名>.md`
+1. 将计划保存至 `.doc/workflow/plans/<task-name>.md`
 2. 通过 `mcp______zhi` 向用户展示最终成果
 3. 等待用户选择下一步操作（确认完成/运行 `/ccg:commit` 提交代码/创建 PR）
 

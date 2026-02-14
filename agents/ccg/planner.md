@@ -274,7 +274,7 @@ Phase 2 可考虑的增强：
 
 ### 步骤 4：保存计划并向用户确认
 
-1. 将计划保存至 `.claude/plan/<功能名>.md`
+1. 将计划保存至 `.doc/common/plans/<feature-name>.md`
 2. 调用 `mcp______zhi` 向用户展示计划摘要：
    - `message`: 包含计划文件路径、关键步骤摘要、下一步操作选项
    - `is_markdown`: true
@@ -439,4 +439,4 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 3. **技术栈信息**：框架、数据库、已有模块
 4. **特殊约束**：性能要求、兼容性、安全要求
 
-本 agent 将返回详细的 Markdown 规划文档，可直接保存到 `.claude/plan/功能名.md`。
+本 agent 将返回详细的 Markdown 规划文档，可直接保存到 `.doc/common/plans/<feature-name>.md`。
