@@ -16,9 +16,18 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
 
 ## Level 2: 命令层执行
 
-**执行方式**：主代理直接执行 + Agent Teams 并行协作
+**执行方式**：Task 调用代理
 
-**工作流**：5 个阶段（前置检查 → 解析计划 → 创建 Team + spawn Builders → 监控进度 → 汇总 + 清理）
+**代理**：`team-exec-agent`
+
+**调用**：
+```
+Task({
+  subagent_type: "team-exec-agent",
+  prompt: "$ARGUMENTS",
+  description: "Agent Teams 并行实施"
+})
+```
 
 **前置条件**：
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 已启用

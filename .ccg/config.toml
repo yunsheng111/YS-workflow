@@ -32,5 +32,10 @@ backup = "C:/Users/Administrator/.claude/.ccg/backup"
 provider = "ace-tool"
 setup_url = "https://augmentcode.com/"
 
+[environment]
+# 环境变量配置（优先级高于 [performance].liteMode）
+LITE_MODE = false  # 设置为 true 可跳过外部模型调用
+GEMINI_MODEL = "gemini-3-pro-preview"  # Gemini 模型版本
+
 [performance]
 liteMode = false

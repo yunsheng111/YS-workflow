@@ -1,0 +1,173 @@
+{
+  "generated_at": "2026-02-14T17:17:41Z",
+  "agents": [
+    {
+      "name": "analyze-agent",
+      "file": "agents/ccg/analyze-agent.md",
+      "description": "🔍 多模型技术分析 - Codex 后端视角 + Gemini 前端视角，交叉验证综合见解",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp______zhi, mcp______ji, mcp______uiux_suggest, mcp__Grok_Search_Mcp__web_search, mcp__github__search_code, mcp__github__search_repositories",
+      "last_modified": "2026-02-14 21:51:20.139769900 +0800"
+    },
+    {
+      "name": "backend-agent",
+      "file": "agents/ccg/backend-agent.md",
+      "description": "⚙️ 后端专项开发 - API 设计、服务实现、数据库操作与性能优化",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search",
+      "last_modified": "2026-02-14 21:51:20.140768000 +0800"
+    },
+    {
+      "name": "commit-agent",
+      "file": "agents/ccg/commit-agent.md",
+      "description": "📝 智能 Git 提交 - 分析改动生成 Conventional Commit 信息，支持拆分建议",
+      "tools": "Bash, Read, Write, mcp______zhi, mcp______ji, mcp__github__list_commits, mcp__github__create_pull_request, mcp__github__get_file_contents",
+      "last_modified": "2026-02-14 21:51:20.141767300 +0800"
+    },
+    {
+      "name": "debug-agent",
+      "file": "agents/ccg/debug-agent.md",
+      "description": "🐛 假设驱动调试 - 系统化定位根因并提出修复方案",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_suggest, mcp__Grok_Search_Mcp__web_search, mcp__github__create_issue",
+      "last_modified": "2026-02-14 21:51:20.142765800 +0800"
+    },
+    {
+      "name": "execute-agent",
+      "file": "agents/ccg/execute-agent.md",
+      "description": "▶️ 计划执行 - 严格按已批准计划逐步执行，不擅自改变方案",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp__github__update_issue, mcp__github__add_issue_comment, mcp__Chrome_DevTools_MCP__list_pages, mcp__Chrome_DevTools_MCP__navigate_page, mcp__Chrome_DevTools_MCP__evaluate_script, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__list_console_messages",
+      "last_modified": "2026-02-14 21:51:20.144767900 +0800"
+    },
+    {
+      "name": "frontend-agent",
+      "file": "agents/ccg/frontend-agent.md",
+      "description": "🎨 前端专项开发 - 组件、页面、样式与交互的设计与实现",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu",
+      "last_modified": "2026-02-14 23:35:15.890974900 +0800"
+    },
+    {
+      "name": "fullstack-agent",
+      "file": "agents/ccg/fullstack-agent.md",
+      "description": "🏗️ 全栈复杂开发 - 架构变更和多模块联动，6 阶段结构化工作流",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__github__create_pull_request, mcp__github__create_branch",
+      "last_modified": "2026-02-14 21:51:20.146767100 +0800"
+    },
+    {
+      "name": "fullstack-light-agent",
+      "file": "agents/ccg/fullstack-light-agent.md",
+      "description": "⚡ 全栈轻量开发 - 中等复杂度单模块功能，前后端一体化快速迭代",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_search, mcp______uiux_stack, mcp______tu, mcp__Grok_Search_Mcp__web_search, mcp__github__get_issue",
+      "last_modified": "2026-02-14 23:38:02.192040400 +0800"
+    },
+    {
+      "name": "get-current-datetime",
+      "file": "agents/ccg/get-current-datetime.md",
+      "description": "description: 执行日期命令并仅返回原始输出。不添加格式、标题、说明或并行代理。",
+      "tools": "Bash, Read, Write",
+      "last_modified": "2026-02-14 21:51:20.147769200 +0800"
+    },
+    {
+      "name": "init-architect",
+      "file": "agents/ccg/init-architect.md",
+      "description": "description: 自适应初始化：根级简明 + 模块级详尽；分阶段遍历并回报覆盖率",
+      "tools": "Read, Write, Glob, Grep, mcp______zhi, mcp______ji, mcp______sou, mcp__github__create_repository",
+      "last_modified": "2026-02-14 21:51:20.147769200 +0800"
+    },
+    {
+      "name": "optimize-agent",
+      "file": "agents/ccg/optimize-agent.md",
+      "description": "🚀 性能优化 - 数据库、算法、前端渲染与资源加载，按性价比排序",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search",
+      "last_modified": "2026-02-14 23:44:40.246480900 +0800"
+    },
+    {
+      "name": "planner",
+      "file": "agents/ccg/planner.md",
+      "description": "description: 📋 任务规划师 - 使用 WBS 方法论分解功能需求为可执行任务",
+      "tools": "Read, Write, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch",
+      "last_modified": "2026-02-14 23:47:46.300081300 +0800"
+    },
+    {
+      "name": "review-agent",
+      "file": "agents/ccg/review-agent.md",
+      "description": "🔎 多视角代码审查 - 安全性、性能、可维护性三维度系统化审查",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_suggest, mcp__Grok_Search_Mcp__web_search, mcp__github__get_pull_request, mcp__github__get_pull_request_files, mcp__github__get_pull_request_status, mcp__github__get_pull_request_comments, mcp__github__get_pull_request_reviews, mcp__github__create_pull_request_review, mcp__github__merge_pull_request, mcp__github__update_pull_request_branch, mcp__github__list_pull_requests, mcp__github__create_issue, mcp__github__add_issue_comment, mcp__github__get_file_contents, mcp__github__list_commits, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__list_console_messages, mcp__Chrome_DevTools_MCP__performance_start_trace, mcp__Chrome_DevTools_MCP__performance_stop_trace, mcp__Chrome_DevTools_MCP__performance_analyze_insight",
+      "last_modified": "2026-02-14 23:44:40.791715100 +0800"
+    },
+    {
+      "name": "spec-impl-agent",
+      "file": "agents/ccg/spec-impl-agent.md",
+      "description": "OpenSpec 实施 - 按零决策计划执行，多模型审计确保约束合规",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch",
+      "last_modified": "2026-02-14 23:44:41.369093800 +0800"
+    },
+    {
+      "name": "spec-init-agent",
+      "file": "agents/ccg/spec-init-agent.md",
+      "description": "OpenSpec 环境初始化 - 验证多模型 MCP 工具可用性，创建约束目录结构",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji",
+      "last_modified": "2026-02-14 23:44:41.882033400 +0800"
+    },
+    {
+      "name": "spec-plan-agent",
+      "file": "agents/ccg/spec-plan-agent.md",
+      "description": "OpenSpec 零决策规划 - 约束集转可执行计划，每步有明确操作指令",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch",
+      "last_modified": "2026-02-14 23:44:42.327290900 +0800"
+    },
+    {
+      "name": "spec-research-agent",
+      "file": "agents/ccg/spec-research-agent.md",
+      "description": "OpenSpec 约束研究 - 需求转结构化约束集，多模型并行探索",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search",
+      "last_modified": "2026-02-14 23:44:42.793362700 +0800"
+    },
+    {
+      "name": "spec-review-agent",
+      "file": "agents/ccg/spec-review-agent.md",
+      "description": "OpenSpec 合规审查 - 双模型交叉审查，Critical 必须修复后归档",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch",
+      "last_modified": "2026-02-14 23:44:43.222304200 +0800"
+    },
+    {
+      "name": "team-exec-agent",
+      "file": "agents/ccg/team-exec-agent.md",
+      "description": "Agent Teams 并行实施 - 读取计划文件，spawn Builder teammates 并行写代码",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp______zhi, mcp______ji",
+      "last_modified": "2026-02-14 23:42:47.301744900 +0800"
+    },
+    {
+      "name": "team-plan-agent",
+      "file": "agents/ccg/team-plan-agent.md",
+      "description": "Agent Teams 规划 - 调用 Codex/Gemini 并行分析，产出零决策并行实施计划",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji",
+      "last_modified": "2026-02-14 23:48:32.235286600 +0800"
+    },
+    {
+      "name": "team-research-agent",
+      "file": "agents/ccg/team-research-agent.md",
+      "description": "Agent Teams 需求研究 - 并行探索代码库，产出约束集 + 可验证成功判据",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp______zhi, mcp______ji",
+      "last_modified": "2026-02-14 23:49:23.708262800 +0800"
+    },
+    {
+      "name": "team-review-agent",
+      "file": "agents/ccg/team-review-agent.md",
+      "description": "Agent Teams 审查 - 双模型交叉审查并行实施的产出，分级处理 Critical/Warning/Info",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji",
+      "last_modified": "2026-02-14 23:49:00.610953900 +0800"
+    },
+    {
+      "name": "test-agent",
+      "file": "agents/ccg/test-agent.md",
+      "description": "🧪 测试用例生成 - 覆盖正常路径、边界条件与异常场景",
+      "tools": "Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp__Chrome_DevTools_MCP__new_page, mcp__Chrome_DevTools_MCP__navigate_page, mcp__Chrome_DevTools_MCP__resize_page, mcp__Chrome_DevTools_MCP__close_page, mcp__Chrome_DevTools_MCP__click, mcp__Chrome_DevTools_MCP__fill, mcp__Chrome_DevTools_MCP__fill_form, mcp__Chrome_DevTools_MCP__press_key, mcp__Chrome_DevTools_MCP__hover, mcp__Chrome_DevTools_MCP__drag, mcp__Chrome_DevTools_MCP__upload_file, mcp__Chrome_DevTools_MCP__wait_for, mcp__Chrome_DevTools_MCP__handle_dialog, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__evaluate_script",
+      "last_modified": "2026-02-14 23:44:43.702806200 +0800"
+    },
+    {
+      "name": "ui-ux-designer",
+      "file": "agents/ccg/ui-ux-designer.md",
+      "description": "🎨 UI/UX 设计师 - 为前端功能生成页面结构、组件拆分和交互流程设计",
+      "tools": "Read, Write, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__resize_page, mcp__Chrome_DevTools_MCP__emulate, mcp__Chrome_DevTools_MCP__evaluate_script, mcp__Chrome_DevTools_MCP__click, mcp__Chrome_DevTools_MCP__hover",
+      "last_modified": "2026-02-14 23:49:00.589421200 +0800"
+    }
+  ]
+}

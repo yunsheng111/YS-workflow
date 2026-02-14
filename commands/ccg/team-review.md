@@ -16,15 +16,24 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
 
 ## Level 2: 命令层执行
 
-**执行方式**：主代理直接执行 + 外部模型协作
+**执行方式**：Task 调用代理
 
-**工作流**：7 个阶段（收集变更产物 → 多模型审查 → 综合发现 → 输出审查报告 → 决策门 → 归档审查结果 → 提交确认）
+**代理**：`team-review-agent`
+
+**调用**：
+```
+Task({
+  subagent_type: "team-review-agent",
+  prompt: "$ARGUMENTS",
+  description: "Agent Teams 审查"
+})
+```
 
 ---
 
 ## Level 3: 工具层执行
 
-**主代理调用的工具**：
+**代理调用的工具**：
 - Git 操作：Bash（git diff）
 - 代码检索：`mcp__ace-tool__search_context` → `mcp______sou` → Grep/Glob
 - 计划读取：Read 工具
@@ -37,14 +46,17 @@ description: 'Agent Teams 审查 - 双模型交叉审查并行实施的产出，
 
 ---
 
-## 执行流程
+## 执行流程（概述）
+
+team-review-agent 将执行以下 7 阶段工作流：
 
 1. **收集变更产物** — 获取 git diff 和计划文件
 2. **多模型审查** — Codex + Gemini 并行审查（`run_in_background: true`）
 3. **综合发现** — 交叉验证、去重、分级
 4. **输出审查报告** — 写入 `.doc/agent-teams/reviews/`
 5. **决策门** — Critical > 0 时要求修复
-6. **提交确认** — 审查通过后调用 `/ccg:commit`
+6. **归档审查结果** — 调用 `mcp______ji` 归档
+7. **提交确认** — 审查通过后调用 `/ccg:commit`
 
 ---
 
