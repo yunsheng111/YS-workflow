@@ -3,6 +3,7 @@ name: review-agent
 description: "🔎 多视角代码审查 - 安全性、性能、可维护性三维度系统化审查"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp______uiux_suggest, mcp__Grok_Search_Mcp__web_search, mcp__github__get_pull_request, mcp__github__get_pull_request_files, mcp__github__get_pull_request_status, mcp__github__get_pull_request_comments, mcp__github__get_pull_request_reviews, mcp__github__create_pull_request_review, mcp__github__merge_pull_request, mcp__github__update_pull_request_branch, mcp__github__list_pull_requests, mcp__github__create_issue, mcp__github__add_issue_comment, mcp__github__get_file_contents, mcp__github__list_commits, mcp__Chrome_DevTools_MCP__take_screenshot, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__list_console_messages, mcp__Chrome_DevTools_MCP__performance_start_trace, mcp__Chrome_DevTools_MCP__performance_stop_trace, mcp__Chrome_DevTools_MCP__performance_analyze_insight
 color: yellow
+# template: tool-only v1.0.0
 ---
 
 # 代码审查代理（Review Agent）
@@ -52,6 +53,13 @@ color: yellow
 ## Skills
 
 无特定 Skill 依赖。
+
+> **预留**：未来如需引入多模型审查能力，可参考 `.doc/standards-agent/dual-model-orchestration.md` 添加双模型调用规范。
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
 
 ## 工作流
 

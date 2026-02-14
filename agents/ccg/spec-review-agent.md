@@ -3,6 +3,7 @@ name: spec-review-agent
 description: "OpenSpec 合规审查 - 双模型交叉审查，Critical 必须修复后归档"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
 color: red
+# template: tool-only v1.0.0
 ---
 
 # OpenSpec 合规审查代理（Spec Review Agent）
@@ -28,6 +29,23 @@ color: red
 
 无特定 Skill 依赖。
 
+## 双模型调用规范
+
+**引用**：`.doc/standards-agent/dual-model-orchestration.md`
+
+使用共享模板实现：
+- 状态机管理
+- SESSION_ID 提取
+- 门禁校验（使用 `||` 逻辑）
+- 超时处理（区分超时与失败）
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 多模型调用 `占位符` `调用语法` `TaskOutput` `LITE_MODE` `信任规则` — [.doc/standards-agent/model-calling.md] (v1.0.0)
+> - 网络搜索 `GrokSearch` `降级链` `结论归档` — [.doc/standards-agent/search-protocol.md] (v1.0.0)
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
+
 ## 工作流
 
 ### 阶段 1：输入收集
@@ -37,10 +55,19 @@ color: red
 4. 调用 `mcp__ace-tool__search_context` 检索已变更的代码文件
 
 ### 阶段 2：双模型交叉审查
-5. 并行调用 Codex 和 Gemini 进行合规审查：
+5. **门禁检查（调用前）**：
+   - 检查 `codexCalled` 和 `geminiCalled` 标志位
+   - 若 `!codexCalled || !geminiCalled`，触发降级流程
+
+6. 并行调用 Codex 和 Gemini 进行合规审查：
    - **Codex**（reviewer 角色）：约束合规性、安全性、性能、错误处理
    - **Gemini**（reviewer 角色）：约束合规性、可访问性、设计一致性、用户体验
-6. 用 `TaskOutput` 等待所有模型返回
+7. 用 `TaskOutput` 等待所有模型返回
+
+**门禁检查（收敛后）**：
+- 检查 `codexSession` 和 `geminiSession` 是否成功获取
+- 若 `!codexSession || !geminiSession`，触发降级流程
+- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
 
 ### 阶段 3：交叉验证
 7. 整合双方审查结果，按严重程度分类：

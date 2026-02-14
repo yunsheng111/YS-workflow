@@ -3,6 +3,7 @@ name: test-agent
 description: "🧪 测试用例生成 - 覆盖正常路径、边界条件与异常场景"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp__Chrome_DevTools_MCP__new_page, mcp__Chrome_DevTools_MCP__navigate_page, mcp__Chrome_DevTools_MCP__resize_page, mcp__Chrome_DevTools_MCP__close_page, mcp__Chrome_DevTools_MCP__click, mcp__Chrome_DevTools_MCP__fill, mcp__Chrome_DevTools_MCP__fill_form, mcp__Chrome_DevTools_MCP__press_key, mcp__Chrome_DevTools_MCP__hover, mcp__Chrome_DevTools_MCP__drag, mcp__Chrome_DevTools_MCP__upload_file, mcp__Chrome_DevTools_MCP__wait_for, mcp__Chrome_DevTools_MCP__handle_dialog, mcp__Chrome_DevTools_MCP__take_snapshot, mcp__Chrome_DevTools_MCP__evaluate_script
 color: green
+# template: tool-only v1.0.0
 ---
 
 # 测试代理（Test Agent）
@@ -46,6 +47,11 @@ color: green
 ## Skills
 
 无特定 Skill 依赖。
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
 
 ## 工作流
 

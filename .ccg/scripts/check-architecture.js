@@ -57,13 +57,22 @@ function extractSubagentCalls(commandsDir) {
 
   for (const file of files) {
     const content = fs.readFileSync(path.join(commandsDir, file), 'utf-8');
-    // 支持 YAML 格式 (subagent_type: "x") 和赋值格式 (subagent_type="x")
-    const regex = /subagent_type\s*[=:]\s*["']([^"']+)["']/g;
-    let match;
-
     const agents = [];
-    while ((match = regex.exec(content)) !== null) {
+
+    // 检测 1: subagent_type 声明（YAML 格式和赋值格式）
+    const subagentRegex = /subagent_type\s*[=:]\s*["']([^"']+)["']/g;
+    let match;
+    while ((match = subagentRegex.exec(content)) !== null) {
       agents.push(match[1]);
+    }
+
+    // 检测 2: 通过 markdown 链接引用代理文件（如：参考 [xxx-agent.md](../../agents/ccg/xxx-agent.md)）
+    const linkRegex = /\[([^\]]+\.md)\]\([^)]*agents\/ccg\/([^)]+)\.md\)/g;
+    while ((match = linkRegex.exec(content)) !== null) {
+      const agentName = match[2];
+      if (!agents.includes(agentName)) {
+        agents.push(agentName);
+      }
     }
 
     if (agents.length > 0) {
@@ -175,6 +184,38 @@ if (absolutePathIssues.length > 0) {
   }
 } else {
   success('未发现绝对路径');
+}
+
+console.log('\n📋 检查 5: 代理模板合规校验');
+const agentFiles = fs.readdirSync(AGENTS_DIR)
+  .filter(f => f.endsWith('.md') && !f.startsWith('_'));
+
+let templateIssues = 0;
+let sharedSpecIssues = 0;
+
+for (const file of agentFiles) {
+  const filePath = path.join(AGENTS_DIR, file);
+  const content = fs.readFileSync(filePath, 'utf-8');
+
+  // 检查是否有 template 注释
+  const hasTemplate = /# template: (tool-only|single-model|multi-model) v\d+\.\d+\.\d+/.test(content);
+  if (!hasTemplate) {
+    error(`${file} 缺少 template 注释`);
+    templateIssues++;
+  }
+
+  // 检查是否有共享规范引用
+  const hasSharedSpec = /## 共享规范/.test(content);
+  if (!hasSharedSpec) {
+    error(`${file} 缺少共享规范引用块`);
+    sharedSpecIssues++;
+  }
+}
+
+if (templateIssues === 0 && sharedSpecIssues === 0) {
+  success(`所有 ${agentFiles.length} 个代理文件都符合模板规范`);
+} else {
+  error(`模板合规问题: ${templateIssues} 个缺少 template 注释, ${sharedSpecIssues} 个缺少共享规范引用`);
 }
 
 console.log('\n' + '='.repeat(50));

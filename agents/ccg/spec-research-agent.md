@@ -3,6 +3,7 @@ name: spec-research-agent
 description: "OpenSpec 约束研究 - 需求转结构化约束集，多模型并行探索"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______enhance, mcp__ace-tool__enhance_prompt, mcp______zhi, mcp______ji, mcp__Grok_Search_Mcp__web_search
 color: blue
+# template: tool-only v1.0.0
 ---
 
 # OpenSpec 约束研究代理（Spec Research Agent）
@@ -29,6 +30,23 @@ color: blue
 
 无特定 Skill 依赖。
 
+## 双模型调用规范
+
+**引用**：`.doc/standards-agent/dual-model-orchestration.md`
+
+使用共享模板实现：
+- 状态机管理
+- SESSION_ID 提取
+- 门禁校验（使用 `||` 逻辑）
+- 超时处理（区分超时与失败）
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 多模型调用 `占位符` `调用语法` `TaskOutput` `LITE_MODE` `信任规则` — [.doc/standards-agent/model-calling.md] (v1.0.0)
+> - 网络搜索 `GrokSearch` `降级链` `结论归档` — [.doc/standards-agent/search-protocol.md] (v1.0.0)
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
+
 ## 工作流
 
 ### 阶段 1：需求增强
@@ -36,10 +54,19 @@ color: blue
 2. 调用 `mcp__ace-tool__search_context` 检索相关代码上下文（不可用时降级到 `mcp______sou`）
 
 ### 阶段 2：多模型并行探索
-3. 并行调用 Codex 和 Gemini 进行约束探索：
+3. **门禁检查（调用前）**：
+   - 检查 `codexCalled` 和 `geminiCalled` 标志位
+   - 若 `!codexCalled || !geminiCalled`，触发降级流程
+
+4. 并行调用 Codex 和 Gemini 进行约束探索：
    - **Codex**（analyzer 角色）：后端约束 — API 兼容性、数据库迁移、性能瓶颈、安全要求
    - **Gemini**（analyzer 角色）：前端约束 — 浏览器兼容、响应式要求、可访问性、设计系统一致性
-4. 用 `TaskOutput` 等待所有模型返回
+5. 用 `TaskOutput` 等待所有模型返回
+
+**门禁检查（收敛后）**：
+- 检查 `codexSession` 和 `geminiSession` 是否成功获取
+- 若 `!codexSession || !geminiSession`，触发降级流程
+- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
 
 ### 阶段 3：约束分类与整合
 5. 将双方分析结果整合为四类约束：
@@ -49,10 +76,11 @@ color: blue
    - **风险约束**（Risk）：需要防护 — 并发冲突、数据丢失、回滚方案
 6. 为每个约束标注来源（用户需求/项目配置/模型分析/行业规范）
 
-### 阶段 4：生成提案
-7. 基于约束集生成 OpenSpec 提案（Proposal），写入 `.doc/spec/proposals/`
-8. 调用 `mcp______zhi` 展示约束集摘要，请用户确认
-9. 调用 `mcp______ji` 存储约束集关键信息
+### 阶段 4：生成产出
+7. 将约束集独立写入 `.doc/spec/constraints/<task-name>-constraints.md`
+8. 基于约束集生成 OpenSpec 提案（Proposal），写入 `.doc/spec/proposals/<task-name>-proposal.md`
+9. 调用 `mcp______zhi` 展示约束集摘要，请用户确认
+10. 调用 `mcp______ji` 存储约束集关键信息
 
 ## 输出格式
 
@@ -104,5 +132,6 @@ color: blue
 - 每个约束必须标注来源，禁止无来源约束
 - 硬约束与风险约束必须逐条与用户确认
 - 多模型调用必须并行执行，等待所有返回后再整合
+- 约束集文件写入 `.doc/spec/constraints/` 目录
 - 提案文件写入 `.doc/spec/proposals/` 目录
 - 约束集中如有冲突，必须在提案中标注并提请用户裁决

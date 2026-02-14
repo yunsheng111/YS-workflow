@@ -3,6 +3,7 @@ name: team-review-agent
 description: "Agent Teams 审查 - 双模型交叉审查并行实施的产出，分级处理 Critical/Warning/Info"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji
 color: red
+# template: multi-model v1.0.0
 ---
 
 # Agent Teams 审查代理（Team Review Agent）
@@ -27,16 +28,41 @@ color: red
 - Glob / Grep — 文件搜索
 - Bash — Git 操作、调用 codeagent-wrapper 进行双模型审查
 
+## 双模型调用规范
+
+**引用**：`.doc/standards-agent/dual-model-orchestration.md`
+
+使用共享模板实现：
+- 状态机管理
+- SESSION_ID 提取
+- 门禁校验（使用 `||` 逻辑）
+- 超时处理（区分超时与失败）
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范，确保调用逻辑正确：
+> - 多模型调用 `占位符` `调用语法` `TaskOutput` `LITE_MODE` `信任规则` — [.doc/standards-agent/model-calling.md] (v1.0.0)
+> - 网络搜索 `GrokSearch` `降级链` `结论归档` — [.doc/standards-agent/search-protocol.md] (v1.0.0)
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
+> - 阶段间传递 `文件路径约定` `必传字段` `错误传递` — [.doc/standards-agent/team-handoff-protocol.md] (v1.0.0)
+
 ## 工作流
 
 ### 阶段 1：收集变更产物
 1. 运行 `git diff` 获取变更摘要
 2. 读取 `.doc/agent-teams/plans/` 下的计划文件
 3. 对照计划文件确认所有子任务已实施
-4. 检查是否有越界修改（修改了文件范围之外的文件）→ 自动标记为 Critical
+4. 检查是否有越界修改：
+   - **越界修改已有文件**（文件范围之外的已有文件被修改）→ 标记为 **Critical**
+   - **创建计划外新文件**（如测试文件、类型定义、配置文件）→ 标记为 **Warning**，通常合理但需确认
+   - 使用 `mcp______zhi` 展示越界列表，让用户判断是否接受
 
 ### 阶段 2：多模型审查
-5. **并行调用** Codex 和 Gemini（`run_in_background: true`）：
+5. **门禁检查（调用前）**：
+   - 检查 `codexCalled` 和 `geminiCalled` 标志位
+   - 若 `!codexCalled || !geminiCalled`，触发降级流程
+
+6. **并行调用** Codex 和 Gemini（`run_in_background: true`）：
 
 **Codex 后端审查**：
 ```bash
@@ -77,6 +103,11 @@ EOF
 ```
 
 6. 用 `TaskOutput` 等待结果（`timeout: 600000`）
+
+**门禁检查（收敛后）**：
+- 检查 `codexSession` 和 `geminiSession` 是否成功获取
+- 若 `!codexSession || !geminiSession`，触发降级流程
+- **超时语义**：等待超时 → 继续轮询（最多 3 次），任务失败 → 触发降级
 
 ### 阶段 3：综合发现
 7. **双模型交叉验证**：

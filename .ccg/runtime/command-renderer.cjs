@@ -28,11 +28,16 @@ function loadConfig(configPath) {
  * @returns {Object} 变量映射
  */
 function buildRuntimeVars({ cwd, env, config }) {
+  // 优先读取环境变量，其次读取 config.toml
+  const liteMode = env.LITE_MODE === 'true' ||
+                   (config.environment?.LITE_MODE === true) ||
+                   (config.performance?.liteMode === true);
+
   const vars = {
     CCG_BIN: config.ccgBin || 'C:/Users/Administrator/.claude/bin/codeagent-wrapper.exe',
     WORKDIR: cwd,
-    LITE_MODE_FLAG: env.LITE_MODE === 'true' ? '--lite ' : '',
-    GEMINI_MODEL_FLAG: buildGeminiModelFlag(env)
+    LITE_MODE_FLAG: liteMode ? '--lite ' : '',
+    GEMINI_MODEL_FLAG: buildGeminiModelFlag(env, config)
   };
   return vars;
 }
@@ -40,11 +45,13 @@ function buildRuntimeVars({ cwd, env, config }) {
 /**
  * 生成 Gemini 模型标志
  * @param {Object} env - 环境变量
+ * @param {Object} config - 配置对象
  * @returns {string} --gemini-model <model> 或空字符串
  */
-function buildGeminiModelFlag(env) {
-  if (env.GEMINI_MODEL && env.GEMINI_MODEL.trim()) {
-    return `--gemini-model ${env.GEMINI_MODEL} `;
+function buildGeminiModelFlag(env, config) {
+  const geminiModel = env.GEMINI_MODEL || config.environment?.GEMINI_MODEL;
+  if (geminiModel && geminiModel.trim()) {
+    return `--gemini-model ${geminiModel} `;
   }
   return '';
 }

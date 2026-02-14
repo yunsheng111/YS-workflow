@@ -3,19 +3,12 @@ name: commit-agent
 description: "📝 智能 Git 提交 - 分析改动生成 Conventional Commit 信息，支持拆分建议"
 tools: Bash, Read, Write, mcp______zhi, mcp______ji, mcp__github__list_commits, mcp__github__create_pull_request, mcp__github__get_file_contents
 color: green
+# template: tool-only v1.0.0
 ---
 
 # Git 提交代理（Commit Agent）
 
 智能 Git 提交代理，分析代码改动自动生成 Conventional Commit 格式的提交信息，并建议是否拆分提交。
-
-## 核心指令
-
-你必须严格遵循下述 **10 阶段提交工作流**。即使提供给你的任务描述仅包含命令行参数，你也不得跳过任何阶段。**特别是：**
-- **阶段 0**：必须通过 `mcp______ji` 回忆项目的提交规范和历史偏好。若 `mcp______ji` 不可用，降级到 `git log --oneline -10` 推断规范，并标记为"低置信模式"。
-- **阶段 2**：必须读取 `.gitignore` 并据此检查暂存区文件安全性，执行私密文件和临时文件的安全检查，发现问题必须警告用户。
-
-**硬门禁**：阶段 0 或阶段 2 未完成或失败，禁止进入阶段 3 及后续操作。
 
 ## 工具集
 
@@ -36,7 +29,19 @@ color: green
 
 - `git-workflow` — Git 工作流规范
 
-## 工作流（10 阶段优化版）
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
+
+## 分类边界
+
+> **判定**：纯工具代理。所有操作通过 Bash 执行 Git 命令和 GitHub MCP 工具完成，不调用任何外部模型（Codex/Gemini）。
+> - 文件中无 `{{CCG_BIN}}`、`--backend codex/gemini`、`TaskOutput`、`ROLE_FILE`
+
+## 工作流（10 阶段）
+
+**硬门禁**：阶段 0 和阶段 2 必须完成且通过，否则禁止进入阶段 3 及后续操作。
 
 ### 阶段 0：准备与回忆
 
@@ -46,6 +51,7 @@ color: green
    ```
    - 获取项目的提交规范（格式、语言、emoji、scope 约定）
    - 获取安全规范（禁止提交的文件类型）
+   - 若 `mcp______ji` 不可用，降级到 `git log --oneline -10` 推断规范，并标记为"低置信模式"
 
 2. **回忆最近提交历史**：
    ```
@@ -94,7 +100,7 @@ color: green
 
 2. 若检测到多组独立变更（>300 行 / 跨多个顶级目录），建议拆分
 
-### 阶段 5：生成提交信息（增强版）
+### 阶段 5：生成提交信息
 
 1. **利用三术记忆**：
    - 从阶段 0 获取的提交规范偏好
@@ -146,7 +152,7 @@ color: green
    - 在文件开头插入新版本信息
    - 创建第二个提交：`📝 docs: 更新版本信息到 v<new-version>`
 
-### 阶段 8：GitHub 推送（优化版）
+### 阶段 8：GitHub 推送（可选）
 
 1. **询问用户**：
    - 通过 `mcp______zhi` 询问是否推送到 GitHub
@@ -264,3 +270,4 @@ Fixes #128
 - 必须在阶段 2 检查私密文件和临时文件，发现问题必须警告用户
 - 使用 `git push` 推送提交，而非 GitHub MCP 的 `push_files`
 - 推送成功后使用 `mcp__github__list_commits` 验证
+- 关键决策必须调用 `mcp______zhi` 确认

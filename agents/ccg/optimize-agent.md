@@ -3,6 +3,7 @@ name: optimize-agent
 description: "🚀 性能优化 - 数据库、算法、前端渲染与资源加载，按性价比排序"
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search
 color: yellow
+# template: tool-only v1.0.0
 ---
 
 # 性能优化代理（Optimize Agent）
@@ -28,6 +29,11 @@ color: yellow
 ## Skills
 
 无特定 Skill 依赖。
+
+## 共享规范
+
+> **[指令]** 执行前必须读取以下规范：
+> - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
 
 ## 工作流
 
