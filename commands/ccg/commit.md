@@ -40,7 +40,7 @@ description: '智能 Git 提交：分析改动生成 Conventional Commit 信息�
 ```
 Task({
   subagent_type: "commit-agent",
-  prompt: "$ARGUMENTS",
+  prompt: "执行智能 Git 提交工作流。用户参数：$ARGUMENTS\n\n【不可跳过的前置步骤】\n1. 阶段0：调用 mcp______ji(回忆, preference) + mcp______ji(回忆, context)\n2. 阶段2：读取 .gitignore，检查暂存区安全性\n若任一步未执行或失败，禁止执行 git add/git commit",
   description: "智能 Git 提交"
 })
 ```
@@ -68,7 +68,7 @@ Task({
 ```
 Task({
   subagent_type: "commit-agent",
-  prompt: "$ARGUMENTS",
+  prompt: "执行智能 Git 提交工作流。用户参数：$ARGUMENTS\n\n【不可跳过的前置步骤】\n1. 阶段0：调用 mcp______ji(回忆, preference) + mcp______ji(回忆, context)\n2. 阶段2：读取 .gitignore，检查暂存区安全性\n若任一步未执行或失败，禁止执行 git add/git commit",
   description: "智能 Git 提交"
 })
 ```
