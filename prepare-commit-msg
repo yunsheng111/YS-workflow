@@ -1,0 +1,46 @@
+#!/bin/sh
+# Git prepare-commit-msg hook
+# 在执行 git commit 时自动生成 Conventional Commit 格式的提交信息
+#
+# 参数：
+#   $1: 提交信息文件路径（.git/COMMIT_EDITMSG）
+#   $2: 提交来源（message/merge/squash/commit 等）
+#   $3: 提交 SHA（修补提交时有值）
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="${2:-commit}"
+COMMIT_SHA="$3"
+
+# 获取项目根目录
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$PROJECT_ROOT" ]; then
+  exit 0
+fi
+
+# 检查是否在 Claude Code 环境中
+# 如果在 Claude Code 中，跳过此 hook（由 PreToolUse hook 处理）
+if [ -n "$CLAUDE_PROJECT_DIR" ]; then
+  exit 0
+fi
+
+# 跳过某些提交来源
+case "$COMMIT_SOURCE" in
+  merge|squash)
+    # 这些类型的提交由 Git 自动生成信息
+    exit 0
+    ;;
+esac
+
+# 检查 Node.js 是否可用
+if ! command -v node &> /dev/null; then
+  # Node.js 不可用，降级为空模板
+  exit 0
+fi
+
+# 调用提交信息生成脚本
+GENERATOR_SCRIPT="$PROJECT_ROOT/hooks/ccg-commit-msg-generator.cjs"
+if [ -f "$GENERATOR_SCRIPT" ]; then
+  node "$GENERATOR_SCRIPT" "$COMMIT_MSG_FILE" "$COMMIT_SOURCE" "$COMMIT_SHA"
+fi
+
+exit 0

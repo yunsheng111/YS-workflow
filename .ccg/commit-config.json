@@ -1,0 +1,39 @@
+{
+  "emoji": true,
+  "language": "zh-CN",
+  "format": "conventional",
+  "coAuthoredBy": "Claude Opus 4.6 <noreply@anthropic.com>",
+  "scopeMap": {
+    "hooks/": "hooks",
+    "commands/": "ccg",
+    "agents/": "ccg",
+    ".ccg/": "ccg",
+    "src/components/": "ui",
+    "src/api/": "api",
+    "src/utils/": "utils",
+    "src/services/": "services",
+    "tests/": "test",
+    "__tests__/": "test",
+    "docs/": "docs",
+    ".doc/": "docs"
+  },
+  "typeEmojis": {
+    "feat": "✨",
+    "fix": "🐛",
+    "docs": "📝",
+    "style": "🎨",
+    "refactor": "♻️",
+    "perf": "⚡",
+    "test": "✅",
+    "chore": "🔧",
+    "ci": "👷",
+    "revert": "⏪"
+  },
+  "excludePatterns": [".env", "*.key", "*.pem", "secret", "password"],
+  "rules": {
+    "maxSubjectLength": 50,
+    "requireBody": false,
+    "requireFooter": true,
+    "requiredFooter": "Co-Authored-By"
+  }
+}
