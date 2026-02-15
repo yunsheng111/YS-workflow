@@ -14,7 +14,18 @@ color: blue
 
 - Research 产出的是**约束集**，不是信息堆砌。每条约束缩小解决方案空间。
 - 约束告诉后续阶段"不要考虑这个方向"，使 plan 阶段能产出零决策计划。
-- 输出：约束集合 + 可验证的成功判据，写入 `.doc/agent-teams/research/<task-name>-research.md`。
+- 输出：约束集合 + 可验证的成功判据，写入 `.doc/agent-teams/research/<YYYYMMDD>-<task-name>-research.md`。
+
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/agent-teams/research/<YYYYMMDD>-<task-name>-research.md`
+- 示例：`/home/user/project/.doc/agent-teams/research/20260215-user-auth-research.md`
+
+**路径说明**：
+- 必须使用 `.doc/agent-teams/research/` 目录（Agent Teams 工作流专用）
+- 禁止写入 `.doc/workflow/research/`（六阶段工作流专用）
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
 
 ## 工具集
 
@@ -33,7 +44,10 @@ color: blue
 
 ## Skills
 
-- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
+  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
+  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
+  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
 
 ## 双模型调用规范
 
@@ -81,6 +95,13 @@ color: blue
 
 ### 阶段 4：多模型并行探索
 
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
+
 **调用 collab Skill**：
 ```
 /collab backend=both role=analyzer task="<增强后的需求>，探索范围：后端（服务、数据模型、API）和前端（组件、路由、状态管理）"
@@ -106,7 +127,21 @@ collab Skill 自动处理：
 13. 将用户回答转化为额外约束
 
 ### 阶段 7：写入研究文件
-14. 写入 `.doc/agent-teams/research/<task-name>-research.md`
+
+**输出路径规范**：
+- **主要输出**：`<项目根目录>/.doc/agent-teams/research/<YYYYMMDD>-<task-name>-research.md`
+- **示例**：`/home/user/project/.doc/agent-teams/research/20260215-user-auth-research.md`
+
+**路径校验清单**（写入前必须执行）：
+- [ ] 输出路径是否为 `.doc/agent-teams/research/`？
+- [ ] 输出路径是否符合全局提示词中的目录结构？
+- [ ] 用户输入中的路径是否仅作为"输入文件位置"，未影响输出路径？
+- [ ] 文件名是否包含日期前缀（YYYYMMDD）？
+- [ ] 文件名是否包含任务名称和 `-research` 后缀？
+
+**自检**：准备写入文件前，确认输出路径。若路径不符合规范（如被误推断为 `.doc/workflow/research/`），立即停止并通过 `mcp______zhi` 询问用户。
+
+14. 使用绝对路径写入研究文档：`<项目根目录>/.doc/agent-teams/research/<YYYYMMDD>-<task-name>-research.md`
 
 ### 阶段 8：归档
 15. 调用 `mcp______ji` 归档关键约束和成功判据

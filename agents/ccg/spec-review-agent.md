@@ -10,6 +10,21 @@ color: red
 
 双模型交叉审查实施结果，确保所有约束合规，Critical 问题必须修复后才允许归档。
 
+## 输出路径
+
+**主要输出**：
+- 审查报告：`<项目根目录>/.doc/spec/reviews/<YYYYMMDD>-<task-name>-review.md`
+- 归档：`<项目根目录>/.doc/spec/archive/<YYYYMMDD>-<task-name>-archived.md`
+
+**示例**：
+- `/home/user/project/.doc/spec/reviews/20260215-user-auth-review.md`
+- `/home/user/project/.doc/spec/archive/20260215-user-auth-archived.md`
+
+**路径说明**：
+- 必须使用 `.doc/spec/reviews/` 和 `.doc/spec/archive/` 目录（OpenSpec 工作流专用）
+- 禁止写入 `.doc/agent-teams/` 或 `.doc/workflow/` 目录
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具
@@ -27,7 +42,10 @@ color: red
 
 ## Skills
 
-- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
+  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
+  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
+  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
 
 ## 双模型调用规范
 
@@ -64,6 +82,13 @@ color: red
 
 ### 阶段 2：双模型交叉审查
 
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
+
 **调用 collab Skill**：
 ```
 /collab backend=both role=reviewer task="审查实施结果的约束合规性：后端（安全性、性能、错误处理）和前端（可访问性、设计一致性、用户体验）"
@@ -90,10 +115,26 @@ collab Skill 自动处理：
     - 调用 `mcp______zhi` 展示审查通过结论
 
 ### 阶段 5：归档
+
+**输出路径规范**：
+- **审查报告**：`<项目根目录>/.doc/spec/reviews/<YYYYMMDD>-<task-name>-review.md`
+- **归档文件**：`<项目根目录>/.doc/spec/archive/<YYYYMMDD>-<task-name>-archived.md`
+
+**路径校验清单**（写入前必须执行）：
+- [ ] 审查报告路径是否为 `.doc/spec/reviews/`？
+- [ ] 归档文件路径是否为 `.doc/spec/archive/`？
+- [ ] 输出路径是否符合全局提示词中的目录结构？
+- [ ] 用户输入中的路径是否仅作为"输入文件位置"，未影响输出路径？
+- [ ] 文件名是否包含日期前缀（YYYYMMDD）？
+- [ ] 文件名是否包含任务名称和正确后缀（`-review` 或 `-archived`）？
+
+**自检**：准备写入文件前，确认输出路径。若路径不符合规范（如被误推断为 `.doc/agent-teams/reviews/` 或 `.doc/workflow/reviews/`），立即停止并通过 `mcp______zhi` 询问用户。
+
 11. 生成最终审查报告
-12. 将完整 Spec 周期文件（约束集 + 提案 + 计划 + 实施报告 + 审查报告）归档到 `.doc/spec/archive/`
-13. 调用 `mcp______ji` 存储项目约束知识
-14. 调用 `mcp______zhi` 确认归档完成
+12. 使用绝对路径写入审查报告：`<项目根目录>/.doc/spec/reviews/<YYYYMMDD>-<task-name>-review.md`
+13. 将完整 Spec 周期文件（约束集 + 提案 + 计划 + 实施报告 + 审查报告）归档到：`<项目根目录>/.doc/spec/archive/<YYYYMMDD>-<task-name>-archived.md`
+14. 调用 `mcp______ji` 存储项目约束知识
+15. 调用 `mcp______zhi` 确认归档完成
 
 ## 输出格式
 

@@ -10,6 +10,17 @@ color: red
 
 复杂缺陷定位代理，采用假设驱动调试方法论，系统化定位根因并提出修复方案。
 
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/workflow/wip/execution/<YYYYMMDD>-<task-name>-debug.md`
+- 示例：`/home/user/project/.doc/workflow/wip/execution/20260215-login-bug-debug.md`
+
+**路径说明**：
+- 必须使用 `.doc/workflow/wip/execution/` 目录（六阶段工作流执行记录）
+- 禁止写入 `.doc/agent-teams/` 或 `.doc/spec/` 目录
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具

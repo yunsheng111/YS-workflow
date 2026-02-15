@@ -10,6 +10,17 @@ color: yellow
 
 性能分析与优化代理，覆盖数据库查询、算法复杂度、前端渲染与资源加载四大领域，按性价比排序输出优化方案。
 
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/workflow/wip/execution/<YYYYMMDD>-<task-name>-optimize.md`
+- 示例：`/home/user/project/.doc/workflow/wip/execution/20260215-api-performance-optimize.md`
+
+**路径说明**：
+- 必须使用 `.doc/workflow/wip/execution/` 目录（六阶段工作流执行记录）
+- 禁止写入 `.doc/agent-teams/` 或 `.doc/spec/` 目录
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具

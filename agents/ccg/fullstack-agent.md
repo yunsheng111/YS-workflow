@@ -10,6 +10,17 @@ color: cyan
 
 全栈复杂开发代理，负责涉及架构变更和多模块联动的大型功能开发，采用 6 阶段结构化工作流。
 
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/workflow/plans/<YYYYMMDD>-<task-name>-plan.md`
+- 示例：`/home/user/project/.doc/workflow/plans/20260215-user-auth-plan.md`
+
+**路径说明**：
+- 必须使用 `.doc/workflow/plans/` 目录（六阶段工作流专用）
+- 禁止写入 `.doc/agent-teams/plans/`（Agent Teams 工作流专用）或 `.doc/spec/plans/`（OpenSpec 工作流专用）
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具
@@ -38,7 +49,10 @@ color: cyan
 - `ui-ux-pro-max` — UI/UX 设计系统，组件规范、设计令牌、交互模式
 - `database-designer` — 数据库建模，表结构设计、索引优化、迁移脚本
 - `ci-cd-generator` — CI/CD 配置，构建流水线、部署脚本、环境配置
-- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
+  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
+  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
+  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
 
 ## 双模型调用规范
 
@@ -93,6 +107,13 @@ color: cyan
 
 `[模式：构思]` - 多模型并行分析：
 
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
+
 **调用 collab Skill**：
 ```
 /collab backend=both role=analyzer task="<增强后的需求描述>"
@@ -113,6 +134,13 @@ collab Skill 自动处理：
 
 `[模式：计划]` - 多模型协作规划：
 
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
+
 **调用 collab Skill**（复用会话）：
 ```
 /collab backend=both role=architect task="基于选定方案生成详细实施计划" resume=<CODEX_SESSION>
@@ -132,7 +160,20 @@ collab Skill 自动处理：
 **阶段确认**：调用 `mcp______zhi` 展示计划摘要、关键文件、预计工作量。
 - `predefined_options`: ["批准并开始实施", "修改计划", "查看完整计划", "终止"]
 
-用户批准后存入 `.doc/workflow/plans/<task-name>.md`
+**输出路径规范**：
+- **主要输出**：`<项目根目录>/.doc/workflow/plans/<YYYYMMDD>-<task-name>-plan.md`
+- **示例**：`/home/user/project/.doc/workflow/plans/20260215-user-auth-plan.md`
+
+**路径校验清单**（写入前必须执行）：
+- [ ] 输出路径是否为 `.doc/workflow/plans/`？
+- [ ] 输出路径是否符合全局提示词中的目录结构？
+- [ ] 用户输入中的路径是否仅作为"输入文件位置"，未影响输出路径？
+- [ ] 文件名是否包含日期前缀（YYYYMMDD）？
+- [ ] 文件名是否包含任务名称和 `-plan` 后缀？
+
+**自检**：准备写入文件前，确认输出路径。若路径不符合规范（如被误推断为 `.doc/agent-teams/plans/` 或 `.doc/spec/plans/`），立即停止并通过 `mcp______zhi` 询问用户。
+
+用户批准后使用绝对路径写入计划文档：`<项目根目录>/.doc/workflow/plans/<YYYYMMDD>-<task-name>-plan.md`
 
 **分支管理（可选）**：
 计划批准后、实施前，检测当前分支：
@@ -170,6 +211,13 @@ collab Skill 自动处理：
 ### 阶段 5：审查与修复（Review & Fix）
 
 `[模式：审查]` - 多模型并行审查 + 问题修复：
+
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
 
 **调用 collab Skill**（复用会话）：
 ```

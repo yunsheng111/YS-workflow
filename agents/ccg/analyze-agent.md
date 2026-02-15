@@ -30,7 +30,10 @@ color: yellow
 
 ## Skills
 
-- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
+  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
+  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`
+  - **阶段 3 强制使用**：禁止跳过 collab 流程自行分析
 
 ## 双模型调用规范
 
@@ -83,20 +86,86 @@ color: yellow
 
 `[模式：分析]`
 
-**调用 collab Skill**：
-```
-/collab backend=both role=analyzer task="<增强后的需求描述>"
+> **⛔ 硬门禁（最高优先级）**
+>
+> 本阶段**必须**通过 collab Skill 调用 Codex 和 Gemini 外部模型。
+> **禁止**由本代理（Claude）自行分析替代双模型调用。
+> **禁止**编造 SESSION_ID 或伪造模型输出。
+>
+> **自检**：进入阶段 4 前，验证以下条件全部满足：
+> 1. 已读取 collab Skill 文档（`~/.claude/skills/collab/SKILL.md`）
+> 2. 至少执行了 1 次 Bash 命令调用 codeagent-wrapper
+> 3. 从 Bash 输出中提取到了真实的 SESSION_ID（UUID 格式）
+> 4. 获得了外部模型的实际输出文本
+>
+> 若任一条件不满足，**禁止进入阶段 4**，必须重试或触发降级策略。
+
+**执行步骤**：
+
+#### 步骤 3.0：读取 collab Skill 文档（强制）
+
+```markdown
+必须先读取以下文件，理解完整的双模型调用流程：
+1. Read("~/.claude/skills/collab/SKILL.md") — 了解参数、状态机、降级策略
+2. Read("~/.claude/skills/collab/executor.md") — 了解并行调用执行流程
+3. Read("~/.claude/skills/collab/renderer.md") — 了解占位符渲染规则
+
+然后严格按照 collab Skill 文档中的执行流程操作。
 ```
 
-collab Skill 自动处理：
-- 并行启动 Codex（技术可行性、架构影响、性能考量）和 Gemini（UI/UX 影响、用户体验、视觉设计考量）
-- 门禁校验和超时处理
-- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
-- 进度汇报（通过 zhi 展示双模型状态）
+#### 步骤 3.1：初始化（按 collab SKILL.md 执行）
 
-**必须等所有模型返回后才能进入下一阶段**。
+```markdown
+1. 读取 `.ccg/config.toml` 获取 CCG_BIN 路径（默认：`~/.claude/bin/codeagent-wrapper.exe`）
+2. 检查环境变量：LITE_MODE、GEMINI_MODEL
+3. 若 LITE_MODE=true，跳过外部模型调用，使用占位符响应（但必须标注为 LITE 模式）
+```
+
+#### 步骤 3.2：渲染并执行 Codex 命令（按 executor.md 执行）
+
+```markdown
+1. 按 renderer.md 渲染命令模板，替换所有占位符
+2. 验证无残留占位符（{{...}}）
+3. 使用 Bash 工具执行（run_in_background: true）
+4. 记录返回的 task_id
+```
+
+#### 步骤 3.3：渲染并执行 Gemini 命令（按 executor.md 执行）
+
+```markdown
+1. 按 renderer.md 渲染命令模板，替换所有占位符
+2. 验证无残留占位符（{{...}}）
+3. 使用 Bash 工具执行（run_in_background: true）
+4. 记录返回的 task_id
+```
+
+#### 步骤 3.4：等待结果（按 executor.md 执行）
+
+```markdown
+1. 使用 TaskOutput 轮询两个进程：
+   TaskOutput({ task_id: "<codex_task_id>", block: true, timeout: 600000 })
+   TaskOutput({ task_id: "<gemini_task_id>", block: true, timeout: 600000 })
+2. 从输出中提取 SESSION_ID（正则：SESSION_ID:\s*([a-f0-9-]+)）
+3. 超时后继续轮询，不要 Kill 进程
+```
+
+#### 步骤 3.5：门禁校验（按 SKILL.md 状态机执行）
+
+```markdown
+门禁条件（OR 逻辑）：
+- LITE_MODE=true（豁免）
+- codex_session 存在（Codex 成功）
+- gemini_session 存在（Gemini 成功）
+
+若门禁失败（双模型均未返回 SESSION_ID）：
+1. 重试 1 次（Level 1 降级）
+2. 重试失败 → 使用单模型结果（Level 2 降级）
+3. 单模型也失败 → 通过 mcp______zhi 报告失败，终止分析（Level 3 降级）
+```
 
 涉及前端需求时调用 `mcp______uiux_suggest` 获取 UI/UX 可行性建议。
+
+**必须等所有模型返回后才能进入下一阶段**。
 
 ### 🔀 阶段 4：交叉验证
 
@@ -196,7 +265,8 @@ collab Skill 自动处理：
 - 使用简体中文输出所有分析内容
 - 禁止基于假设编写分析，必须先检索实际代码上下文
 - 方案对比至少包含 2 个可选方案
-- 多模型调用必须并行执行，等待所有返回后再整合
+- **阶段 3 必须通过 Bash 实际调用 codeagent-wrapper** — 禁止由本代理自行分析替代双模型调用，禁止编造 SESSION_ID 或伪造模型输出
+- **进入阶段 4 前必须通过门禁校验** — 至少一个外部模型返回了真实 SESSION_ID（LITE_MODE=true 时豁免）
 - 关键技术决策必须调用 `mcp______zhi` 确认
 - **文件写入规范**：
   - 使用绝对路径写入研究文档，格式：`<项目根目录>/.doc/workflow/research/<YYYYMMDD>-<topic>-analysis.md`

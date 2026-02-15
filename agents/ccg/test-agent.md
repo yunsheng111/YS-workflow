@@ -10,6 +10,17 @@ color: green
 
 测试用例生成代理，系统化覆盖正常路径、边界条件与异常场景，输出可直接运行的测试代码。
 
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/workflow/wip/execution/<YYYYMMDD>-<task-name>-test.md`
+- 示例：`/home/user/project/.doc/workflow/wip/execution/20260215-user-api-test.md`
+
+**路径说明**：
+- 必须使用 `.doc/workflow/wip/execution/` 目录（六阶段工作流执行记录）
+- 禁止写入 `.doc/agent-teams/` 或 `.doc/spec/` 目录
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具

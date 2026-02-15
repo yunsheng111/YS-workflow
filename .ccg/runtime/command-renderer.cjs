@@ -49,7 +49,7 @@ function buildRuntimeVars({ cwd, env, config }) {
  * @returns {string} --gemini-model <model> 或空字符串
  */
 function buildGeminiModelFlag(env, config) {
-  const geminiModel = env.GEMINI_MODEL || config.environment?.GEMINI_MODEL;
+  const geminiModel = env.GEMINI_MODEL || (config && config.environment && config.environment.GEMINI_MODEL);
   if (geminiModel && geminiModel.trim()) {
     return `--gemini-model ${geminiModel} `;
   }

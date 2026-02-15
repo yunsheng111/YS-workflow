@@ -1,5 +1,16 @@
 # collab Skill
 
+> **⛔ 强制执行指令（读取即生效）**
+>
+> 任何读取本文档的代理必须：
+> 1. 按照下方"执行流程"章节的 4 个步骤**完整执行**，不得跳过任何步骤
+> 2. 按照 `reporter.md` 的规范**每 30 秒**通过 `mcp______zhi` 向用户汇报进度
+> 3. 通过 Bash 工具**实际调用** codeagent-wrapper，不得由 Claude 自行分析替代
+> 4. 从 Bash 输出中**提取真实 SESSION_ID**，不得编造或伪造
+> 5. 将 SESSION_ID 写入最终产出文档，供 PreToolUse Hook 验证
+>
+> 违反以上任一条即视为执行失败，PreToolUse Hook（`ccg-dual-model-validator.cjs`）将拦截缺少 SESSION_ID 的报告写入。
+
 双模型（Codex + Gemini）协作调用 Skill，封装 codeagent-wrapper 的并行调用、状态管理和进度汇报。
 
 ## 触发条件
@@ -50,7 +61,7 @@
 ```
 INIT → RUNNING → SUCCESS
               ↓
-         DEGRADED → SUCCESS
+         DEGRADED (ACCEPTABLE / UNACCEPTABLE) → SUCCESS
               ↓
           FAILED
 ```
@@ -61,9 +72,18 @@ INIT → RUNNING → SUCCESS
 |------|------|
 | `INIT` | 初始化，准备调用 |
 | `RUNNING` | 模型正在执行 |
-| `SUCCESS` | 双模型均成功返回 |
-| `DEGRADED` | 单模型成功，另一模型失败或超时 |
-| `FAILED` | 双模型均失败 |
+| `SUCCESS` | 双模型均成功返回且满足业务门禁 |
+| `DEGRADED_ACCEPTABLE` | 部分维度缺失，但核心目标已达成（满足 OR 门禁） |
+| `DEGRADED_UNACCEPTABLE` | 核心维度缺失或质量不达标，需用户介入 |
+| `FAILED` | 双模型均失败或严重错误 |
+
+## 门禁协议 (HC-2)
+
+1. **AND 门禁**：双模型必须全部 SUCCESS。
+2. **OR 门禁 (默认)**：至少一个核心视角（由 role 决定）SUCCESS，次要视角允许缺失但必须标注为 DEGRADED。
+   - `role=architect`: 后端(Codex) 为核心
+   - `role=analyzer`: 双重视角均为核心
+   - `role=reviewer`: 前端(Gemini) 为核心 (UI/UX 场景)
 
 ## 降级策略
 
@@ -113,13 +133,21 @@ INIT → RUNNING → SUCCESS
 ### Codex 调用
 
 ```bash
-{{CCG_BIN}} --backend codex {{LITE_MODE_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+echo 'ROLE_FILE: ~/.claude/.ccg/prompts/codex/{{ROLE}}.md
+<TASK>
+需求：{{TASK}}
+</TASK>
+OUTPUT: structured-analysis' | {{CCG_BIN}} --backend codex {{LITE_MODE_FLAG}}- "{{WORKDIR}}"
 ```
 
 ### Gemini 调用
 
 ```bash
-{{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+echo 'ROLE_FILE: ~/.claude/.ccg/prompts/gemini/{{ROLE}}.md
+<TASK>
+需求：{{TASK}}
+</TASK>
+OUTPUT: structured-analysis' | {{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}"
 ```
 
 ## 进度汇报格式

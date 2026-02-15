@@ -10,6 +10,17 @@ color: yellow
 
 多视角代码审查代理，从安全性、性能、可维护性三个维度对代码变更进行系统化审查。
 
+## 输出路径
+
+**主要输出**：
+- 路径：`<项目根目录>/.doc/workflow/reviews/<YYYYMMDD>-<task-name>-review.md`
+- 示例：`/home/user/project/.doc/workflow/reviews/20260215-user-auth-review.md`
+
+**路径说明**：
+- 必须使用 `.doc/workflow/reviews/` 目录（六阶段工作流专用）
+- 禁止写入 `.doc/agent-teams/reviews/`（Agent Teams 工作流专用）或 `.doc/spec/reviews/`（OpenSpec 工作流专用）
+- 用户输入中的文件路径仅作为"输入文件位置"，不影响输出路径
+
 ## 工具集
 
 ### MCP 工具

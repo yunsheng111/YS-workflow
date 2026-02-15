@@ -18,7 +18,10 @@ color: blue
 
 ## Skills
 
-- `collab` — 双模型协作调用，封装 Codex + Gemini 并行调用逻辑
+- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
+  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
+  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
+  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
 
 ## 双模型调用规范
 
@@ -61,6 +64,13 @@ color: blue
 
 #### 0.3 并行调用 Codex 和 Gemini
 
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
+
 **调用 collab Skill**：
 ```
 /collab backend=both role=analyzer task="<增强后的需求描述>"
@@ -82,6 +92,13 @@ collab Skill 自动处理：
 #### 0.5（可选）双模型计划草案
 
 为降低遗漏风险，可并行让两个模型输出计划草案：
+
+> **⛔ 硬门禁** — 引用 `_templates/multi-model-gate.md`
+>
+> 本阶段必须通过 collab Skill 调用外部模型。禁止自行分析替代。
+> 执行前必须先 Read collab Skill 文档（SKILL.md + executor.md + renderer.md + reporter.md），
+> 然后严格按文档步骤操作。进入下一阶段前必须验证 SESSION_ID 存在。
+> 详细步骤见 `_templates/multi-model-gate.md`。
 
 **调用 collab Skill**（复用会话）：
 ```

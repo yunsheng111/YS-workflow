@@ -85,13 +85,21 @@ collab Skill 的并行调用逻辑，负责启动 Codex 和 Gemini 进程并等�
 ### Codex 命令
 
 ```bash
-{{CCG_BIN}} --backend codex {{LITE_MODE_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+echo 'ROLE_FILE: ~/.claude/.ccg/prompts/codex/{{ROLE}}.md
+<TASK>
+需求：{{TASK}}
+</TASK>
+OUTPUT: structured-analysis' | {{CCG_BIN}} --backend codex {{LITE_MODE_FLAG}}- "{{WORKDIR}}"
 ```
 
 ### Gemini 命令
 
 ```bash
-{{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}}--role {{ROLE}} --task "{{TASK}}" --workdir "{{WORKDIR}}"
+echo 'ROLE_FILE: ~/.claude/.ccg/prompts/gemini/{{ROLE}}.md
+<TASK>
+需求：{{TASK}}
+</TASK>
+OUTPUT: structured-analysis' | {{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}}- "{{WORKDIR}}"
 ```
 
 ## 结果结构

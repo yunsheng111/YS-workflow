@@ -590,7 +590,7 @@ Git 提交前必须展示：
 ├── workflow/                     # 六阶段工作流
 │   ├── wip/
 │   │   ├── research/            # 阶段1 研究中间产出
-│   │   ├── ideation/            # 阶段2 构思中间产出
+│   │   ├── analysis/            # 技术架构分析（双模型/代理层/架构评估）
 │   │   ├── execution/           # 阶段4 执行记录
 │   │   ├── review/              # 阶段5 审查修复记录
 │   │   └── acceptance/          # 阶段6 验收记录

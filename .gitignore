@@ -19,6 +19,9 @@ history.jsonl
 # 三术记忆
 .sanshu-memory/
 
+# 三术运行时缓存和会话
+.magi/
+
 # .doc 目录下的所有文件（只保留目录结构）
 .doc/**/*
 !.doc/**/.gitkeep
@@ -37,6 +40,10 @@ plan/
 .doc/agent-teams/wip/
 .doc/workflow/wip/
 .doc/common/wip/
+
+# 保留技术分析文件
+!.doc/workflow/wip/analysis/
+!.doc/workflow/wip/analysis/**
 
 # IDE 锁文件
 ide/*.lock
