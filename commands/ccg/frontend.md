@@ -14,6 +14,30 @@ description: '前端专项工作流 - 智能分流到设计方案或开发实施
 
 ---
 
+## Level 1: 智能路由层
+
+### 步骤 1：增强需求
+调用 `mcp______enhance` 增强前端需求：
+- 明确 UI 设计、交互逻辑、技术实现
+- 降级链：`mcp__ace-tool__enhance_prompt` → Claude 自增强
+
+### 步骤 2：推荐方案
+基于增强后的需求，推荐执行方案：
+- 分析是设计方案类还是开发实施类
+- 推荐使用 `ui-ux-designer` 或 `frontend-agent`
+
+### 步骤 3：用户确认
+使用 `mcp______zhi` 展示推荐方案并确认
+
+### 步骤 4：上下文检索
+调用 `mcp__ace-tool__search_context` 获取前端代码上下文：
+- 降级链：`mcp______sou` → Grep/Glob
+
+### ⛔ 硬门禁
+**未完成 Level 1 禁止进入 Level 2**。
+
+---
+
 ## Level 2: 命令层执行
 
 **执行方式**：主代理路由到子代理

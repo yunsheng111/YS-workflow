@@ -14,6 +14,30 @@ description: '智能功能开发 - 自动识别输入类型，规划/讨论/实�
 
 ---
 
+## Level 1: 智能路由层
+
+### 步骤 1：增强需求
+调用 `mcp______enhance` 增强功能需求：
+- 明确功能目标、用户场景、技术约束
+- 降级链：`mcp__ace-tool__enhance_prompt` → Claude 自增强
+
+### 步骤 2：推荐方案
+基于增强后的需求，推荐执行方案：
+- 分析是否需要规划、设计或直接实施
+- 推荐使用 `planner`、`ui-ux-designer` 或 `fullstack-light-agent`
+
+### 步骤 3：用户确认
+使用 `mcp______zhi` 展示推荐方案并确认
+
+### 步骤 4：上下文检索
+调用 `mcp__ace-tool__search_context` 获取相关代码上下文：
+- 降级链：`mcp______sou` → Grep/Glob
+
+### ⛔ 硬门禁
+**未完成 Level 1 禁止进入 Level 2**。
+
+---
+
 ## Level 2: 命令层执行
 
 **执行方式**：主代理智能路由
