@@ -1,5 +1,42 @@
 # YS-workflow 版本历史
 
+## v1.0.2 (2026-02-16)
+
+### 🐛 修复：Agent Teams 审查修复 + 命令层 Level 1 补全
+
+**提交哈希**：2ae8c58
+
+**P0 Critical 修复**（5 个）：
+- 路径穿越安全风险：ccg-commit-interceptor.cjs 新增 isProtectedPath 校验
+- 并发写入竞争条件：execution-ledger.cjs 临时文件名使用随机后缀
+- 错误处理缺失：execution-guard.cjs 新增 try-catch + fail-open 策略
+- 测试与实现不一致：execution-ledger.spec.cjs 修复 12 个测试用例
+- 自动清理未集成：multi-model-gate.md 新增清理指令
+
+**P1 Warning 修复**（2 个）：
+- 事件数据未校验：ledger-adapter.cjs 新增 validateEventChain
+- 文档一致性：evidence-parser.cjs 统一 SESSION_ID 提取逻辑
+
+**架构补全**：
+- feat.md / frontend.md：新增 Level 1 智能路由层（增强→推荐→确认→检索）
+
+**新增文件**：
+- hooks/ccg-execution-guard.cjs：执行状态和证据链校验 Hook
+- hooks/lib/evidence-parser.cjs：证据解析器
+- hooks/lib/ledger-adapter.cjs：Ledger 适配器
+- hooks/ccg-commit-interceptor.spec.cjs：拦截器测试
+- hooks/ccg-execution-guard.spec.cjs：执行守卫测试
+
+**测试通过率**：100%（31/31）
+
+**修改文件**：8 个（+1351 行，-8 行）
+
+**Co-Authored-By**: Claude Opus 4.6 <noreply@anthropic.com>
+
+---
+
+# YS-workflow 版本历史
+
 ## v1.0.1 (2026-02-15)
 
 ### ♻️ 重构：collab Skill 封装
