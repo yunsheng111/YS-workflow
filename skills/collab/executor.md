@@ -111,7 +111,7 @@ OUTPUT: structured-analysis' | {{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}
   "backend": "codex" | "gemini",
   "task_id": "string",
   "session_id": "uuid | null",
-  "status": "success" | "timeout" | "failed",
+  "status": "SUCCESS" | "TIMEOUT" | "FAILED",
   "output": "string",
   "duration_ms": 12345,
   "error": "string | null"
@@ -124,7 +124,7 @@ OUTPUT: structured-analysis' | {{CCG_BIN}} --backend gemini {{GEMINI_MODEL_FLAG}
 {
   "codex": { /* 单模型结果 */ },
   "gemini": { /* 单模型结果 */ },
-  "overall_status": "success" | "degraded" | "failed",
+  "overall_status": "SUCCESS" | "DEGRADED" | "FAILED",
   "total_duration_ms": 12345
 }
 ```

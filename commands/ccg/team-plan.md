@@ -16,18 +16,13 @@ description: 'Agent Teams 规划 - Lead 调用 Codex/Gemini 并行分析，产�
 
 ## Level 2: 命令层执行
 
-**执行方式**：Task 调用代理
+**执行方式**：命令内执行（主代理 + Codex/Gemini）
 
-**代理**：`team-plan-agent`
+> **重要**：本命令必须由主代理直接执行，不通过 Task 调用子代理。
+> 原因：team-plan 需要调用 Codex/Gemini 并行分析，子代理中 Task 工具不可用（Claude Code 平台限制），
+> 无法通过 run_in_background 并行启动外部模型调用。
 
-**调用**：
-```
-Task({
-  subagent_type: "team-plan-agent",
-  prompt: "$ARGUMENTS",
-  description: "Agent Teams 规划"
-})
-```
+**执行指令**：读取 [team-plan-agent.md](../../agents/ccg/team-plan-agent.md) 并按其工作流执行。
 
 ---
 

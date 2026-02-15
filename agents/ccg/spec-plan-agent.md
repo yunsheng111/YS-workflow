@@ -97,6 +97,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取
 - 进度汇报（通过 zhi 展示双模型状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`：直接进入阶段 3
+- `status=DEGRADED`：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心维度缺失（如仅缺前端视角但任务主要是后端计划）
+    - `UNACCEPTABLE`：核心维度缺失（如全栈计划缺少后端分析）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`：触发 Level 3 降级或终止
+
+**进入阶段 3 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 ### 阶段 3：消除歧义
 6. 检查双方规划中的冲突和歧义点
 7. 对每个步骤进行零决策化处理：
@@ -160,6 +173,25 @@ collab Skill 自动处理：
 |----------|----------|------|
 | H1 | 步骤 1, 3 | 已覆盖 |
 | R1 | 步骤 5 | 已覆盖 |
+
+### 双模型执行元数据
+
+| 字段 | 值 |
+|------|-----|
+| dual_model_status | SUCCESS / DEGRADED / FAILED |
+| degraded_level | ACCEPTABLE / UNACCEPTABLE / null |
+| missing_dimensions | [] / ["backend"] / ["frontend"] |
+| codex_session | <UUID> / null |
+| gemini_session | <UUID> / null |
+
+#### 降级影响说明（仅 DEGRADED 时填写）
+- **缺失维度**：<backend / frontend>
+- **影响范围**：<哪些规划步骤可能受影响>
+- **补偿措施**：<由 Claude 补充的规划内容说明>
+
+### SESSION_ID（供后续使用）
+- CODEX_SESSION: <保存的 Codex 会话 ID>
+- GEMINI_SESSION: <保存的 Gemini 会话 ID>
 
 ### 下一步
 运行 `/ccg:spec-impl` 执行此计划

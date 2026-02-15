@@ -163,6 +163,19 @@ color: yellow
 3. 单模型也失败 → 通过 mcp______zhi 报告失败，终止分析（Level 3 降级）
 ```
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入阶段 4
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心分析维度缺失（如仅缺前端分析但任务主要是后端架构评估）
+    - `UNACCEPTABLE`：核心分析维度缺失（如全栈可行性评估缺少后端分析）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入阶段 4 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 涉及前端需求时调用 `mcp______uiux_suggest` 获取 UI/UX 可行性建议。
 
 **必须等所有模型返回后才能进入下一阶段**。

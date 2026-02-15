@@ -40,7 +40,9 @@
 
 ```json
 {
-  "status": "success" | "degraded" | "failed",
+  "status": "SUCCESS | DEGRADED | FAILED",
+  "degraded_level": "ACCEPTABLE | UNACCEPTABLE | null",
+  "missing_dimensions": ["backend" | "frontend"],
   "codex_session": "uuid-string | null",
   "gemini_session": "uuid-string | null",
   "codex_output": "string | null",
@@ -49,6 +51,14 @@
   "degraded_reason": "string | null"
 }
 ```
+
+### 状态契约说明
+
+| 字段 | 说明 |
+|------|------|
+| `status` | 唯一状态枚举：`SUCCESS`（双模型均成功）、`DEGRADED`（单模型成功）、`FAILED`（双模型均失败或双模型均无 SESSION_ID） |
+| `degraded_level` | 仅当 `status=DEGRADED` 时有值：`ACCEPTABLE`（非核心维度缺失）、`UNACCEPTABLE`（核心维度缺失，需用户介入） |
+| `missing_dimensions` | 仅当 `status=DEGRADED` 时有值：标注缺失的分析维度（`backend` 或 `frontend`） |
 
 ## 信任规则
 
@@ -61,21 +71,35 @@
 ```
 INIT → RUNNING → SUCCESS
               ↓
-         DEGRADED (ACCEPTABLE / UNACCEPTABLE) → SUCCESS
-              ↓
-          FAILED
+         DEGRADED (degraded_level: ACCEPTABLE / UNACCEPTABLE)
+              ↓ (ACCEPTABLE + 用户确认)
+           SUCCESS
+              ↓ (UNACCEPTABLE 或双模型均无 SESSION_ID)
+           FAILED
 ```
 
 ### 状态说明
 
-| 状态 | 说明 |
-|------|------|
-| `INIT` | 初始化，准备调用 |
-| `RUNNING` | 模型正在执行 |
-| `SUCCESS` | 双模型均成功返回且满足业务门禁 |
-| `DEGRADED_ACCEPTABLE` | 部分维度缺失，但核心目标已达成（满足 OR 门禁） |
-| `DEGRADED_UNACCEPTABLE` | 核心维度缺失或质量不达标，需用户介入 |
-| `FAILED` | 双模型均失败或严重错误 |
+| 状态 | 说明 | 触发条件 |
+|------|------|----------|
+| `INIT` | 初始化，准备调用 | Skill 启动时 |
+| `RUNNING` | 模型正在执行 | 进程启动后 |
+| `SUCCESS` | 双模型均成功返回且满足业务门禁 | `codex_session` 和 `gemini_session` 均存在 |
+| `DEGRADED` | 单模型成功，另一模型失败/超时 | 仅 `codex_session` 或 `gemini_session` 其一存在 |
+| `FAILED` | 执行失败 | 双模型均失败，或**双模型均无 SESSION_ID** |
+
+### DEGRADED 分级（degraded_level）
+
+| 级别 | 说明 | 后续动作 |
+|------|------|----------|
+| `ACCEPTABLE` | 非核心维度缺失，核心目标已达成（满足 OR 执行门禁） | 标注 `missing_dimensions`，经用户确认后可继续 |
+| `UNACCEPTABLE` | 核心维度缺失或质量不达标 | 标注 `missing_dimensions` + 影响评估，必须用户介入决策 |
+
+### 关键规则
+
+- **双模型均无 SESSION_ID => `FAILED`**：即使有文字输出，若双模型均未返回有效 SESSION_ID，状态为 `FAILED`，不得标记为 `DEGRADED`
+- **单模型有 SESSION_ID => `DEGRADED`**：必须标注 `missing_dimensions`（缺失的维度：`backend` 或 `frontend`）
+- **DEGRADED 产出前置动作**：标注缺失维度 + 风险影响 + 补偿分析，经 `mcp______zhi` 确认后才能进入下一阶段
 
 ## 门禁协议 (HC-2)
 

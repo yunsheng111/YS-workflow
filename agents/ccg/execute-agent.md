@@ -215,6 +215,19 @@ collab Skill 自动处理：
 - 门禁校验、超时处理、降级策略
 - 进度汇报（通过 zhi 展示双模型审查状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入 5.2 整合修复
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心审查维度缺失（如仅缺前端审查但变更全为后端代码）
+    - `UNACCEPTABLE`：核心审查维度缺失（如全栈变更缺少安全性审查）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入 5.2 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 #### 5.2 整合修复
 
 1. 综合 Codex + Gemini 的审查意见

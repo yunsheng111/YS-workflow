@@ -126,6 +126,8 @@ const WHITELIST_PATTERNS = [
   /^\.ccg[\/\\]/,
   // agents 目录（代理规范文件）
   /^agents[\/\\]/,
+  // commands 目录（命令定义文件）
+  /^commands[\/\\]/,
   // hooks 目录（Hook 脚本）
   /^hooks[\/\\]/,
   // skills 目录（Skill 文件）
@@ -164,6 +166,31 @@ function readHookInput() {
 }
 
 /**
+ * 将绝对路径转为项目相对路径
+ * 处理 Windows 绝对路径（C:/Users/.../xxx）和 Unix 绝对路径（/home/.../xxx）
+ */
+function toRelativePath(filePath) {
+  // 规范化为正斜杠
+  const normalized = filePath.replace(/\\/g, '/');
+
+  // 检测项目根目录标记（.claude/ 目录）
+  const claudeMarker = '/.claude/';
+  const claudeIdx = normalized.indexOf(claudeMarker);
+  if (claudeIdx !== -1) {
+    // 返回 .claude/ 之后的部分（不含 .claude/ 前缀）
+    return normalized.substring(claudeIdx + claudeMarker.length);
+  }
+
+  // 如果已经是相对路径，直接返回
+  if (!path.isAbsolute(filePath)) {
+    return normalized;
+  }
+
+  // 兜底：返回原始规范化路径
+  return normalized;
+}
+
+/**
  * 检查路径是否在白名单中
  */
 function isWhitelisted(filePath) {
@@ -174,8 +201,11 @@ function isWhitelisted(filePath) {
   // 规范化路径（统一使用正斜杠）
   const normalizedPath = filePath.replace(/\\/g, '/');
 
+  // 同时检查原始路径和相对路径，确保两种情况都能匹配
+  const relativePath = toRelativePath(filePath);
+
   for (const pattern of WHITELIST_PATTERNS) {
-    if (pattern.test(normalizedPath)) {
+    if (pattern.test(normalizedPath) || pattern.test(relativePath)) {
       return true;
     }
   }
@@ -184,12 +214,111 @@ function isWhitelisted(filePath) {
 }
 
 /**
+ * 从文件内容推断代理类型
+ */
+function inferAgentTypeFromContent(content) {
+  if (!content || typeof content !== 'string') {
+    return null;
+  }
+
+  // 检查特征关键词
+  const contentLower = content.toLowerCase();
+
+  // Agent Teams 工作流
+  if (contentLower.includes('team research:') || contentLower.includes('agent teams 研究')) {
+    return 'team-research-agent';
+  }
+  if (contentLower.includes('team plan:') || contentLower.includes('agent teams 规划')) {
+    return 'team-plan-agent';
+  }
+  if (contentLower.includes('team review:') || contentLower.includes('agent teams 审查')) {
+    return 'team-review-agent';
+  }
+
+  // OpenSpec 工作流
+  if (contentLower.includes('openspec') && (contentLower.includes('约束集') || contentLower.includes('constraints'))) {
+    return 'spec-research-agent';
+  }
+  if (contentLower.includes('openspec') && (contentLower.includes('零决策计划') || contentLower.includes('zero-decision plan'))) {
+    return 'spec-plan-agent';
+  }
+  if (contentLower.includes('openspec') && contentLower.includes('实施报告')) {
+    return 'spec-impl-agent';
+  }
+  if (contentLower.includes('openspec') && (contentLower.includes('合规审查') || contentLower.includes('compliance review'))) {
+    return 'spec-review-agent';
+  }
+
+  return null;
+}
+
+/**
+ * 从文件名推断代理类型
+ */
+function inferAgentTypeFromFilename(filePath) {
+  if (!filePath || typeof filePath !== 'string') {
+    return null;
+  }
+
+  const filename = filePath.split(/[\/\\]/).pop().toLowerCase();
+
+  // 根据文件名后缀推断
+  if (filename.endsWith('-research.md')) {
+    // 需要进一步判断是哪个 research agent
+    if (filePath.includes('agent-teams')) {
+      return 'team-research-agent';
+    }
+    if (filePath.includes('spec')) {
+      return 'spec-research-agent';
+    }
+    // 默认是 analyze-agent（workflow/research）
+    return 'analyze-agent';
+  }
+
+  if (filename.endsWith('-plan.md')) {
+    if (filePath.includes('agent-teams')) {
+      return 'team-plan-agent';
+    }
+    if (filePath.includes('spec')) {
+      return 'spec-plan-agent';
+    }
+    if (filePath.includes('common')) {
+      return 'fullstack-light-agent';
+    }
+    return 'fullstack-agent';
+  }
+
+  if (filename.endsWith('-review.md')) {
+    if (filePath.includes('agent-teams')) {
+      return 'team-review-agent';
+    }
+    if (filePath.includes('spec')) {
+      return 'spec-review-agent';
+    }
+    return 'review-agent';
+  }
+
+  if (filename.endsWith('-constraints.md')) {
+    return 'spec-research-agent';
+  }
+
+  if (filename.endsWith('-proposal.md')) {
+    return 'spec-research-agent';
+  }
+
+  return null;
+}
+
+/**
  * 从上下文推断当前代理类型
- * 策略：从 hookInput 的 context 或 conversation_history 中提取
+ * 策略：多层推断，优先级从高到低
  */
 function inferAgentType(hookInput) {
-  // 策略 1：从 tool_input.description 中提取（如果有）
+  const filePath = hookInput.tool_input?.file_path;
+  const content = hookInput.tool_input?.content;
   const description = hookInput.tool_input?.description;
+
+  // 策略 1：从 tool_input.description 中提取（最高优先级）
   if (description && typeof description === 'string') {
     for (const agentName of Object.keys(PATH_RULES)) {
       if (description.toLowerCase().includes(agentName.replace('-agent', ''))) {
@@ -198,20 +327,54 @@ function inferAgentType(hookInput) {
     }
   }
 
-  // 策略 2：从 file_path 推断（反向匹配）
-  const filePath = hookInput.tool_input?.file_path;
+  // 策略 2：从文件内容推断（高优先级）
+  const agentFromContent = inferAgentTypeFromContent(content);
+  if (agentFromContent) {
+    return agentFromContent;
+  }
+
+  // 策略 3：从文件名推断（中优先级）
+  const agentFromFilename = inferAgentTypeFromFilename(filePath);
+  if (agentFromFilename) {
+    return agentFromFilename;
+  }
+
+  // 策略 4：从 file_path 推断（低优先级，反向匹配）
   if (filePath && typeof filePath === 'string') {
     const normalizedPath = filePath.replace(/\\/g, '/');
 
-    // 尝试匹配每个代理的路径规范
-    for (const [agentName, rule] of Object.entries(PATH_RULES)) {
-      if (rule.pattern.test(normalizedPath)) {
+    // 建立路径优先级：更具体的路径优先匹配
+    const prioritizedAgents = [
+      // Agent Teams 和 OpenSpec 优先（更具体）
+      'team-research-agent',
+      'team-plan-agent',
+      'team-review-agent',
+      'spec-research-agent',
+      'spec-plan-agent',
+      'spec-impl-agent',
+      'spec-review-agent',
+      // 其他代理
+      'fullstack-light-agent',
+      'analyze-agent',
+      'fullstack-agent',
+      'review-agent',
+      'backend-agent',
+      'frontend-agent',
+      'execute-agent',
+      'debug-agent',
+      'optimize-agent',
+      'test-agent',
+    ];
+
+    for (const agentName of prioritizedAgents) {
+      const rule = PATH_RULES[agentName];
+      if (rule && rule.pattern.test(normalizedPath)) {
         return agentName;
       }
     }
   }
 
-  // 策略 3：无法推断，返回 null（允许执行，不校验）
+  // 策略 5：无法推断，返回 null（允许执行，不校验）
   return null;
 }
 
@@ -226,8 +389,9 @@ function validatePath(agentType, filePath) {
 
   const rule = PATH_RULES[agentType];
   const normalizedPath = filePath.replace(/\\/g, '/');
+  const relativePath = toRelativePath(filePath);
 
-  if (rule.pattern.test(normalizedPath)) {
+  if (rule.pattern.test(normalizedPath) || rule.pattern.test(relativePath)) {
     return { valid: true };
   }
 

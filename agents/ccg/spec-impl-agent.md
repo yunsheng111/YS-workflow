@@ -105,6 +105,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取
 - 进度汇报（通过 zhi 展示双模型状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`：审计通过，继续实施
+- `status=DEGRADED`：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心审计维度缺失（如仅缺前端审计但当前步骤全为后端变更）
+    - `UNACCEPTABLE`：核心审计维度缺失（如安全相关变更缺少 Codex 审计）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`：触发 Level 3 降级或终止
+
+**进入下一阶段前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止继续实施
+
 审计发现 Critical 问题 → 立即暂停，调用 `mcp______zhi` 报告并等待指示
 审计发现 Info 问题 → 记录并继续，在最终报告中汇总
 

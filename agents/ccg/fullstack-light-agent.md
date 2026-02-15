@@ -169,6 +169,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
 - 进度汇报
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入实施步骤
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心维度缺失（如仅缺前端视角但任务主要是后端逻辑）
+    - `UNACCEPTABLE`：核心维度缺失（如全栈功能缺少前端或后端分析）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入实施步骤前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 **实施步骤**：
 10. **数据层**：实现数据模型和迁移脚本（如需要）
 11. **服务层**：实现后端 API 和业务逻辑

@@ -99,6 +99,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取
 - 进度汇报（通过 zhi 展示双模型状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入阶段 3
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 记录 `dual_model_status=DEGRADED`
+  - 记录 `degraded_level`（ACCEPTABLE / UNACCEPTABLE）
+  - 记录 `missing_dimensions`（缺失的分析维度）
+  - 强制写入"缺失维度 + 影响范围 + 补偿分析"
+  - 通过 `mcp______zhi` 向用户展示降级详情并确认是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入阶段 3 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 ### 阶段 3：约束分类与整合
 5. 将双方分析结果整合为四类约束：
    - **硬约束**（Hard）：不可违反 — 类型安全、API 兼容、安全策略
@@ -158,6 +171,25 @@ collab Skill 自动处理：
 - 项目配置：N 条
 - Codex 分析：N 条
 - Gemini 分析：N 条
+
+### 双模型执行元数据
+
+| 字段 | 值 |
+|------|-----|
+| dual_model_status | SUCCESS / DEGRADED / FAILED |
+| degraded_level | ACCEPTABLE / UNACCEPTABLE / null |
+| missing_dimensions | [] / ["backend"] / ["frontend"] |
+| codex_session | <UUID> / null |
+| gemini_session | <UUID> / null |
+
+#### 降级影响说明（仅 DEGRADED 时填写）
+- **缺失维度**：<backend / frontend>
+- **影响范围**：<哪些约束类型的分析可能不完整>
+- **补偿措施**：<由 Claude 补充的分析内容说明>
+
+### SESSION_ID（供后续使用）
+- CODEX_SESSION: <保存的 Codex 会话 ID>
+- GEMINI_SESSION: <保存的 Gemini 会话 ID>
 
 ### 下一步
 运行 `/ccg:spec-plan` 将约束集转化为零决策计划

@@ -7,9 +7,11 @@ collab Skill 的状态管理和门禁校验逻辑，确保执行流程的正确�
 ```
 INIT → RUNNING → SUCCESS
               ↓
-         DEGRADED → SUCCESS
-              ↓
-          FAILED
+         DEGRADED (degraded_level: ACCEPTABLE / UNACCEPTABLE)
+              ↓ (ACCEPTABLE + 用户确认)
+           SUCCESS
+              ↓ (UNACCEPTABLE 或双模型均无 SESSION_ID)
+           FAILED
 ```
 
 ### 状态说明
@@ -18,9 +20,22 @@ INIT → RUNNING → SUCCESS
 |------|------|----------|
 | `INIT` | 初始化状态 | Skill 启动时 |
 | `RUNNING` | 执行中 | 进程启动后 |
-| `SUCCESS` | 成功完成 | 双模型均成功返回 |
-| `DEGRADED` | 降级运行 | 单模型成功，另一模型失败/超时 |
-| `FAILED` | 执行失败 | 双模型均失败 |
+| `SUCCESS` | 成功完成 | 双模型均成功返回且均有有效 SESSION_ID |
+| `DEGRADED` | 降级运行 | 单模型成功（有 SESSION_ID），另一模型失败/超时 |
+| `FAILED` | 执行失败 | **双模型均失败**或**双模型均无 SESSION_ID** |
+
+### DEGRADED 分级（degraded_level）
+
+| 级别 | 说明 | 后续动作 |
+|------|------|----------|
+| `ACCEPTABLE` | 非核心维度缺失，核心目标已达成 | 标注 `missing_dimensions`，经用户确认后继续 |
+| `UNACCEPTABLE` | 核心维度缺失或质量不达标 | 标注 `missing_dimensions` + 影响评估，用户介入决策 |
+
+### 关键规则
+
+- **双模型均无 SESSION_ID => `FAILED`**：即使有文字输出，无有效 SESSION_ID 即为 `FAILED`
+- **`missing_dimensions`**：`DEGRADED` 时必须标注缺失维度（`["backend"]` 或 `["frontend"]`）
+- **`degraded_reason`**：`DEGRADED` 时必须记录降级原因（超时/错误/连接失败等）
 
 ## 状态转换规则
 
@@ -109,14 +124,22 @@ INIT → RUNNING → SUCCESS
 ### 结果门禁
 
 ```markdown
-校验逻辑（OR 门禁）：
-- `codexSession || geminiSession` 为真即可继续
-- 双模型均无 SESSION_ID 时标记为 DEGRADED
+校验逻辑（OR 执行门禁 + 质量门禁分层）：
+
+**执行门禁（OR 逻辑）**：
+- `liteMode || codexSession || geminiSession` 为真即通过执行门禁
+- 双模型均无 SESSION_ID 且非 liteMode => 状态为 FAILED（非 DEGRADED）
+
+**质量门禁（代理层判断）**：
+- `status=SUCCESS`：直接进入下一阶段
+- `status=DEGRADED`：必须标注 `missing_dimensions` + `degraded_level`，经 zhi 确认后才能继续
+- `status=FAILED`：触发 Level 3 降级（主代理接管）或终止
 
 校验规则：
-1. 至少一个模型返回有效输出
+1. 至少一个模型返回有效 SESSION_ID（liteMode 豁免此规则）
 2. 输出格式符合预期
 3. 无严重错误信息
+4. 双模型均无 SESSION_ID 且非 liteMode => FAILED（不得标记为 DEGRADED）
 ```
 
 ### 超时门禁
@@ -182,6 +205,8 @@ INIT → RUNNING → SUCCESS
 ```json
 {
   "state": "RUNNING",
+  "degraded_level": null,
+  "missing_dimensions": [],
   "started_at": "2026-02-15T10:00:00Z",
   "codex": {
     "task_id": "abc-123",

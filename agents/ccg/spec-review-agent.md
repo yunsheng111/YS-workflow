@@ -100,6 +100,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取
 - 进度汇报（通过 zhi 展示双模型状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`：直接进入阶段 3
+- `status=DEGRADED`：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心审查维度缺失（如仅缺前端审查但变更全为后端代码）
+    - `UNACCEPTABLE`：核心审查维度缺失（如全栈变更缺少安全性审查）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`：触发 Level 3 降级或终止
+
+**进入阶段 3 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 ### 阶段 3：交叉验证
 7. 整合双方审查结果，按严重程度分类：
    - **Critical**：违反硬约束 → 必须修复

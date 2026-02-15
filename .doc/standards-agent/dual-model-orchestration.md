@@ -61,7 +61,7 @@ INIT → RUNNING → SUCCESS
 | `RUNNING` | 运行中 | 进程已启动 | 轮询输出，提取 SESSION_ID |
 | `SUCCESS` | 成功 | 双模型均完成 | 整合结果，进入下一阶段 |
 | `DEGRADED` | 降级 | 单模型失败/超时 | 使用另一模型结果继续 |
-| `FAILED` | 失败 | 双模型均失败 | 报告错误，终止任务 |
+| `FAILED` | 失败 | 双模型均失败或均无有效 SESSION_ID | 报告错误，终止任务 |
 
 ### 状态转换规则
 
@@ -131,29 +131,56 @@ if (!geminiSession) {
 使用 `||` 逻辑确保至少一个模型成功：
 
 ```javascript
-// 门禁条件
+// 执行门禁（OR 逻辑）— 唯一真源定义
 const passGate = (
   liteMode ||                          // Lite 模式豁免
-  (codexCalled && codexSession) ||     // Codex 成功
-  (geminiCalled && geminiSession)      // Gemini 成功
+  codexSession ||                      // Codex 返回有效 SESSION_ID
+  geminiSession                        // Gemini 返回有效 SESSION_ID
 );
 
 if (!passGate) {
-  throw new Error('门禁失败：双模型均未成功调用');
+  // 双模型均无 SESSION_ID => FAILED（不是 DEGRADED）
+  throw new Error('门禁失败：双模型均未返回有效 SESSION_ID');
+}
+
+// 质量门禁（代理层判断）
+if (codexSession && geminiSession) {
+  status = 'SUCCESS';
+} else if (codexSession || geminiSession) {
+  status = 'DEGRADED';
+  degraded_level = determineDegradedLevel(role, missingModel);
+  missing_dimensions = missingModel === 'codex' ? ['backend'] : ['frontend'];
+  // DEGRADED 产出前置动作：标注缺失维度 + 风险影响 + 补偿分析，经 zhi 确认
+} else {
+  status = 'FAILED';
 }
 ```
+
+> **语义真源声明**：上述门禁逻辑是 CCG 框架中双模型门禁的唯一权威定义。
+> 其他文档（`model-calling.md`、代理文件等）中的门禁描述必须与此一致。
+> 如发现不一致，以本文档为准。
 
 ### Bash 实现
 
 ```bash
-# 门禁校验
+# 执行门禁校验
 if [[ "$LITE_MODE" == "true" ]] || \
    [[ -n "$codex_session" ]] || \
    [[ -n "$gemini_session" ]]; then
-  echo "✅ 门禁通过"
+  echo "执行门禁通过"
 else
-  echo "❌ 门禁失败：双模型均未返回 SESSION_ID"
+  echo "门禁失败：双模型均未返回 SESSION_ID => FAILED"
   exit 1
+fi
+
+# 质量门禁
+if [[ -n "$codex_session" ]] && [[ -n "$gemini_session" ]]; then
+  status="SUCCESS"
+elif [[ -n "$codex_session" ]] || [[ -n "$gemini_session" ]]; then
+  status="DEGRADED"
+  # 标注 missing_dimensions 和 degraded_level
+else
+  status="FAILED"
 fi
 ```
 

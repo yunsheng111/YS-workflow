@@ -98,6 +98,19 @@ collab Skill 自动处理：
 - SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
 - 进度汇报（通过 zhi 展示双模型状态）
 
+**collab 返回后的状态处理**：
+- `status=SUCCESS`：直接进入阶段 3
+- `status=DEGRADED`：
+  - 判定 `degraded_level`：
+    - `ACCEPTABLE`：非核心维度缺失（如仅缺前端规划但任务主要是后端）
+    - `UNACCEPTABLE`：核心维度缺失（如全栈规划缺少后端分析）
+  - 记录 `missing_dimensions`
+  - 通过 `mcp______zhi` 展示降级详情，由用户决定是否继续
+- `status=FAILED`：触发 Level 3 降级或终止
+
+**进入阶段 3 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
+
 ### 阶段 3：综合分析 + 任务拆分
 5. 后端方案以 Codex 为准，前端方案以 Gemini 为准
 6. 拆分为独立子任务，每个子任务：

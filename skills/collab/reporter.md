@@ -241,7 +241,44 @@ reporter.md (本模块)
 
 ## 日志记录
 
-### 汇报日志
+### 关键事件日志
+
+关键事件日志记录状态变化、降级触发、执行完成等重要节点，每条必须包含以下 5 个字段：
+
+```markdown
+必须字段：
+- task_id：当前任务的唯一标识（由调用方传入或自动生成）
+- backend：模型标识（codex / gemini / both）
+- session_id：该模型返回的 SESSION_ID（未获取时为 null）
+- duration_ms：该事件从开始到触发的耗时（毫秒）
+- degraded_reason：降级原因（非降级时为 null）
+```
+
+**触发时机**：
+1. 状态变化（INIT -> RUNNING -> SUCCESS/DEGRADED/FAILED）
+2. 单模型完成（记录 session_id 和 duration_ms）
+3. 降级触发（记录 degraded_reason）
+4. 执行完成（记录最终状态和总耗时）
+5. 执行失败（记录错误详情）
+
+**日志格式示例**：
+```json
+{
+  "type": "critical_event",
+  "timestamp": "2026-02-15T10:30:00Z",
+  "task_id": "spec-research-20260215",
+  "backend": "codex",
+  "session_id": "abc-123-def",
+  "duration_ms": 45000,
+  "degraded_reason": null,
+  "event": "model_completed",
+  "message": "Codex 分析完成"
+}
+```
+
+### 轮询日志
+
+轮询日志记录定时汇报和心跳检测的常规状态，频率高但信息密度低。
 
 ```markdown
 每次汇报记录：
@@ -250,6 +287,10 @@ reporter.md (本模块)
 - 消息内容摘要
 - 用户响应（如有）
 ```
+
+**与关键事件日志的区别**：
+- 轮询日志：高频、低信息密度，用于进度展示和心跳检测
+- 关键事件日志：低频、高信息密度，用于审计追踪和降级诊断
 
 ### 调试日志
 

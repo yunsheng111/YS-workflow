@@ -110,9 +110,22 @@ color: blue
 collab Skill 自动处理：
 - 并行启动 Codex（后端上下文边界探索）和 Gemini（前端上下文边界探索）
 - 门禁校验和超时处理
-- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
+- SESSION_ID 提取（`codex_session` 和 `gemini_session`）
 - 进度汇报（通过 zhi 展示双模型状态）
 - 3 级降级策略（重试 → 单模型 → 主代理）
+
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入阶段 5
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 记录 `dual_model_status=DEGRADED`
+  - 记录 `degraded_level`（ACCEPTABLE / UNACCEPTABLE）
+  - 记录 `missing_dimensions`（缺失的分析维度）
+  - 强制写入"缺失维度 + 影响范围 + 补偿分析"
+  - 通过 `mcp______zhi` 向用户展示降级详情并确认是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入阶段 5 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
 
 ### 阶段 5：聚合与综合
 10. 合并探索输出为统一约束集：
@@ -155,6 +168,16 @@ collab Skill 自动处理：
 ## 增强后的需求
 <结构化需求描述>
 
+## 双模型执行元数据
+
+| 字段 | 值 |
+|------|-----|
+| `dual_model_status` | SUCCESS / DEGRADED / FAILED |
+| `degraded_level` | ACCEPTABLE / UNACCEPTABLE / null |
+| `missing_dimensions` | [] / ["backend"] / ["frontend"] |
+| `CODEX_SESSION` | <uuid> / null |
+| `GEMINI_SESSION` | <uuid> / null |
+
 ## 约束集
 
 ### 硬约束
@@ -168,6 +191,15 @@ collab Skill 自动处理：
 
 ### 风险
 - [RISK-1] <风险描述> — 缓解：<策略>
+
+## 降级影响说明（仅 DEGRADED 时）
+
+> 若 `dual_model_status=DEGRADED`，此章节为必填。
+
+- **缺失维度**：<backend / frontend>
+- **影响范围**：<缺失维度对约束集完整性的影响>
+- **补偿分析**：<Claude 自行补充的分析内容>
+- **风险约束补充**：<因维度缺失而新增的风险约束>
 
 ## 成功判据
 

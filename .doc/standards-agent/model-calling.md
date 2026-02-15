@@ -144,7 +144,10 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
    - 若 `LITE_MODE=true`，跳过外部模型调用
 
 2. **门禁校验**：
-   - 使用 `||` 而非 `&&`：`(!codexCalled || !geminiCalled || !codexSession || !geminiSession)`
+   - **语义真源**：门禁逻辑定义见 `.doc/standards-agent/dual-model-orchestration.md`（唯一权威）
+   - **执行门禁（OR 逻辑）**：`liteMode || codexSession || geminiSession`
+   - **质量门禁（代理层）**：SUCCESS / DEGRADED（含 `degraded_level` + `missing_dimensions`）/ FAILED
+   - **关键规则**：双模型均无 SESSION_ID => `FAILED`（非 DEGRADED）
    - 三个触发时机：调用前、收敛后、阶段切换前
 
 3. **超时处理**：
@@ -175,3 +178,7 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 - `spec-review-agent`（阶段 2）
 - `spec-impl-agent`（阶段 3）
 - `fullstack-light-agent`（全栈场景）
+
+> **语义真源引用**：本文档中的门禁逻辑、状态枚举和降级策略的权威定义见 `.doc/standards-agent/dual-model-orchestration.md`。本文档仅定义调用协议（占位符、语法、适用范围），不重新定义门禁语义。如发现不一致，以 `dual-model-orchestration.md` 为准。
+
+> **Legacy 警告**：历史版本中使用的 `codexCalled`/`geminiCalled` 私有标志位已废弃。门禁校验仅基于 `SESSION_ID`（`codexSession || geminiSession`），不再使用私有 `called` 标志。如在代理文件中发现 `codexCalled`/`geminiCalled`，应视为 legacy 代码并予以移除。

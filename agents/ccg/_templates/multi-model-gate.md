@@ -80,12 +80,30 @@
 ### 步骤 5：门禁校验
 
 ```markdown
-门禁条件（OR 逻辑）：
+**执行门禁（OR 逻辑）** — 输入仅为 status + sessions：
 - LITE_MODE=true（豁免）
 - codex_session 存在（Codex 成功）
 - gemini_session 存在（Gemini 成功）
 
-若门禁失败（双模型均未返回 SESSION_ID）：
+**状态判定**：
+- codex_session && gemini_session => status = SUCCESS
+- codex_session || gemini_session => status = DEGRADED
+  - 标注 degraded_level（ACCEPTABLE / UNACCEPTABLE）
+  - 标注 missing_dimensions（["backend"] 或 ["frontend"]）
+- 无任何 SESSION_ID => status = FAILED（**禁止标记为 DEGRADED**）
+
+**关键规则：无 SESSION_ID 的 DEGRADED 是被禁止的**
+- 即使模型有文字输出，若无有效 SESSION_ID，状态必须为 FAILED
+- 无 SESSION_ID -> FAILED，这是不可违反的硬规则
+
+**DEGRADED 产出前置动作**（status=DEGRADED 时必须执行）：
+1. 标注缺失维度（missing_dimensions）
+2. 评估风险影响（缺失维度对当前任务的影响程度）
+3. 将缺失维度相关约束转为风险约束
+4. 通过 mcp______zhi 向用户展示降级详情并确认是否继续
+5. 仅在用户确认后才能进入下一阶段
+
+若门禁失败（双模型均未返回 SESSION_ID => FAILED）：
 1. 重试 1 次（Level 1 降级）
 2. 重试失败 → 使用单模型结果（Level 2 降级）
 3. 单模型也失败 → 通过 mcp______zhi 报告失败（Level 3 降级）

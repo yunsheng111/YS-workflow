@@ -16,18 +16,13 @@ description: 'Agent Teams 并行实施 - 读取计划文件，spawn Builder team
 
 ## Level 2: 命令层执行
 
-**执行方式**：Task 调用代理
+**执行方式**：命令内执行（主代理 + Agent Teams）
 
-**代理**：`team-exec-agent`
+> **重要**：本命令必须由主代理直接执行，不通过 Task 调用子代理。
+> 原因：Agent Teams 工具（TeamCreate、Task + team_name、SendMessage）仅在主代理（top-level session）中可用。
+> Claude Code 平台限制：子代理无法使用 Task 工具（防止无限嵌套），因此无法 spawn Builder teammates。
 
-**调用**：
-```
-Task({
-  subagent_type: "team-exec-agent",
-  prompt: "$ARGUMENTS",
-  description: "Agent Teams 并行实施"
-})
-```
+**执行指令**：读取 [team-exec-agent.md](../../agents/ccg/team-exec-agent.md) 并按其工作流执行。
 
 **前置条件**：
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 已启用
