@@ -37,6 +37,8 @@
 4. Read("~/.claude/skills/collab/reporter.md") — 进度汇报规范
 
 然后严格按照文档中的执行流程操作。
+
+**[Ledger Event]** 上报 `docs_read` 事件（包含读取的文档列表）
 ```
 
 ### 步骤 1：初始化
