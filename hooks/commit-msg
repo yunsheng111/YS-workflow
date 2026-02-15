@@ -1,0 +1,153 @@
+#!/usr/bin/env node
+
+/**
+ * Git commit-msg Hook
+ * 
+ * 验证提交信息是否符合 Conventional Commits 规范
+ * 
+ * 规范格式：[emoji] <type>(<scope>): <subject>
+ * 
+ * 使用方式：
+ * 1. 确保此文件有执行权限：chmod +x hooks/commit-msg
+ * 2. Git 会在提交时自动调用此 Hook
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// 读取提交信息
+const commitMsgFile = process.argv[2];
+if (!commitMsgFile) {
+  console.error('错误：未提供提交信息文件路径');
+  process.exit(1);
+}
+
+const commitMsg = fs.readFileSync(commitMsgFile, 'utf-8').trim();
+
+// 跳过空提交信息（可能是 rebase/merge）
+if (!commitMsg || commitMsg.startsWith('#')) {
+  process.exit(0);
+}
+
+// 检测空提交（无暂存改动）
+try {
+  const stagedOutput = execSync('git diff --cached --stat', { encoding: 'utf8' }).trim();
+  if (!stagedOutput) {
+    console.error('\n❌ 拒绝空提交：没有暂存改动');
+    console.error('提示：请先使用 git add 暂存文件，或检查是否有实际变更。\n');
+    process.exit(1);
+  }
+} catch (err) {
+  // 无法检测暂存状态，跳过检查
+}
+
+// 读取配置文件
+let config = null;
+const configPath = path.join(process.cwd(), '.ccg', 'commit-config.json');
+if (fs.existsSync(configPath)) {
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch (err) {
+    console.warn('警告：无法读取 .ccg/commit-config.json，使用默认规范');
+  }
+}
+
+// 默认配置
+const defaultConfig = {
+  format: {
+    emoji: true,
+    maxSubjectLength: 50,
+    requireFooter: true
+  },
+  types: {
+    feat: { emoji: '✨' },
+    fix: { emoji: '🐛' },
+    refactor: { emoji: '♻️' },
+    docs: { emoji: '📝' },
+    style: { emoji: '🎨' },
+    perf: { emoji: '⚡' },
+    test: { emoji: '✅' },
+    chore: { emoji: '🔧' },
+    ci: { emoji: '👷' },
+    revert: { emoji: '⏪' }
+  },
+  footer: {
+    coAuthor: 'Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>',
+    required: true
+  }
+};
+
+const finalConfig = config || defaultConfig;
+
+// 验证函数
+function validateCommitMessage(message) {
+  const errors = [];
+  const lines = message.split('\n');
+  const firstLine = lines[0];
+
+  // 1. 检查格式：[emoji] <type>(<scope>): <subject>
+  const formatRegex = /^(\p{Emoji})\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\([a-z0-9-]+\))?:\s+.+/u;
+  if (!formatRegex.test(firstLine)) {
+    errors.push('格式错误：必须遵循 [emoji] <type>(<scope>): <subject> 格式');
+    errors.push('示例：✨ feat(auth): 添加 OAuth2.0 登录支持');
+    return { valid: false, errors };
+  }
+
+  // 2. 提取 type 和 emoji
+  const typeMatch = firstLine.match(/^\p{Emoji}\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)/u);
+  const emojiMatch = firstLine.match(/^(\p{Emoji})/u);
+
+  if (typeMatch && emojiMatch) {
+    const type = typeMatch[1];
+    const emoji = emojiMatch[1];
+    const expectedEmoji = finalConfig.types[type]?.emoji;
+
+    // 3. 检查 emoji 是否匹配 type
+    if (expectedEmoji && emoji !== expectedEmoji) {
+      errors.push(`Emoji 不匹配：${type} 应使用 ${expectedEmoji}，当前使用 ${emoji}`);
+    }
+  }
+
+  // 4. 检查 subject 长度
+  const subjectMatch = firstLine.match(/:\s+(.+)$/);
+  if (subjectMatch) {
+    const subject = subjectMatch[1];
+    const maxLength = finalConfig.format?.maxSubjectLength || 50;
+    if (subject.length > maxLength) {
+      errors.push(`Subject 过长：${subject.length} 字符（建议 ≤ ${maxLength}）`);
+    }
+  }
+
+  // 5. 检查 Co-Authored-By footer
+  if (finalConfig.footer?.required) {
+    const coAuthor = finalConfig.footer.coAuthor;
+    if (!message.includes(coAuthor)) {
+      errors.push(`缺少 Footer：${coAuthor}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+// 执行验证
+const result = validateCommitMessage(commitMsg);
+
+if (!result.valid) {
+  console.error('\n❌ 提交信息格式不符合规范\n');
+  console.error('错误详情：');
+  result.errors.forEach((err, idx) => {
+    console.error(`  ${idx + 1}. ${err}`);
+  });
+  console.error('\n请修改提交信息后重试。');
+  console.error('参考文档：skills/git-workflow/SKILL.md');
+  console.error('配置文件：.ccg/commit-config.json\n');
+  process.exit(1);
+}
+
+// 验证通过
+console.log('✅ 提交信息格式验证通过');
+process.exit(0);

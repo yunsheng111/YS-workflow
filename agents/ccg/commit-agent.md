@@ -51,15 +51,21 @@ color: green
    ```
    - 获取项目的提交规范（格式、语言、emoji、scope 约定）
    - 获取安全规范（禁止提交的文件类型）
-   - 若 `mcp______ji` 不可用，降级到 `git log --oneline -10` 推断规范，并标记为"低置信模式"
 
-2. **回忆最近提交历史**：
+2. **降级策略**：
+   - **Level 1（推荐）**：`mcp______ji` 可用 → 获取历史规范偏好
+   - **Level 2（降级）**：`mcp______ji` 不可用 → 读取 `.ccg/commit-config.json`
+   - **Level 3（兜底）**：配置文件不存在 → 使用 `git log --oneline -10` 推断规范
+   - 标记降级级别，在阶段 4.5 和阶段 5 中使用对应的规范来源
+
+3. **回忆最近提交历史**：
    ```
    mcp______ji({ action: "回忆", category: "context", project_path: "<项目路径>" })
    ```
    - 了解最近的提交模式和版本号
+   - 若不可用，使用 `git log --oneline -5` 获取
 
-3. **检查临时文件**：
+4. **检查临时文件**：
    - 执行 `git status` 查看未跟踪文件
    - 识别临时文件模式（tasks/、teams/、*.tmp、.cache/）
 
@@ -100,10 +106,37 @@ color: green
 
 2. 若检测到多组独立变更（>300 行 / 跨多个顶级目录），建议拆分
 
+### 阶段 4.5：浏览提交规范
+
+**目的**：确保生成的提交信息符合项目规范。
+
+1. **读取集中配置**：
+   ```bash
+   cat .ccg/commit-config.json
+   ```
+   - 获取项目的提交规范配置（格式、语言、emoji、scope 约定、type 优先级）
+   - 若文件不存在，降级到阶段 0 回忆的规范
+
+2. **读取 git-workflow Skill**：
+   ```
+   Read skills/git-workflow/SKILL.md
+   ```
+   - 获取 Conventional Commits 格式规范
+   - 获取 type 定义和示例
+   - 获取格式验证规则
+
+3. **合并规范**：
+   - 优先级：`.ccg/commit-config.json` > `mcp______ji` 回忆 > `git-workflow` Skill 默认规范
+   - 构建完整的规范上下文，用于阶段 5 生成提交信息
+
+4. **降级策略**：
+   - 若 `.ccg/commit-config.json` 不存在且 `mcp______ji` 失败，使用 `git-workflow` Skill 默认规范
+   - 标记为"低置信模式"，在阶段 5 提示用户确认规范
+
 ### 阶段 5：生成提交信息
 
-1. **利用三术记忆**：
-   - 从阶段 0 获取的提交规范偏好
+1. **利用阶段 4.5 的规范**：
+   - 从阶段 4.5 获取的完整提交规范（配置文件 + Skill + 三术记忆）
    - 自动应用项目的 type 优先级、emoji 使用、scope 约定
 
 2. **版本号判断**：
@@ -117,8 +150,19 @@ color: green
    - Body 补充变更原因与影响
    - Footer 添加 `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
-4. **三术(zhi)确认**：
+4. **格式验证**：
+   - 调用 `git-workflow` Skill 的格式验证函数
+   - 检查项：
+     - Type 是否在允许列表中（feat/fix/docs/style/refactor/perf/test/chore/ci）
+     - Scope 是否符合项目约定（若配置中定义了 scope 白名单）
+     - Subject 长度是否 ≤ 50 字符
+     - Emoji 是否正确（若配置启用 emoji）
+     - Footer 是否包含 `Co-Authored-By`
+   - 若验证失败，标记问题并在确认时提示用户
+
+5. **三术(zhi)确认**：
    - 展示提交信息预览
+   - 若格式验证失败，显示警告信息
    - 提供选项：["确认提交", "修改信息", "查看详细 diff", "取消"]
 
 ### 阶段 6：执行提交

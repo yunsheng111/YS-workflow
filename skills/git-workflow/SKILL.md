@@ -25,7 +25,7 @@ You are a Git workflow expert that helps with version control operations.
 Follow Conventional Commits format:
 
 ```
-<type>(<scope>): <description>
+[emoji] <type>(<scope>): <description>
 
 [optional body]
 
@@ -33,42 +33,119 @@ Follow Conventional Commits format:
 ```
 
 #### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style (formatting, semicolons)
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `test`: Adding/updating tests
-- `chore`: Maintenance tasks
-- `ci`: CI/CD changes
+- `feat`: New feature (✨)
+- `fix`: Bug fix (🐛)
+- `docs`: Documentation changes (📝)
+- `style`: Code style (formatting, semicolons) (🎨)
+- `refactor`: Code refactoring (♻️)
+- `perf`: Performance improvements (⚡)
+- `test`: Adding/updating tests (✅)
+- `chore`: Maintenance tasks (🔧)
+- `ci`: CI/CD changes (👷)
+- `revert`: Revert changes (⏪)
+
+#### Language
+- **简体中文**：Subject 和 Body 使用简体中文
+- **英文**：仅在代码标识符和技术术语中使用
+
+#### Scope
+- 可选但建议使用
+- 表示变更影响的模块或范围
+- 示例：`auth`, `api`, `ui`, `ccg`, `hooks`
+
+#### Emoji
+- 每个 type 对应一个 emoji（见上方括号）
+- 格式：`[emoji] <type>(<scope>): <subject>`
+- 示例：`✨ feat(auth): 添加 OAuth2.0 登录支持`
 
 #### Examples
 
 ```bash
-# Feature
-feat(auth): add OAuth2 login with Google provider
+# Feature (简体中文)
+✨ feat(auth): 添加 OAuth2.0 Google 登录支持
 
-- Implement GoogleAuthProvider class
-- Add callback endpoint /auth/google/callback
-- Store refresh tokens securely
+- 实现 GoogleAuthProvider 类
+- 添加回调端点 /auth/google/callback
+- 安全存储 refresh tokens
 
 Closes #123
 
-# Bug fix
-fix(api): handle null response in user service
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 
-The getUserById method was throwing when user not found.
-Now returns null and lets caller handle the case.
+# Bug fix (简体中文)
+🐛 fix(api): 修复用户服务中的空响应处理
+
+getUserById 方法在用户不存在时抛出异常。
+现在返回 null 并让调用方处理该情况。
 
 Fixes #456
 
-# Breaking change
-feat(api)!: change response format for pagination
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 
-BREAKING CHANGE: Pagination now uses cursor-based format.
-Old: { page, limit, total }
-New: { cursor, hasMore, items }
+# Breaking change (简体中文)
+✨ feat(api)!: 更改分页响应格式
+
+BREAKING CHANGE: 分页现在使用基于游标的格式。
+旧格式: { page, limit, total }
+新格式: { cursor, hasMore, items }
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+```
+
+### Format Validation
+
+Validate commit messages against the following rules:
+
+```javascript
+function validateCommitMessage(message) {
+  const errors = [];
+
+  // 1. Check format: [emoji] <type>(<scope>): <subject>
+  const formatRegex = /^(\p{Emoji})\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\([a-z0-9-]+\))?:\s+.+/u;
+  if (!formatRegex.test(message.split('\n')[0])) {
+    errors.push('格式错误：必须遵循 [emoji] <type>(<scope>): <subject> 格式');
+  }
+
+  // 2. Check subject length (≤ 50 characters, excluding emoji and type)
+  const firstLine = message.split('\n')[0];
+  const subjectMatch = firstLine.match(/:\s+(.+)$/);
+  if (subjectMatch && subjectMatch[1].length > 50) {
+    errors.push(`Subject 过长：${subjectMatch[1].length} 字符（建议 ≤ 50）`);
+  }
+
+  // 3. Check for Co-Authored-By footer
+  if (!message.includes('Co-Authored-By: Claude Opus 4.6')) {
+    errors.push('缺少 Co-Authored-By footer');
+  }
+
+  // 4. Check emoji matches type
+  const emojiMap = {
+    'feat': '✨',
+    'fix': '🐛',
+    'docs': '📝',
+    'style': '🎨',
+    'refactor': '♻️',
+    'perf': '⚡',
+    'test': '✅',
+    'chore': '🔧',
+    'ci': '👷',
+    'revert': '⏪'
+  };
+
+  const typeMatch = firstLine.match(/^\p{Emoji}\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)/u);
+  if (typeMatch) {
+    const emoji = firstLine.match(/^(\p{Emoji})/u)[1];
+    const type = typeMatch[1];
+    if (emoji !== emojiMap[type]) {
+      errors.push(`Emoji 不匹配：${type} 应使用 ${emojiMap[type]}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
 ```
 
 ### Branch Naming

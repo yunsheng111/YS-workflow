@@ -421,8 +421,20 @@ Git 提交前必须展示：
 
 1. **变更统计**：新增/修改/删除文件数量、总行数变更
 2. **提交信息预览**：完整的提交信息（包括 Co-Authored-By）
-3. **变更清单**：使用 `git status --short` 格式
-4. **推送确认**：如果需要推送到远程，单独确认
+3. **格式验证结果**：显示提交信息是否符合 Conventional Commits 规范
+4. **变更清单**：使用 `git status --short` 格式
+5. **推送确认**：如果需要推送到远程，单独确认
+
+**提交信息格式规范**：
+- 格式：`[emoji] <type>(<scope>): <subject>`
+- 语言：简体中文（subject 和 body）
+- Emoji：必须使用（✨ feat, 🐛 fix, ♻️ refactor, 📝 docs, 等）
+- Type：feat/fix/refactor/docs/style/perf/test/chore/ci/revert
+- Scope：可选但建议使用（如 ccg, agents, hooks, api, ui）
+- Subject：≤ 50 字符，简洁描述变更
+- Footer：必须包含 `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+
+**配置文件**：`.ccg/commit-config.json` 集中管理提交规范配置
 
 ### 5.6 违规处理
 

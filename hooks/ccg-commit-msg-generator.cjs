@@ -424,8 +424,12 @@ function main() {
       .filter(line => line.trim() && !line.startsWith('#'))
       .filter(line => line.trim());
 
-    if (nonCommentLines.length > 0) {
-      // 已有提交信息，不生成
+    // 检测 Claude Code 自动提交的非规范消息（如 "[Claude Code] 继续 prompt #4"）
+    const isClaudeCodeAutoCommit = nonCommentLines.length > 0 &&
+      nonCommentLines[0].startsWith('[Claude Code]');
+
+    if (nonCommentLines.length > 0 && !isClaudeCodeAutoCommit) {
+      // 已有规范化提交信息，不覆盖
       return 0;
     }
 

@@ -1,39 +1,127 @@
 {
-  "emoji": true,
-  "language": "zh-CN",
-  "format": "conventional",
-  "coAuthoredBy": "Claude Opus 4.6 <noreply@anthropic.com>",
-  "scopeMap": {
-    "hooks/": "hooks",
-    "commands/": "ccg",
-    "agents/": "ccg",
-    ".ccg/": "ccg",
-    "src/components/": "ui",
-    "src/api/": "api",
-    "src/utils/": "utils",
-    "src/services/": "services",
-    "tests/": "test",
-    "__tests__/": "test",
-    "docs/": "docs",
-    ".doc/": "docs"
-  },
-  "typeEmojis": {
-    "feat": "✨",
-    "fix": "🐛",
-    "docs": "📝",
-    "style": "🎨",
-    "refactor": "♻️",
-    "perf": "⚡",
-    "test": "✅",
-    "chore": "🔧",
-    "ci": "👷",
-    "revert": "⏪"
-  },
-  "excludePatterns": [".env", "*.key", "*.pem", "secret", "password"],
-  "rules": {
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "CCG Commit Configuration",
+  "description": "集中管理项目的 Git 提交规范配置",
+  "version": "1.0.0",
+  "format": {
+    "template": "[emoji] <type>(<scope>): <subject>",
+    "language": "zh-CN",
+    "emoji": true,
     "maxSubjectLength": 50,
+    "requireScope": false,
     "requireBody": false,
-    "requireFooter": true,
-    "requiredFooter": "Co-Authored-By"
+    "requireFooter": true
+  },
+  "types": {
+    "feat": {
+      "description": "新功能",
+      "emoji": "✨",
+      "priority": 1
+    },
+    "fix": {
+      "description": "Bug 修复",
+      "emoji": "🐛",
+      "priority": 2
+    },
+    "refactor": {
+      "description": "代码重构",
+      "emoji": "♻️",
+      "priority": 1
+    },
+    "docs": {
+      "description": "文档变更",
+      "emoji": "📝",
+      "priority": 3
+    },
+    "style": {
+      "description": "代码格式（不影响功能）",
+      "emoji": "🎨",
+      "priority": 4
+    },
+    "perf": {
+      "description": "性能优化",
+      "emoji": "⚡",
+      "priority": 2
+    },
+    "test": {
+      "description": "测试相关",
+      "emoji": "✅",
+      "priority": 3
+    },
+    "chore": {
+      "description": "构建/工具链变更",
+      "emoji": "🔧",
+      "priority": 4
+    },
+    "ci": {
+      "description": "CI/CD 配置",
+      "emoji": "👷",
+      "priority": 4
+    },
+    "revert": {
+      "description": "回滚变更",
+      "emoji": "⏪",
+      "priority": 2
+    }
+  },
+  "scopes": {
+    "ccg": "CCG 架构相关",
+    "agents": "代理层",
+    "commands": "命令层",
+    "hooks": "Git Hooks",
+    "skills": "Skills",
+    "mcp": "MCP 工具",
+    "docs": "文档",
+    "config": "配置文件",
+    "auth": "认证授权",
+    "api": "API 接口",
+    "ui": "用户界面",
+    "db": "数据库"
+  },
+  "footer": {
+    "coAuthor": "Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>",
+    "required": true
+  },
+  "security": {
+    "excludePatterns": [
+      ".env",
+      "*.key",
+      "*.pem",
+      "credentials/",
+      "secrets/",
+      "config.json",
+      "*.log",
+      "node_modules/",
+      "dist/",
+      "build/",
+      ".cache/",
+      "tasks/",
+      "teams/",
+      "*.tmp"
+    ],
+    "warnPatterns": [
+      "password",
+      "secret",
+      "token",
+      "api_key",
+      "apiKey",
+      "private_key",
+      "privateKey"
+    ]
+  },
+  "preferences": {
+    "typePriority": ["refactor", "feat", "fix", "perf", "docs", "test", "style", "chore", "ci"],
+    "autoStage": false,
+    "suggestSplit": true,
+    "splitThreshold": {
+      "lines": 300,
+      "files": 10,
+      "directories": 3
+    },
+    "versionBump": {
+      "enabled": true,
+      "versionFile": "VERSION.md",
+      "autoUpdate": false
+    }
   }
 }

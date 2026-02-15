@@ -5,7 +5,7 @@
  * 三层强制执行方案的 Layer 2 安全网：
  *   1. 拦截所有 bare git commit 命令
  *   2. 返回 deny + reason，引导用户使用 /ccg:commit
- *   3. 白名单：-F 参数（commit-agent）和 --no-verify（用户跳过）
+ *   3. 白名单：仅 -F/--file 参数（commit-agent 内部使用）
  */
 
 const path = require('path');
@@ -95,7 +95,11 @@ function isProtectedPath(filePath) {
 
 /**
  * 检查命令是否在白名单中（不需要拦截）
- * 白名单：-F/--file（commit-agent）、--no-verify（用户跳过）
+ * 白名单：仅 -F/--file（commit-agent 内部使用）
+ *
+ * 注意：--no-verify 不在白名单中。
+ * --no-verify 仅跳过 git hooks（pre-commit、commit-msg），
+ * 不应跳过 CCG 工作流拦截。所有提交必须通过 /ccg:commit。
  */
 function isWhitelisted(command) {
   if (!command || typeof command !== 'string') {
@@ -105,7 +109,6 @@ function isWhitelisted(command) {
   const whitelistPatterns = [
     /-F\s+/,       // commit-agent 使用 -F 参数
     /--file\s+/,   // --file 等价于 -F
-    /--no-verify/, // 用户明确跳过 hooks
   ];
 
   for (const pattern of whitelistPatterns) {
@@ -160,9 +163,19 @@ const DENY_REASON_REDIRECT = `[CCG Hook] Bash 重定向到受保护目录被拒�
  * 主逻辑
  */
 async function main() {
-  try {
-    const hookInput = await readHookInput();
+  let hookInput = null;
+  let isGitCommit = false;
 
+  try {
+    hookInput = await readHookInput();
+  } catch (err) {
+    // stdin 解析失败，无法判断命令类型，宽容放行
+    console.error(`PreToolUse hook stdin 解析失败: ${err.message}`);
+    respondAllow();
+    return;
+  }
+
+  try {
     // 非 Bash 工具 → allow
     if (!hookInput || hookInput.tool_name !== 'Bash') {
       respondAllow();
@@ -176,8 +189,11 @@ async function main() {
       return;
     }
 
-    // 优先检查 git commit（保持原有逻辑）
-    if (/\bgit\s+commit\b/.test(command)) {
+    // 标记是否为 git commit 命令（用于 catch 中的安全决策）
+    isGitCommit = /\bgit\s+commit\b/.test(command);
+
+    // 优先检查 git commit
+    if (isGitCommit) {
       // 白名单命中 → allow
       if (isWhitelisted(command)) {
         respondAllow();
@@ -202,14 +218,20 @@ async function main() {
     // 其他 Bash 命令 → allow
     respondAllow();
   } catch (err) {
-    // 出错时允许执行原命令（宽容策略，避免阻断合法操作）
-    console.error(`PreToolUse hook 错误: ${err.message}`);
-    respondAllow();
+    console.error(`PreToolUse hook 逻辑错误: ${err.message}`);
+    if (isGitCommit) {
+      // 已确认是 git commit 命令但处理出错，安全起见拦截
+      respondDeny(`[CCG Hook] Hook 执行出错，出于安全考虑拦截此提交命令。\n错误: ${err.message}\n操作：请使用 /ccg:commit 命令重新发起提交。`);
+    } else {
+      // 非 git commit 命令出错，宽容放行（避免阻断合法操作）
+      respondAllow();
+    }
   }
 }
 
 main().catch(err => {
-  console.error(`Hook 执行失败: ${err.message}`);
+  // 最外层异常兜底：宽容放行（极端情况，不应发生）
+  console.error(`Hook 致命错误: ${err.message}`);
   respondAllow();
   process.exit(1);
 });
