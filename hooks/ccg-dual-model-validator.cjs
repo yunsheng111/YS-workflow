@@ -3,7 +3,7 @@
  * Claude Code PreToolUse Hook -- 双模型产出验证器
  *
  * 三层强制执行方案的 Layer 3 安全网：
- *   1. 拦截 Write 工具写入研究产出目录的操作
+ *   1. 拦截 Write/Edit 工具写入研究产出目录的操作
  *   2. 验证文件内容包含真实的 SESSION_ID（双模型调用证据）
  *   3. 白名单：LITE 模式、Level 3 降级、wip 临时文件
  */
@@ -142,14 +142,14 @@ async function main() {
   try {
     const hookInput = await readHookInput();
 
-    // 非 Write 工具 → allow
-    if (!hookInput || hookInput.tool_name !== 'Write') {
+    // 非 Write/Edit 工具 → allow
+    if (!hookInput || (hookInput.tool_name !== 'Write' && hookInput.tool_name !== 'Edit')) {
       respondAllow();
       return;
     }
 
     const filePath = hookInput.tool_input?.file_path;
-    const content = hookInput.tool_input?.content;
+    const content = hookInput.tool_input?.content || hookInput.tool_input?.new_string;
 
     // 路径不匹配研究产出目录 → allow
     if (!filePath || typeof filePath !== 'string') {

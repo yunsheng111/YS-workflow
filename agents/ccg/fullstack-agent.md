@@ -79,6 +79,14 @@ color: cyan
 > - 网络搜索 `GrokSearch` `降级链` `结论归档` — [.doc/standards-agent/search-protocol.md] (v1.0.0)
 > - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
 
+## Ledger 事件上报
+
+本代理遵循 `agents/ccg/_templates/multi-model-gate.md` 中的 Ledger 事件上报规范，在关键步骤上报以下事件：
+- `docs_read` — 读取 collab Skill 文档时
+- `model_called` — 调用 Codex/Gemini 时
+- `session_captured` — 提取 SESSION_ID 时
+- `zhi_confirmed` — 用户确认关键决策时
+
 ## 工作流
 
 采用 **6 阶段结构化工作流**，每个阶段有明确的输入、输出和检查点。
@@ -124,6 +132,19 @@ collab Skill 自动处理：
 - 门禁校验和超时处理
 - SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
 - 进度汇报（通过 zhi 展示双模型状态）
+
+**collab 返回后的状态处理**：
+- `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入阶段 3
+- `status=DEGRADED`（单模型有 SESSION_ID）：
+  - 记录 `dual_model_status=DEGRADED`
+  - 记录 `degraded_level`（ACCEPTABLE / UNACCEPTABLE）
+  - 记录 `missing_dimensions`（缺失的分析维度）
+  - 强制写入"缺失维度 + 影响范围 + 补偿分析"
+  - 通过 `mcp______zhi` 向用户展示降级详情并确认是否继续
+- `status=FAILED`（双模型均无 SESSION_ID）：触发 Level 3 降级或终止
+
+**进入阶段 3 前的 SESSION_ID 断言**：
+- 至少一个 SESSION_ID 不为空（`codex_session || gemini_session`），否则禁止进入下一阶段
 
 综合两方分析，输出方案对比（至少 2 个方案）。
 
@@ -281,6 +302,15 @@ collab Skill 自动处理：
 5. **降级方案**：GitHub MCP 不可用 → 使用 `gh pr create`
 
 **工作流结束**：调用 `mcp______ji` 存储本次工作流的关键决策、架构变更和实施经验。
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LITE_MODE` | 设为 `true` 跳过外部模型调用，使用模拟响应 | `false` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+
+**LITE_MODE 检查**：阶段 2/3/5 调用 Codex/Gemini 前，检查 `LITE_MODE` 环境变量。若为 `true`，跳过多模型调用，由 Claude 独立完成分析/规划/审查。
 
 ## 输出格式
 

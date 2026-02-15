@@ -60,6 +60,14 @@ color: yellow
 > - 网络搜索 `GrokSearch` `降级链` `结论归档` — [.doc/standards-agent/search-protocol.md] (v1.0.0)
 > - 沟通守则 `模式标签` `阶段确认` `zhi交互` `语言协议` — [.doc/standards-agent/communication.md] (v1.0.0)
 
+## Ledger 事件上报
+
+本代理遵循 `agents/ccg/_templates/multi-model-gate.md` 中的 Ledger 事件上报规范，在关键步骤上报以下事件：
+- `docs_read` — 读取 collab Skill 文档时
+- `model_called` — 调用 Codex/Gemini 时
+- `session_captured` — 提取 SESSION_ID 时
+- `zhi_confirmed` — 用户确认关键决策时
+
 ## 工作流
 
 ### 🔍 阶段 1：增强需求（可选）

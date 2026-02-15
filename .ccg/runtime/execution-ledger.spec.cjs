@@ -87,7 +87,7 @@ describe('ExecutionLedger', () => {
       ExecutionLedger.init('task-2');
 
       ExecutionLedger.append('task-1', EventTypes.DOCS_READ);
-      ExecutionLedger.append('task-2', EventTypes.MODEL_CALLED);
+      ExecutionLedger.append('task-2', EventTypes.MODEL_CALLED, { backend: 'codex' });
 
       const ledger1 = ExecutionLedger.get('task-1');
       const ledger2 = ExecutionLedger.get('task-2');
@@ -154,8 +154,8 @@ describe('ExecutionLedger', () => {
       ExecutionLedger.init(testTaskId);
 
       ExecutionLedger.append(testTaskId, EventTypes.DOCS_READ);
-      ExecutionLedger.append(testTaskId, EventTypes.MODEL_CALLED);
-      ExecutionLedger.append(testTaskId, EventTypes.SESSION_CAPTURED);
+      ExecutionLedger.append(testTaskId, EventTypes.MODEL_CALLED, { backend: 'codex' });
+      ExecutionLedger.append(testTaskId, EventTypes.SESSION_CAPTURED, { session_id: 'test-session-123' });
 
       const ledger = ExecutionLedger.get(testTaskId);
 

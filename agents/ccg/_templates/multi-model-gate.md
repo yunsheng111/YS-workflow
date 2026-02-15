@@ -39,6 +39,10 @@
 然后严格按照文档中的执行流程操作。
 
 **[Ledger Event]** 上报 `docs_read` 事件（包含读取的文档列表）
+
+> **注意**：Execution Ledger 当前处于基础设施预备阶段。
+> Ledger Event 标记为未来集成预留，当前阶段无需实际调用 ExecutionLedger API。
+> 待 Ledger 完全接入后，此标记将转为强制要求。
 ```
 
 ### 步骤 1：初始化
