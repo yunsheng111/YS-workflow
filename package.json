@@ -5,6 +5,7 @@
   "scripts": {
     "check-arch": "node .ccg/scripts/check-architecture.js",
     "test-arch": "node .ccg/scripts/check-architecture.spec.js",
+    "check-compliance": "node .ccg/scripts/check-compliance-flow.cjs",
     "install-hooks": "node hooks/install-git-hooks.cjs install",
     "uninstall-hooks": "node hooks/install-git-hooks.cjs uninstall",
     "verify-hooks": "node hooks/install-git-hooks.cjs verify"

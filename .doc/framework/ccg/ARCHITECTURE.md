@@ -387,4 +387,232 @@ EOF
 spec-init → spec-research → spec-plan → spec-impl → spec-review
 ```
 
+---
+
+## Agent 合规执行流程
+
+### 概述
+
+CCG 框架通过 **Execution Ledger + PreToolUse Hook** 双层机制确保 Agent 执行流程的合规性、可追溯性和安全性。
+
+### 核心组件
+
+#### 1. Execution Ledger（执行账本）
+
+**位置**: `.ccg/runtime/execution-ledger.cjs`
+
+**职责**: 记录 Agent 执行过程中的关键事件和状态转换。
+
+**状态模型**:
+- `INIT` - 初始化
+- `RUNNING` - 运行中
+- `DEGRADED` - 降级模式（部分工具不可用）
+- `FAILED` - 失败
+- `SUCCESS` - 成功
+
+**事件类型**:
+- `docs_read` - 读取 collab Skill 文档
+- `model_called` - 调用 Codex/Gemini
+- `session_captured` - 提取 SESSION_ID
+- `zhi_confirmed` - 用户确认关键决策
+- `degraded` - 降级事件（记录原因）
+
+**API**:
+```javascript
+ExecutionLedger.init(taskId)                    // 初始化 Ledger
+ExecutionLedger.append(taskId, event)           // 追加事件
+ExecutionLedger.bindSession(taskId, sessionId)  // 绑定 SESSION_ID
+ExecutionLedger.transition(taskId, newState)    // 状态转换
+ExecutionLedger.get(taskId)                     // 获取 Ledger
+ExecutionLedger.cleanup(taskId)                 // 清理 Ledger
+```
+
+#### 2. PreToolUse Hook 体系
+
+**执行顺序**（按 `settings.json` 配置）:
+
+1. **ccg-path-validator.cjs** - 路径白名单校验
+   - 检查文件路径是否在白名单内
+   - 白名单：`agents/`, `.ccg/`, `hooks/`, `skills/`, `commands/`
+   - 非白名单路径拒绝写入
+
+2. **ccg-execution-guard.cjs** - Ledger 状态与事件链校验
+   - 校验 Ledger 状态（仅允许 SUCCESS/DEGRADED）
+   - 校验事件链完整性（docs_read → model_called → session_captured → zhi_confirmed）
+   - 校验 SESSION_ID 绑定（Ledger 中的 SESSION_ID 必须与文档中的一致）
+   - DEGRADED 状态必须包含降级事件
+
+3. **ccg-dual-model-validator.cjs** - 双模型调用证据校验
+   - 检查受保护目录的写入是否包含双模型证据（Codex/Gemini）
+   - 受保护目录：`.doc/workflow/`, `.doc/agent-teams/`, `.doc/spec/`, `.doc/common/` 的正式产出目录
+   - 白名单豁免：`wip/` 目录、`LITE_MODE=true`、DEGRADED 状态
+
+4. **ccg-commit-interceptor.cjs** - Git 提交与 Bash 重定向拦截
+   - 拦截 bare `git commit` 命令（必须通过 `/ccg:commit`）
+   - 检测 Bash 重定向写文件（`>`, `>>`, `tee`）
+   - 重定向到受保护目录时校验双模型证据
+
+### 合规流程示例
+
+#### 正常流程（SUCCESS）
+
+```
+1. Agent 初始化
+   ExecutionLedger.init(taskId)
+   → state: INIT
+
+2. 读取 collab Skill 文档
+   ExecutionLedger.append(taskId, { type: 'docs_read', data: { file: 'collab.md' } })
+
+3. 调用 Codex/Gemini
+   ExecutionLedger.append(taskId, { type: 'model_called', data: { backend: 'codex' } })
+
+4. 提取 SESSION_ID
+   ExecutionLedger.append(taskId, { type: 'session_captured', data: { session_id: 'xxx' } })
+   ExecutionLedger.bindSession(taskId, 'xxx')
+
+5. 用户确认
+   ExecutionLedger.append(taskId, { type: 'zhi_confirmed', data: { decision: 'approve' } })
+
+6. 状态转换
+   ExecutionLedger.transition(taskId, 'SUCCESS')
+   → state: SUCCESS
+
+7. 写入正式产出
+   Write tool → PreToolUse Hook 链路：
+   - ccg-path-validator: ✅ 路径在白名单外（正式产出目录）
+   - ccg-execution-guard: ✅ state=SUCCESS, 事件链完整, SESSION_ID 匹配
+   - ccg-dual-model-validator: ✅ 文档包含 Codex/Gemini 证据
+   - ccg-commit-interceptor: N/A（非 Bash 工具）
+   → 写入成功
+```
+
+#### 降级流程（DEGRADED）
+
+```
+1. Agent 初始化
+   ExecutionLedger.init(taskId)
+
+2. 尝试调用外部模型失败
+   ExecutionLedger.append(taskId, { type: 'degraded', data: { reason: 'Codex timeout' } })
+   ExecutionLedger.transition(taskId, 'DEGRADED')
+   → state: DEGRADED
+
+3. 使用 Claude 自增强替代
+   ExecutionLedger.append(taskId, { type: 'fallback', data: { method: 'claude-native' } })
+
+4. 用户确认降级方案
+   ExecutionLedger.append(taskId, { type: 'zhi_confirmed', data: { decision: 'approve_degraded' } })
+
+5. 写入正式产出
+   Write tool → PreToolUse Hook 链路：
+   - ccg-path-validator: ✅ 路径在白名单外
+   - ccg-execution-guard: ✅ state=DEGRADED, 包含降级事件
+   - ccg-dual-model-validator: ✅ DEGRADED 状态豁免双模型证据
+   - ccg-commit-interceptor: N/A
+   → 写入成功（降级模式）
+```
+
+#### 拒绝场景
+
+**场景 1: 缺少事件链**
+```
+Write tool → ccg-execution-guard
+→ ❌ deny: 缺少必需事件: model_called, session_captured
+```
+
+**场景 2: SESSION_ID 不匹配**
+```
+Write tool → ccg-execution-guard
+→ ❌ deny: SESSION_ID 不匹配: Ledger=abc-123, Document=xyz-789
+```
+
+**场景 3: 缺少双模型证据**
+```
+Write tool → ccg-dual-model-validator
+→ ❌ deny: 受保护目录缺少双模型调用证据（Codex/Gemini）
+```
+
+**场景 4: Bash 重定向到受保护目录**
+```
+Bash: echo "test" > .doc/workflow/plans/plan.md
+→ ccg-commit-interceptor
+→ ❌ deny: Bash 重定向到受保护目录被拒绝
+```
+
+### 合规指标
+
+**查看完整的 KPI 定义**: [COMPLIANCE-METRICS.md](./COMPLIANCE-METRICS.md)
+
+**核心指标**:
+- **合规率**: ≥ 95%（包含 Ledger 事件上报的代理占比）
+- **zhi 覆盖率**: 100%（包含 Level 1 门禁的关键命令占比）
+- **Hook 激活率**: 100%（已部署 Hook 占比）
+- **误拦截率**: ≤ 5%（合法操作被错误拦截的比例）
+- **伪造率**: 0%（伪造 SESSION_ID 或证据的尝试）
+
+**一键检查**:
+```bash
+npm run check-compliance
+```
+
+### 回滚与恢复
+
+**场景 1: Hook 误拦截导致无法写入**
+
+1. 检查拦截原因（Hook 返回的 `reason` 字段）
+2. 如果是误拦截：
+   - 临时设置 `LITE_MODE=true` 环境变量
+   - 或将文件写入 `wip/` 目录
+3. 修复后移动到正式目录
+
+**场景 2: Ledger 状态异常**
+
+1. 检查 Ledger 状态：
+   ```javascript
+   const ledger = ExecutionLedger.get(taskId);
+   console.log(ledger.state, ledger.events);
+   ```
+2. 如果状态为 FAILED：
+   - 分析失败原因（最后一个事件）
+   - 清理 Ledger：`ExecutionLedger.cleanup(taskId)`
+   - 重新初始化：`ExecutionLedger.init(taskId)`
+
+**场景 3: SESSION_ID 丢失**
+
+1. 从外部模型输出中重新提取 SESSION_ID
+2. 手动绑定：
+   ```javascript
+   ExecutionLedger.bindSession(taskId, sessionId);
+   ```
+3. 补充 `session_captured` 事件：
+   ```javascript
+   ExecutionLedger.append(taskId, {
+     type: 'session_captured',
+     data: { session_id: sessionId }
+   });
+   ```
+
+### 最佳实践
+
+1. **Multi-model 代理必须上报 Ledger 事件**
+   - 在代理文档中增加"Ledger 事件上报"章节
+   - 明确列出上报的事件类型
+
+2. **关键命令必须包含 Level 1 门禁**
+   - enhance → zhi 确认 → search_context
+   - 包含"未完成 Level 1 禁止进入 Level 2"硬门禁
+
+3. **降级时必须记录原因**
+   - 使用 `degraded` 事件类型
+   - 在 `data.reason` 中说明降级原因
+
+4. **SESSION_ID 必须一致**
+   - Ledger 中的 SESSION_ID 必须与文档中的一致
+   - 使用 `bindSession()` API 绑定
+
+5. **定期运行合规检查**
+   - 每次重大变更后运行 `npm run check-compliance`
+   - 确保合规率 ≥ 95%
+
 每个阶段对应 `commands/ccg/spec-*.md` 命令。适用于需求复杂、约束众多、需要严格合规审查的场景。

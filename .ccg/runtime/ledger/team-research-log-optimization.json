@@ -1,0 +1,35 @@
+{
+  "task_id": "team-research-log-optimization",
+  "session_id": null,
+  "state": "DEGRADED",
+  "events": [
+    {
+      "type": "docs_read",
+      "timestamp": 1771179580275,
+      "data": {
+        "files": [
+          "collab/SKILL.md",
+          "collab/executor.md",
+          "collab/reporter.md"
+        ]
+      }
+    },
+    {
+      "type": "model_called",
+      "timestamp": 1771179626687,
+      "data": {
+        "backend": "both"
+      }
+    },
+    {
+      "type": "session_captured",
+      "timestamp": 1771179719605,
+      "data": {
+        "backend": "gemini",
+        "session_id": "d3c83324-c146-4220-b6b8-543c150215c5"
+      }
+    }
+  ],
+  "created_at": 1771179580272,
+  "updated_at": 1771179882513
+}
