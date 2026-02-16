@@ -1,5 +1,46 @@
 # YS-workflow 版本历史
 
+## v1.0.3 (2026-02-17)
+
+### ♻️ 重构：标准化 Skill 调用体系，统一双模型编排内核
+
+**提交哈希**：bae1977
+
+**方案 1 - Skill 调用标准化与冗余消除**：
+- 固化状态/事件真值源到 collab SKILL.md
+- 修复 Ledger/Hook 语义闭环（payload 键名、fail-close）
+- 标准化 multi-model-gate 模板（shell 参数转义）
+- 修复 3 个代理工具声明漂移（backend/frontend/planner）
+- 12 个代理去冗余，统一引用 collab Skill
+
+**方案 2 - Level 1 Skill 感知路由**：
+- 新增 .ccg/skills/capability.json 能力索引
+- CLAUDE.md 路由增强，支持 Skill 触发词匹配与参数注入
+
+**方案 3 - 统一双模型编排内核**：
+- 新增 collab-orchestrator.cjs（464 行）+ 37 个单元测试
+- 封装 spawn/render/degrade/report 四阶段 API
+
+**审查修复（4 个 Warning）**：
+- W-1: shell 参数转义（单引号包裹变量）
+- W-2: Hook fail-close 策略（catch 返回 deny）
+- W-3: payload 键名统一（camelCase）
+- W-4: missing_dimensions 契约修复（数组类型校验）
+
+**额外修复**：
+- commit-msg Hook 正则支持 emoji 变体序列（♻️ = U+267B + U+FE0F）
+
+**新增文件**：
+- `.ccg/runtime/collab-orchestrator.cjs` - 双模型编排内核
+- `.ccg/runtime/collab-orchestrator.spec.cjs` - 单元测试（37 个）
+- `.ccg/skills/capability.json` - Skill 能力索引
+
+**修改文件**：30 个（+1395 行，-573 行）
+
+**Co-Authored-By**: Claude Opus 4.6 <noreply@anthropic.com>
+
+---
+
 ## v1.0.2 (2026-02-16)
 
 ### 🐛 修复：Agent Teams 审查修复 + 命令层 Level 1 补全
@@ -34,8 +75,6 @@
 **Co-Authored-By**: Claude Opus 4.6 <noreply@anthropic.com>
 
 ---
-
-# YS-workflow 版本历史
 
 ## v1.0.1 (2026-02-15)
 
