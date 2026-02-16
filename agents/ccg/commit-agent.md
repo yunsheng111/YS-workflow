@@ -21,7 +21,7 @@ color: green
   - `mcp__github__get_file_contents` — 读取远程文件（如 VERSION.md）
 
 ### 内置工具
-- Bash — Git 命令执行（`git status`、`git diff`、`git log`、`git add`、`git commit`、`git push` 等）
+- Bash — Git 命令执行（`git status`、`git diff`、`git log`、`git add`、`git commit` 等，禁止 `git push`）
 - Read — 读取变更文件内容以理解改动意图
 - Write — 更新 VERSION.md（如需要）
 
@@ -203,34 +203,25 @@ color: green
    - 在文件开头插入新版本信息
    - 创建第二个提交：`📝 docs: 更新版本信息到 v<new-version>`
 
-### 阶段 8：GitHub 推送（可选）
+### 阶段 8：推送提示（禁止直接推送）
 
-1. **询问用户**：
-   - 通过 `mcp______zhi` 询问是否推送到 GitHub
-   - 提供选项：["推送到 GitHub", "仅本地提交", "查看提交详情"]
+> **⛔ 硬门禁**：commit-agent 禁止直接执行 `git push`。推送操作必须由用户通过 `/ccg:push` 命令发起。
 
-2. **推送流程**：
-   - 检测仓库信息：`git remote get-url origin`
-   - 解析 owner 和 repo
-   - 获取当前分支：`git branch --show-current`
-   - 推送提交：`git push origin <branch>`
+1. **提示用户后续操作**：
+   - 通过 `mcp______zhi` 展示提交完成信息，推荐后续命令
+   - 消息格式：
+     ```markdown
+     ## 提交完成 ✅
 
-3. **验证推送成功**：
-   ```
-   mcp__github__list_commits({
-     owner: "<owner>",
-     repo: "<repo>",
-     sha: "<branch>"
-   })
-   ```
-   - 检查最新提交哈希是否匹配
+     提交已创建，如需推送到远程仓库，请执行：
+     - `/ccg:push` — 智能推送（含审查检测、规范验证）
+     ```
+   - 提供选项：`["继续（不推送）", "查看提交详情"]`
 
-4. **可选：创建 PR**：
-   - 如果当前分支不是 main/master，询问是否创建 PR
-   - 使用 `mcp__github__create_pull_request` 创建 PR
-
-5. **降级方案**：
-   - GitHub MCP 不可用 → 仅使用 `git push`，跳过验证
+2. **禁止行为**：
+   - ❌ 禁止执行 `git push`
+   - ❌ 禁止通过 `mcp__github__push_files` 推送
+   - ❌ 禁止询问用户"是否推送"后自行推送
 
 ### 阶段 9：归档与清理
 
@@ -319,6 +310,6 @@ Fixes #128
 - 提交信息通过 HEREDOC 传递，确保格式正确
 - 如果没有可提交的变更，不得创建空提交
 - 必须在阶段 2 检查私密文件和临时文件，发现问题必须警告用户
-- 使用 `git push` 推送提交，而非 GitHub MCP 的 `push_files`
+- 使用 `/ccg:push` 命令推送提交，commit-agent 禁止直接执行 `git push`
 - 推送成功后使用 `mcp__github__list_commits` 验证
 - 关键决策必须调用 `mcp______zhi` 确认
