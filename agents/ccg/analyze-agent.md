@@ -30,28 +30,12 @@ color: yellow
 
 ## Skills
 
-- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
-  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
-  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`
-  - **阶段 3 强制使用**：禁止跳过 collab 流程自行分析
+- `collab` — 双模型协作调用 Skill。详见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)
 
 ## 双模型调用规范
 
-**引用**：`.doc/standards-agent/dual-model-orchestration.md`
-
-**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
-- 占位符渲染和命令执行
-- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
-- SESSION_ID 提取和会话复用
-- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
-- 超时处理和降级策略
-- 进度汇报（通过 zhi 展示双模型状态）
-
-**collab Skill 参数**：
-- `backend`: `both`（默认）、`codex`、`gemini`
-- `role`: `architect`、`analyzer`、`reviewer`、`developer`
-- `task`: 任务描述
-- `resume`: SESSION_ID（会话复用）
+> 引用 [`_templates/multi-model-gate.md`](./_templates/multi-model-gate.md) 执行步骤 0~5。
+> 详细参数和状态机见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)。
 
 ## 共享规范
 
@@ -110,65 +94,11 @@ color: yellow
 
 **执行步骤**：
 
-#### 步骤 3.0：读取 collab Skill 文档（强制）
+> 按 [`_templates/multi-model-gate.md`](./_templates/multi-model-gate.md) 步骤 0~5 执行。
 
-```markdown
-必须先读取以下文件，理解完整的双模型调用流程：
-1. Read("~/.claude/skills/collab/SKILL.md") — 了解参数、状态机、降级策略
-2. Read("~/.claude/skills/collab/executor.md") — 了解并行调用执行流程
-3. Read("~/.claude/skills/collab/renderer.md") — 了解占位符渲染规则
-
-然后严格按照 collab Skill 文档中的执行流程操作。
+**collab 调用参数**：
 ```
-
-#### 步骤 3.1：初始化（按 collab SKILL.md 执行）
-
-```markdown
-1. 读取 `.ccg/config.toml` 获取 CCG_BIN 路径（默认：`~/.claude/bin/codeagent-wrapper.exe`）
-2. 检查环境变量：LITE_MODE、GEMINI_MODEL
-3. 若 LITE_MODE=true，跳过外部模型调用，使用占位符响应（但必须标注为 LITE 模式）
-```
-
-#### 步骤 3.2：渲染并执行 Codex 命令（按 executor.md 执行）
-
-```markdown
-1. 按 renderer.md 渲染命令模板，替换所有占位符
-2. 验证无残留占位符（{{...}}）
-3. 使用 Bash 工具执行（run_in_background: true）
-4. 记录返回的 task_id
-```
-
-#### 步骤 3.3：渲染并执行 Gemini 命令（按 executor.md 执行）
-
-```markdown
-1. 按 renderer.md 渲染命令模板，替换所有占位符
-2. 验证无残留占位符（{{...}}）
-3. 使用 Bash 工具执行（run_in_background: true）
-4. 记录返回的 task_id
-```
-
-#### 步骤 3.4：等待结果（按 executor.md 执行）
-
-```markdown
-1. 使用 TaskOutput 轮询两个进程：
-   TaskOutput({ task_id: "<codex_task_id>", block: true, timeout: 600000 })
-   TaskOutput({ task_id: "<gemini_task_id>", block: true, timeout: 600000 })
-2. 从输出中提取 SESSION_ID（正则：SESSION_ID:\s*([a-f0-9-]+)）
-3. 超时后继续轮询，不要 Kill 进程
-```
-
-#### 步骤 3.5：门禁校验（按 SKILL.md 状态机执行）
-
-```markdown
-门禁条件（OR 逻辑）：
-- LITE_MODE=true（豁免）
-- codex_session 存在（Codex 成功）
-- gemini_session 存在（Gemini 成功）
-
-若门禁失败（双模型均未返回 SESSION_ID）：
-1. 重试 1 次（Level 1 降级）
-2. 重试失败 → 使用单模型结果（Level 2 降级）
-3. 单模型也失败 → 通过 mcp______zhi 报告失败，终止分析（Level 3 降级）
+/collab backend=both role=analyzer task="<增强后的需求描述>"
 ```
 
 **collab 返回后的状态处理**：

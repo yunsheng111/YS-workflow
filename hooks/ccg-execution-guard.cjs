@@ -105,8 +105,12 @@ async function main() {
       return;
     }
 
-    // 获取 task_id（从环境变量或其他来源）
-    const taskId = process.env.TASK_ID || 'default';
+    // 获取 task_id（从环境变量，缺失时 fail-close deny）
+    const taskId = process.env.TASK_ID;
+    if (!taskId) {
+      respondDeny('❌ Execution Guard: TASK_ID 缺失，拒绝执行');
+      return;
+    }
     const ledger = LedgerAdapter.get(taskId);
 
     // 校验状态
@@ -145,14 +149,14 @@ async function main() {
     // 所有校验通过
     respondAllow();
   } catch (err) {
-    // 异常时 fail-open（避免阻断合法操作）
+    // 受保护路径异常时 fail-close（拒绝写入，防止绕过）
     console.error(`Execution Guard 错误: ${err.message}`);
-    respondAllow();
+    respondDeny(`❌ Execution Guard 异常: ${err.message}`);
   }
 }
 
 main().catch(err => {
   console.error(`Hook 执行失败: ${err.message}`);
-  respondAllow();
+  respondDeny(`❌ Hook 执行失败: ${err.message}`);
   process.exit(1);
 });

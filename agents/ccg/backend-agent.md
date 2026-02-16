@@ -1,7 +1,7 @@
 ---
 name: backend-agent
 description: "⚙️ 后端专项开发 - API 设计、服务实现、数据库操作与性能优化"
-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______enhance, mcp______context7, mcp__Grok_Search_Mcp__web_search
 color: green
 # template: single-model v1.0.0
 ---
@@ -28,6 +28,7 @@ color: green
 - `mcp______zhi` — 关键决策确认，接口设计方案、数据库变更等需用户确认
 - `mcp______ji` — 存储 API 设计规范和数据模型模式，跨会话复用后端开发经验
 - `mcp______context7` — 框架文档查询，获取 Express/NestJS/FastAPI 等后端框架的最新 API 和最佳实践
+- `mcp______enhance` — 需求增强，阶段 0 调用以结构化补全用户需求（降级：`mcp__ace-tool__enhance_prompt` → Claude 自增强）
 - `mcp__Grok_Search_Mcp__web_search` — 搜索后端最佳实践、安全模式、性能优化方案
 
 ### 内置工具

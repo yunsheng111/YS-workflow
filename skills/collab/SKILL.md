@@ -13,6 +13,16 @@
 
 双模型（Codex + Gemini）协作调用 Skill，封装 codeagent-wrapper 的并行调用、状态管理和进度汇报。
 
+> **📌 真值源声明**
+>
+> 本文档（`skills/collab/SKILL.md`）是 CCG 框架中以下定义的**唯一真值源**：
+> - **状态枚举**：`SUCCESS | DEGRADED | FAILED`
+> - **事件枚举**：`init | running | success | degraded | failed`
+> - **降级分级**：`ACCEPTABLE | UNACCEPTABLE`
+> - **门禁语义**：执行门禁（OR 逻辑）和质量门禁的判定规则
+>
+> 其他文档（`model-calling.md`、`dual-model-orchestration.md`、代理文件等）中的状态枚举、事件和门禁描述必须与本文档一致。如发现不一致，以本文档为准。
+
 ## 触发条件
 
 当用户需要同时调用 Codex 和 Gemini 进行技术分析、架构规划或代码审查时使用。
@@ -109,13 +119,25 @@ INIT → RUNNING → SUCCESS
    - `role=analyzer`: 双重视角均为核心
    - `role=reviewer`: 前端(Gemini) 为核心 (UI/UX 场景)
 
+## 事件枚举
+
+> **真值源**：以下事件枚举是 CCG 框架中双模型编排事件的唯一权威定义。
+
+| 事件 | 说明 | 触发时机 |
+|------|------|----------|
+| `init` | Skill 初始化 | 参数解析完成、占位符渲染完成后 |
+| `running` | 模型进程已启动 | Bash 进程启动后 |
+| `success` | 双模型均成功返回 | 状态机转入 `SUCCESS` |
+| `degraded` | 单模型成功，另一模型失败/超时 | 状态机转入 `DEGRADED`，触发降级分级评估（`degraded_level`） |
+| `failed` | 双模型均失败或均无有效 SESSION_ID | 状态机转入 `FAILED` |
+
 ## 降级策略
 
 | 级别 | 触发条件 | 处理方式 |
 |------|----------|----------|
 | Level 1 | 单模型超时 | 重试 1 次（timeout/2） |
-| Level 2 | 重试失败 | 使用成功的单模型结果，标记 `degraded` |
-| Level 3 | 双模型均失败 | 回退到主代理直接处理，标记 `failed` |
+| Level 2 | 重试失败 | 使用成功的单模型结果，标记 `DEGRADED` |
+| Level 3 | 双模型均失败 | 回退到主代理直接处理，标记 `FAILED` |
 
 ## 执行流程
 

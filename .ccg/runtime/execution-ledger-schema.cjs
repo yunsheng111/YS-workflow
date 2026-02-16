@@ -17,7 +17,8 @@ const EventTypes = {
   DOCS_READ: 'docs_read',           // 文档读取
   MODEL_CALLED: 'model_called',     // 模型调用
   SESSION_CAPTURED: 'session_captured', // SESSION_ID 捕获
-  ZHI_CONFIRMED: 'zhi_confirmed'    // zhi 确认
+  ZHI_CONFIRMED: 'zhi_confirmed',   // zhi 确认
+  DEGRADED: 'degraded'              // 降级事件
 };
 
 // 状态转换规则

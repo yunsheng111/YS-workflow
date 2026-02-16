@@ -2,11 +2,11 @@
 
 /**
  * Git commit-msg Hook
- * 
+ *
  * 验证提交信息是否符合 Conventional Commits 规范
- * 
+ *
  * 规范格式：[emoji] <type>(<scope>): <subject>
- * 
+ *
  * 使用方式：
  * 1. 确保此文件有执行权限：chmod +x hooks/commit-msg
  * 2. Git 会在提交时自动调用此 Hook
@@ -80,6 +80,9 @@ const defaultConfig = {
 
 const finalConfig = config || defaultConfig;
 
+// emoji 匹配模式：支持单码点 emoji 和变体序列（如 ♻️ = U+267B + U+FE0F）
+const EMOJI_PATTERN = '(?:\\p{Emoji_Presentation}|\\p{Emoji}\\uFE0F?)';
+
 // 验证函数
 function validateCommitMessage(message) {
   const errors = [];
@@ -87,7 +90,7 @@ function validateCommitMessage(message) {
   const firstLine = lines[0];
 
   // 1. 检查格式：[emoji] <type>(<scope>): <subject>
-  const formatRegex = /^(\p{Emoji})\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\([a-z0-9-]+\))?:\s+.+/u;
+  const formatRegex = new RegExp(`^${EMOJI_PATTERN}\\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\\([a-z0-9-]+\\))?:\\s+.+`, 'u');
   if (!formatRegex.test(firstLine)) {
     errors.push('格式错误：必须遵循 [emoji] <type>(<scope>): <subject> 格式');
     errors.push('示例：✨ feat(auth): 添加 OAuth2.0 登录支持');
@@ -95,17 +98,22 @@ function validateCommitMessage(message) {
   }
 
   // 2. 提取 type 和 emoji
-  const typeMatch = firstLine.match(/^\p{Emoji}\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)/u);
-  const emojiMatch = firstLine.match(/^(\p{Emoji})/u);
+  const typeRegex = new RegExp(`^${EMOJI_PATTERN}\\s+(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)`, 'u');
+  const emojiRegex = new RegExp(`^(${EMOJI_PATTERN})`, 'u');
+  const typeMatch = firstLine.match(typeRegex);
+  const emojiMatch = firstLine.match(emojiRegex);
 
   if (typeMatch && emojiMatch) {
     const type = typeMatch[1];
     const emoji = emojiMatch[1];
     const expectedEmoji = finalConfig.types[type]?.emoji;
 
-    // 3. 检查 emoji 是否匹配 type
-    if (expectedEmoji && emoji !== expectedEmoji) {
-      errors.push(`Emoji 不匹配：${type} 应使用 ${expectedEmoji}，当前使用 ${emoji}`);
+    // 3. 检查 emoji 是否匹配 type（规范化比较，去除 U+FE0F 变体选择符）
+    if (expectedEmoji) {
+      const normalizeEmoji = (e) => e.replace(/\uFE0F/g, '');
+      if (normalizeEmoji(emoji) !== normalizeEmoji(expectedEmoji)) {
+        errors.push(`Emoji 不匹配：${type} 应使用 ${expectedEmoji}，当前使用 ${emoji}`);
+      }
     }
   }
 

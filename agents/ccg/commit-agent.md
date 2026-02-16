@@ -27,7 +27,14 @@ color: green
 
 ## Skills
 
-- `git-workflow` — Git 工作流规范
+- `git-workflow` — Git 工作流规范（通过 `/ccg:commit` 命令自动注入上下文）
+
+## 规范注入说明
+
+> **渐进式披露**：当 `/ccg:commit` 命令触发时，`git-workflow` Skill 会自动注入到上下文中。
+> 代理执行时，提交规范（格式、emoji、安全规范）已在上下文中可用。
+>
+> **降级策略**：如果 Skill 未注入，阶段 0 会从 `.ccg/commit-config.json` 读取配置。
 
 ## 共享规范
 

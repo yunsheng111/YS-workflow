@@ -80,7 +80,7 @@ class LedgerAdapter {
     // DEGRADED 必须有降级事件
     if (ledger.state === 'DEGRADED') {
       const hasDegradedEvent = ledger.events.some(e =>
-        e.type === 'degraded' || e.data?.degraded
+        e.type === 'degraded'
       );
       if (!hasDegradedEvent) {
         return {

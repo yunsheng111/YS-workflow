@@ -40,28 +40,12 @@ color: blue
 
 ## Skills
 
-- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
-  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
-  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
-  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
+- `collab` — 双模型协作调用 Skill。详见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)
 
 ## 双模型调用规范
 
-**引用**：`.doc/standards-agent/dual-model-orchestration.md`
-
-**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
-- 占位符渲染和命令执行
-- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
-- SESSION_ID 提取和会话复用
-- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
-- 超时处理和降级策略
-- 进度汇报（通过 zhi 展示双模型状态）
-
-**collab Skill 参数**：
-- `backend`: `both`（默认）、`codex`、`gemini`
-- `role`: `architect`、`analyzer`、`reviewer`、`developer`
-- `task`: 任务描述
-- `resume`: SESSION_ID（会话复用）
+> 引用 [`_templates/multi-model-gate.md`](./_templates/multi-model-gate.md) 执行步骤 0~5。
+> 详细参数和状态机见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)。
 
 ## 共享规范
 
@@ -98,12 +82,6 @@ color: blue
 ```
 /collab backend=both role=architect task="基于提案和约束集生成零决策实施计划：后端（数据模型、API、服务层、迁移）和前端（组件、状态、路由、样式）"
 ```
-
-collab Skill 自动处理：
-- 并行启动 Codex（后端实施步骤）和 Gemini（前端实施步骤）
-- 门禁校验和超时处理
-- SESSION_ID 提取
-- 进度汇报（通过 zhi 展示双模型状态）
 
 **collab 返回后的状态处理**：
 - `status=SUCCESS`：直接进入阶段 3

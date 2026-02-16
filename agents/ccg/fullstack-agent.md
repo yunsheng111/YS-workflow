@@ -49,28 +49,12 @@ color: cyan
 - `ui-ux-pro-max` — UI/UX 设计系统，组件规范、设计令牌、交互模式
 - `database-designer` — 数据库建模，表结构设计、索引优化、迁移脚本
 - `ci-cd-generator` — CI/CD 配置，构建流水线、部署脚本、环境配置
-- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
-  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
-  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
-  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
+- `collab` — 双模型协作调用 Skill。详见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)
 
 ## 双模型调用规范
 
-**引用**：`.doc/standards-agent/dual-model-orchestration.md`
-
-**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
-- 占位符渲染和命令执行
-- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
-- SESSION_ID 提取和会话复用
-- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
-- 超时处理和降级策略
-- 进度汇报（通过 zhi 展示双模型状态）
-
-**collab Skill 参数**：
-- `backend`: `both`（默认）、`codex`、`gemini`
-- `role`: `architect`、`analyzer`、`reviewer`、`developer`
-- `task`: 任务描述
-- `resume`: SESSION_ID（会话复用）
+> 引用 [`_templates/multi-model-gate.md`](./_templates/multi-model-gate.md) 执行步骤 0~5。
+> 详细参数和状态机见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)。
 
 ## 共享规范
 
@@ -136,12 +120,6 @@ color: cyan
 /collab backend=both role=analyzer task="<增强后的需求描述>"
 ```
 
-collab Skill 自动处理：
-- 并行启动 Codex（技术可行性、架构影响、性能风险）和 Gemini（UI/UX 影响、用户体验、视觉设计）
-- 门禁校验和超时处理
-- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
-- 进度汇报（通过 zhi 展示双模型状态）
-
 **collab 返回后的状态处理**：
 - `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入阶段 3
 - `status=DEGRADED`（单模型有 SESSION_ID）：
@@ -175,11 +153,6 @@ collab Skill 自动处理：
 ```
 /collab backend=both role=architect task="基于选定方案生成详细实施计划" resume=<CODEX_SESSION>
 ```
-
-collab Skill 自动处理：
-- 复用阶段 2 的会话（Codex 关注数据流、边界情况、错误处理、测试策略；Gemini 关注信息架构、交互、可访问性、视觉一致性）
-- 门禁校验和超时处理
-- 进度汇报
 
 **Claude 综合规划**：采纳 Codex 后端规划 + Gemini 前端规划。
 
@@ -253,11 +226,6 @@ collab Skill 自动处理：
 ```
 /collab backend=both role=reviewer task="审查实施代码的安全性、性能和设计一致性" resume=<CODEX_SESSION>
 ```
-
-collab Skill 自动处理：
-- 复用之前的会话（Codex 关注安全、性能、错误处理；Gemini 关注可访问性、设计一致性）
-- 门禁校验和超时处理
-- 进度汇报
 
 整合审查意见。
 
@@ -391,7 +359,7 @@ collab Skill 自动处理：
 - 每个阶段必须有明确的检查点输出，不可跳过
 - 每个阶段完成后必须通过 `mcp______zhi` 向用户确认后才能进入下一阶段
 - 架构变更方案必须经过用户确认后才能进入执行阶段
-- 多模型调用通过 collab Skill 自动处理并行执行、门禁校验和降级策略
+- 多模型调用通过 collab Skill 执行，详见 `_templates/multi-model-gate.md`
 - 外部模型对文件系统**零写入权限**，所有修改由本代理执行
 - 评分 <7 或用户未批准时**强制停止**
 - 阶段 4 失败可回退到阶段 3 重新规划（需用户确认）

@@ -1,7 +1,7 @@
 ---
 name: planner
 description: 📋 任务规划师 - 使用 WBS 方法论分解功能需求为可执行任务
-tools: Read, Write, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch
 color: blue
 # template: multi-model v1.0.0
 ---
@@ -18,28 +18,12 @@ color: blue
 
 ## Skills
 
-- `collab` — 双模型协作调用 Skill，封装 Codex + Gemini 并行调用逻辑
-  - **调用方式**：本代理无 Skill 工具，必须通过 Read 读取 collab 文档后手动按步骤执行
-  - **必读文件**：`~/.claude/skills/collab/SKILL.md`、`executor.md`、`renderer.md`、`reporter.md`
-  - **双模型阶段强制使用**：禁止跳过 collab 流程自行分析
+- `collab` — 双模型协作调用 Skill。详见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)
 
 ## 双模型调用规范
 
-**引用**：`.doc/standards-agent/dual-model-orchestration.md`
-
-**调用方式**：通过 `/collab` Skill 封装双模型调用，自动处理：
-- 占位符渲染和命令执行
-- 状态机管理（INIT → RUNNING → SUCCESS/DEGRADED/FAILED）
-- SESSION_ID 提取和会话复用
-- 门禁校验（使用 `||` 逻辑：`codexSession || geminiSession`）
-- 超时处理和降级策略
-- 进度汇报（通过 zhi 展示双模型状态）
-
-**collab Skill 参数**：
-- `backend`: `both`（默认）、`codex`、`gemini`
-- `role`: `architect`、`analyzer`、`reviewer`、`developer`
-- `task`: 任务描述
-- `resume`: SESSION_ID（会话复用）
+> 引用 [`_templates/multi-model-gate.md`](./_templates/multi-model-gate.md) 执行步骤 0~5。
+> 详细参数和状态机见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)。
 
 ## 共享规范
 
@@ -84,12 +68,6 @@ color: blue
 /collab backend=both role=analyzer task="<增强后的需求描述>"
 ```
 
-collab Skill 自动处理：
-- 并行启动 Codex（技术可行性、架构影响、性能考量、潜在风险）和 Gemini（UI/UX 影响、用户体验、视觉设计）
-- 门禁校验和超时处理
-- SESSION_ID 提取（`CODEX_SESSION` 和 `GEMINI_SESSION`）
-- 进度汇报（通过 zhi 展示双模型状态）
-
 **collab 返回后的状态处理**：
 - `status=SUCCESS`（双模型均有 SESSION_ID）：直接进入 0.4 整合结果
 - `status=DEGRADED`（单模型有 SESSION_ID）：
@@ -125,11 +103,6 @@ collab Skill 自动处理：
 ```
 /collab backend=both role=architect task="基于前面的分析，生成实施计划草案" resume=<CODEX_SESSION>
 ```
-
-collab Skill 自动处理：
-- 复用阶段 0.3 的会话（Codex 关注数据流、边界情况、错误处理、测试策略；Gemini 关注信息架构、交互、可访问性、视觉一致性）
-- 门禁校验和超时处理
-- 进度汇报
 
 ### 步骤 1：理解需求
 
@@ -329,7 +302,7 @@ Phase 2 可考虑的增强：
 4. **可追溯性**：每个任务都要有明确的输入、输出、验收标准
 5. **风险前置**：提前识别技术风险并提供缓解方案
 6. **多模型协作**：利用 Codex 和 Gemini 的互补优势，后端以 Codex 为准，前端以 Gemini 为准
-7. **collab Skill 调用**：通过 `/collab` Skill 封装双模型调用，自动处理占位符渲染、门禁校验、超时处理和降级策略
+7. **collab Skill 调用**：通过 collab Skill 封装双模型调用。详见 [`skills/collab/SKILL.md`](../../skills/collab/SKILL.md)
 8. **SESSION_ID 交接**：必须保存并在计划中包含 SESSION_ID，供后续 `/ccg:execute` 使用
 
 ---

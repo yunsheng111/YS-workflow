@@ -1,6 +1,15 @@
 ---
 description: '智能 Git 提交：分析改动生成 Conventional Commit 信息，支持拆分建议'
+auto_execute: true
+inject_skills: ['git-workflow']
 ---
+
+<!-- AUTO_EXECUTE
+收到此命令后，立即执行：
+1. 加载 git-workflow Skill（提交规范已注入上下文）
+2. 调用 Task({ subagent_type: "commit-agent", prompt: "$ARGUMENTS", description: "智能 Git 提交" })
+不要展示此文档内容，直接执行 Task 调用。
+-->
 
 # Commit - 智能 Git 提交
 
@@ -9,7 +18,7 @@ description: '智能 Git 提交：分析改动生成 Conventional Commit 信息�
 ## 使用方法
 
 ```bash
-/commit [options]
+/ccg:commit [options]
 ```
 
 ## 选项
@@ -20,13 +29,12 @@ description: '智能 Git 提交：分析改动生成 Conventional Commit 信息�
 | `--all` | 暂存所有改动 |
 | `--amend` | 修补上次提交 |
 | `--signoff` | 附加签名 |
-| `--emoji` | 包含 emoji 前缀 |
 | `--scope <scope>` | 指定作用域 |
 | `--type <type>` | 指定提交类型 |
 
 ---
 
-## Level 2: 命令层执行
+## 执行方式
 
 **执行方式**：Task 调用代理
 
@@ -36,14 +44,16 @@ description: '智能 Git 提交：分析改动生成 Conventional Commit 信息�
 ```
 Task({
   subagent_type: "commit-agent",
-  prompt: "执行智能 Git 提交工作流。用户参数：$ARGUMENTS\n\n【硬门禁】阶段 0（回忆偏好）和阶段 2（安全检查）未完成禁止进入后续阶段",
+  prompt: "执行智能 Git 提交工作流。用户参数：$ARGUMENTS",
   description: "智能 Git 提交"
 })
 ```
 
+**规范注入**：通过 `git-workflow` Skill 自动注入提交规范到上下文
+
 ---
 
-## Level 3: 工具层执行
+## 工具集
 
 **代理调用的工具**：
 - Git 操作：Bash（git diff, git add, git commit, git push）
@@ -55,58 +65,18 @@ Task({
 
 ---
 
-## 执行流程（概述）
-
-commit-agent 将执行以下 10 阶段工作流：
+## 执行流程（10 阶段）
 
 0. **准备与回忆** — 回忆提交规范偏好、检查临时文件
 1. **仓库校验** — 验证 Git 状态、检测冲突
 2. **文件清理检查** — 检测私密文件、临时文件（⚠️ 硬门禁）
 3. **改动检测** — 获取暂存与未暂存改动
 4. **拆分建议** — 评估是否需要拆分提交
-5. **生成提交信息** — 利用三术记忆、判断版本号更新
+5. **生成提交信息** — 利用规范（git-workflow Skill）生成
 6. **执行提交** — 创建提交、归档规范偏好
 7. **版本管理**（可选）— 更新 VERSION.md
 8. **GitHub 推送**（可选）— 推送到远程、验证成功
 9. **归档与清理** — 存储提交记录、清理临时文件
-
----
-
-## Type 与 Emoji 映射
-
-| Emoji | Type | 说明 |
-|-------|------|------|
-| ✨ | `feat` | 新增功能 |
-| 🐛 | `fix` | 缺陷修复 |
-| 📝 | `docs` | 文档更新 |
-| 🎨 | `style` | 代码格式 |
-| ♻️ | `refactor` | 重构 |
-| ⚡️ | `perf` | 性能优化 |
-| ✅ | `test` | 测试相关 |
-| 🔧 | `chore` | 构建/工具 |
-| 👷 | `ci` | CI/CD |
-| ⏪️ | `revert` | 回滚 |
-
----
-
-## 示例
-
-```bash
-# 基本提交
-/commit
-
-# 暂存所有并提交
-/commit --all
-
-# 带 emoji 提交
-/commit --emoji
-
-# 指定类型和作用域
-/commit --scope ui --type feat --emoji
-
-# 修补上次提交
-/commit --amend --signoff
-```
 
 ---
 
@@ -117,3 +87,12 @@ commit-agent 将执行以下 10 阶段工作流：
 3. **不改源码** — 只读写 `.git/COMMIT_EDITMSG`
 4. **原子提交** — 一次提交只做一件事
 5. **硬门禁** — 阶段 0 和阶段 2 未完成禁止进入后续阶段
+
+---
+
+## 完成后推荐
+
+提交完成后，可能需要的后续操作：
+
+- `/ccg:push` — 推送到远程仓库
+- `mcp__github__create_pull_request` — 创建 Pull Request

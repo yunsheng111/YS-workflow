@@ -83,6 +83,9 @@
 - **必须推荐至少一个 CCG 命令（`/ccg:<name>`），禁止推荐"主代理直接执行"**
 - 确定执行方式：串行（存在依赖）或并行（文件范围可隔离）
 - 为每个推荐命令附带理由说明
+- 基于增强后的需求，匹配 `.ccg/skills/capability.json` 中的 triggers
+- 若匹配到 Skill，从 enhance 输出中提取对应 Skill 的 CLI 参数
+- 在推荐命令时附带推导出的 Skill 参数
 
 **步骤 3**：使用 `mcp______zhi` 展示推荐方案，等待用户确认
 - 确认执行 → 进入 Level 2
@@ -90,7 +93,7 @@
 - 修改需求 → 回到步骤 1
 - 取消 → 终止
 
-**确认选项**：`["执行推荐方案", "调整命令组合", "修改需求", "取消"]`
+**确认选项**：`["执行推荐方案", "调整命令组合", "查看 Skill 详情", "修改需求", "取消"]`
 
 #### 路径 B：命令 + 自然语言
 
@@ -101,8 +104,8 @@
 - 如果需要额外命令：说明理由，推荐补充命令及执行顺序
 
 **步骤 3**：使用 `mcp______zhi` 展示方案，等待用户确认
-- 无需额外命令时选项：`["确认执行", "补充其他命令", "修改需求", "取消"]`
-- 需要额外命令时选项：`["执行全部命令", "仅执行指定命令", "调整方案", "取消"]`
+- 无需额外命令时选项：`["确认执行", "补充其他命令", "查看 Skill 详情", "修改需求", "取消"]`
+- 需要额外命令时选项：`["执行全部命令", "仅执行指定命令", "查看 Skill 详情", "调整方案", "取消"]`
 
 #### 并行/串行判定规则
 
@@ -119,6 +122,9 @@
 2. `/ccg:plan` — 理由：...（串行，第 2 步，依赖第 1 步输出）
 
 **[执行方式]** 串行执行 / 并行执行
+
+**[推荐 Skill]**（可选）
+- `<skill-name>` — 触发词匹配：「<matched-trigger>」→ 推荐参数：`<params>`
 
 **[替代方案]**（可选）
 - `/ccg:workflow` — 理由：...
@@ -430,24 +436,22 @@
 > **PreToolUse Hook 安全网**：即使提示词规则未被遵循，
 > `ccg-commit-interceptor.cjs` 会拦截 bare git commit 并返回 deny。
 
-Git 提交前必须展示：
+**命令执行流程**：
+1. 主代理识别到提交请求 → 执行 `/ccg:commit`
+2. 命令加载 `git-workflow` Skill（提交规范注入上下文）
+3. 调用 `Task({ subagent_type: "commit-agent", ... })`
+4. commit-agent 执行 10 阶段工作流
 
-1. **变更统计**：新增/修改/删除文件数量、总行数变更
-2. **提交信息预览**：完整的提交信息（包括 Co-Authored-By）
-3. **格式验证结果**：显示提交信息是否符合 Conventional Commits 规范
-4. **变更清单**：使用 `git status --short` 格式
-5. **推送确认**：如果需要推送到远程，单独确认
+**规范来源**（渐进式披露）：
+- 详细规范：`skills/git-workflow/SKILL.md`
+- 配置文件：`.ccg/commit-config.json`
 
-**提交信息格式规范**：
-- 格式：`[emoji] <type>(<scope>): <subject>`
-- 语言：简体中文（subject 和 body）
-- Emoji：必须使用（✨ feat, 🐛 fix, ♻️ refactor, 📝 docs, 等）
-- Type：feat/fix/refactor/docs/style/perf/test/chore/ci/revert
-- Scope：可选但建议使用（如 ccg, agents, hooks, api, ui）
-- Subject：≤ 50 字符，简洁描述变更
-- Footer：必须包含 `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-
-**配置文件**：`.ccg/commit-config.json` 集中管理提交规范配置
+**提交前必须展示**：
+1. 变更统计（文件数、行数）
+2. 提交信息预览
+3. 格式验证结果
+4. 变更清单
+5. 推送确认（如需要）
 
 ### 5.6 违规处理
 

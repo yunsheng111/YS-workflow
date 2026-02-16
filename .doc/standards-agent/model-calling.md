@@ -34,7 +34,9 @@ version: v1.0.0
 collab Skill 返回：
 - `codex_session`: Codex 会话 ID
 - `gemini_session`: Gemini 会话 ID
-- `status`: `success` / `degraded` / `failed`
+- `status`: `SUCCESS` / `DEGRADED` / `FAILED`（状态枚举真值源：`skills/collab/SKILL.md`）
+- `degraded_level`: `ACCEPTABLE` / `UNACCEPTABLE` / `null`（仅当 `status=DEGRADED` 时有值）
+- `missing_dimensions`: `["backend"]` / `["frontend"]` / `null`（仅当 `status=DEGRADED` 时有值，标注缺失的分析维度）
 - `codex_output`: Codex 输出内容
 - `gemini_output`: Gemini 输出内容
 
@@ -179,6 +181,6 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 - `spec-impl-agent`（阶段 3）
 - `fullstack-light-agent`（全栈场景）
 
-> **语义真源引用**：本文档中的门禁逻辑、状态枚举和降级策略的权威定义见 `.doc/standards-agent/dual-model-orchestration.md`。本文档仅定义调用协议（占位符、语法、适用范围），不重新定义门禁语义。如发现不一致，以 `dual-model-orchestration.md` 为准。
+> **语义真源引用**：本文档中的状态枚举（`SUCCESS | DEGRADED | FAILED`）、门禁逻辑和降级策略的唯一真值源为 `skills/collab/SKILL.md`。门禁语义的权威定义见 `.doc/standards-agent/dual-model-orchestration.md`。本文档仅定义调用协议（占位符、语法、适用范围），不重新定义状态枚举或门禁语义。如发现不一致，以 `skills/collab/SKILL.md` 为准。
 
 > **Legacy 警告**：历史版本中使用的 `codexCalled`/`geminiCalled` 私有标志位已废弃。门禁校验仅基于 `SESSION_ID`（`codexSession || geminiSession`），不再使用私有 `called` 标志。如在代理文件中发现 `codexCalled`/`geminiCalled`，应视为 legacy 代码并予以移除。

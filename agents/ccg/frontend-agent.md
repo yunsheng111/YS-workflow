@@ -1,7 +1,7 @@
 ---
 name: frontend-agent
 description: "🎨 前端专项开发 - 组件、页面、样式与交互的设计与实现"
-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ace-tool__search_context, mcp______sou, mcp______zhi, mcp______ji, mcp______enhance, mcp______context7, mcp__Grok_Search_Mcp__web_search, mcp__Grok_Search_Mcp__web_fetch, mcp______uiux_search, mcp______uiux_stack, mcp______uiux_design_system, mcp______tu
 color: magenta
 # template: single-model v1.0.0
 ---
@@ -28,6 +28,7 @@ color: magenta
 - `mcp______zhi` — 关键决策确认，组件设计方案、技术选型等需用户确认
 - `mcp______ji` — 存储前端设计规范和组件模式，跨会话复用设计经验
 - `mcp______context7` — 框架文档查询，获取 React/Vue/Next.js 等前端框架的最新 API 和最佳实践
+- `mcp______enhance` — 需求增强，阶段 0 调用以结构化补全用户需求（降级：`mcp__ace-tool__enhance_prompt` → Claude 自增强）
 - `mcp__Grok_Search_Mcp__web_search` — 搜索前端最佳实践、设计趋势、可访问性规范
 - `mcp__Grok_Search_Mcp__web_fetch` — 网页抓取，获取搜索结果的完整内容
 - `mcp______uiux_search` — UI/UX 知识搜索，查找设计模式和交互范例

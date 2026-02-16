@@ -38,11 +38,10 @@
 
 然后严格按照文档中的执行流程操作。
 
-**[Ledger Event]** 上报 `docs_read` 事件（包含读取的文档列表）
-
-> **注意**：Execution Ledger 当前处于基础设施预备阶段。
-> Ledger Event 标记为未来集成预留，当前阶段无需实际调用 ExecutionLedger API。
-> 待 Ledger 完全接入后，此标记将转为强制要求。
+**[Ledger Event - 强制]** 上报 `docs_read` 事件：
+- **状态**：SUCCESS
+- **payload**：`{ "docs": ["SKILL.md", "executor.md", "renderer.md", "reporter.md"] }`
+- 此事件上报为强制要求，不可跳过
 ```
 
 ### 步骤 1：初始化
@@ -60,6 +59,10 @@
 2. 验证无残留占位符（{{...}}）
 3. 使用 Bash 工具执行（run_in_background: true）
 4. 记录返回的 task_id
+
+**[Ledger Event - 强制]** 上报 `model_called` 事件：
+- **状态**：SUCCESS（命令已提交）/ FAILED（执行失败）
+- **payload**：`{ "backend": "codex", "task_id": "<task_id>" }`
 ```
 
 ### 步骤 3：渲染并执行 Gemini 命令
@@ -69,6 +72,10 @@
 2. 验证无残留占位符（{{...}}）
 3. 使用 Bash 工具执行（run_in_background: true）
 4. 记录返回的 task_id
+
+**[Ledger Event - 强制]** 上报 `model_called` 事件：
+- **状态**：SUCCESS（命令已提交）/ FAILED（执行失败）
+- **payload**：`{ "backend": "gemini", "task_id": "<task_id>" }`
 ```
 
 ### 步骤 4：等待结果 + 进度汇报
@@ -81,6 +88,10 @@
 3. 从输出中提取 SESSION_ID（正则：SESSION_ID:\s*([a-f0-9-]+)）
 4. 超时后继续轮询，不要 Kill 进程
 5. 模型返回后立即通过 zhi 推送输出摘要
+
+**[Ledger Event - 强制]** 每成功提取一个 SESSION_ID 后上报 `session_captured` 事件：
+- **状态**：SUCCESS（提取到有效 SESSION_ID）/ FAILED（未提取到）
+- **payload**：`{ "backend": "codex|gemini", "session_id": "<SESSION_ID>" }`
 ```
 
 ### 步骤 5：门禁校验
@@ -108,6 +119,11 @@
 3. 将缺失维度相关约束转为风险约束
 4. 通过 mcp______zhi 向用户展示降级详情并确认是否继续
 5. 仅在用户确认后才能进入下一阶段
+
+**[Ledger Event - 强制]** status=DEGRADED 时必须上报 `degraded` 事件：
+- **状态**：DEGRADED
+- **payload**：`{ "degraded_level": "ACCEPTABLE|UNACCEPTABLE", "missing_dimensions": [...], "risk_impact": "..." }`
+- DEGRADED 状态不上报此事件视为违规，Hook 将拦截后续写入
 
 若门禁失败（双模型均未返回 SESSION_ID => FAILED）：
 1. 重试 1 次（Level 1 降级）

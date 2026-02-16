@@ -1,0 +1,78 @@
+{
+  "version": "1.0.0",
+  "skills": {
+    "ui-ux-pro-max": {
+      "triggers": ["设计", "UI", "UX", "配色", "样式", "布局"],
+      "intents": ["design_system", "component_spec", "visual_review"],
+      "params_mapping": {
+        "style": "--style",
+        "domain": "--domain",
+        "palette": "--palette"
+      }
+    },
+    "database-designer": {
+      "triggers": ["数据库", "表结构", "SQL", "ER图", "Schema"],
+      "intents": ["schema_design", "query_optimization", "migration"],
+      "params_mapping": {
+        "db_type": "--db-type",
+        "table": "--table"
+      }
+    },
+    "ci-cd-generator": {
+      "triggers": ["CI", "CD", "流水线", "部署", "GitHub Actions"],
+      "intents": ["pipeline_config", "deploy_setup"],
+      "params_mapping": {
+        "platform": "--platform",
+        "env": "--env"
+      }
+    },
+    "documentation-writer": {
+      "triggers": ["文档", "README", "API文档", "注释"],
+      "intents": ["readme_gen", "api_doc", "code_comment"],
+      "params_mapping": {
+        "format": "--format",
+        "scope": "--scope"
+      }
+    },
+    "frontend-design": {
+      "triggers": ["前端", "页面", "组件", "HTML", "CSS"],
+      "intents": ["page_build", "component_create"],
+      "params_mapping": {
+        "framework": "--framework",
+        "component": "--component"
+      }
+    },
+    "git-workflow": {
+      "triggers": ["提交", "commit", "分支", "PR", "合并"],
+      "intents": ["commit_msg", "branch_manage"],
+      "params_mapping": {
+        "type": "--type",
+        "scope": "--scope"
+      }
+    },
+    "prototype-prompt-generator": {
+      "triggers": ["原型", "原型图", "设计稿", "移动端"],
+      "intents": ["prototype_spec"],
+      "params_mapping": {
+        "design_system": "--design-system",
+        "platform": "--platform"
+      }
+    },
+    "find-skills": {
+      "triggers": ["技能", "skill", "扩展", "插件"],
+      "intents": ["skill_discovery"],
+      "params_mapping": {
+        "query": "--query"
+      }
+    },
+    "collab": {
+      "triggers": ["双模型", "协作", "架构分析", "深度审查"],
+      "intents": ["architecture_analysis", "code_review"],
+      "params_mapping": {
+        "backend": "--backend",
+        "role": "--role",
+        "task": "--task"
+      }
+    }
+  }
+}
