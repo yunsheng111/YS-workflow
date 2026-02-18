@@ -80,79 +80,186 @@ color: orange
 
 #### D.0 创建文档目录结构
 
-在生成文档前，先创建标准的 `.doc/` 目录结构：
+在生成文档前，先创建标准的 `.doc/` 目录结构。这是项目级文档组织的基础设施。
 
-1. **创建目录树**：
-   ```
-   .doc/
-   ├── framework/
-   │   └── ccg/
-   ├── workflow/
-   │   ├── wip/
-   │   │   ├── research/
-   │   │   ├── analysis/
-   │   │   ├── execution/
-   │   │   ├── review/
-   │   │   └── acceptance/
-   │   ├── research/
-   │   ├── plans/
-   │   ├── reviews/
-   │   ├── progress/
-   │   └── archive/
-   ├── agent-teams/
-   │   ├── wip/
-   │   │   ├── research/
-   │   │   ├── planning/
-   │   │   ├── execution/
-   │   │   └── review/
-   │   ├── research/
-   │   ├── plans/
-   │   ├── reviews/
-   │   ├── progress/
-   │   └── archive/
-   ├── spec/
-   │   ├── wip/
-   │   │   ├── research/
-   │   │   ├── planning/
-   │   │   ├── execution/
-   │   │   └── review/
-   │   ├── constraints/
-   │   ├── proposals/
-   │   ├── plans/
-   │   ├── reviews/
-   │   ├── progress/
-   │   ├── templates/
-   │   └── archive/
-   ├── common/
-   │   ├── wip/
-   │   │   ├── research/
-   │   │   ├── planning/
-   │   │   └── execution/
-   │   ├── plans/
-   │   ├── reviews/
-   │   ├── progress/
-   │   └── archive/
-   ├── standards-agent/
-   ├── mcp/
-   └── guides/
-   ```
+##### 步骤 1：检查目录是否已存在
 
-2. **创建说明文件**：
-   - 在每个主目录下创建 `README.md` 说明用途
-   - 在空目录下放置 `.gitkeep` 以便版本控制跟踪
+使用 Glob 工具检查 `.doc/` 目录是否已存在：
+```
+Glob({ pattern: ".doc" })
+```
 
-3. **配置 .gitignore**：
-   - 在 `.doc/.gitignore` 中添加：
-     ```
-     # 忽略所有 wip 目录（临时文件）
-     **/wip/
+- 如果已存在：跳过目录创建，仅更新缺失的子目录和文件
+- 如果不存在：执行完整的目录创建流程
 
-     # 但保留目录结构
-     !**/wip/.gitkeep
-     ```
+##### 步骤 2：创建目录树
 
-4. **创建顶层说明**：
-   - 在 `.doc/README.md` 中写入目录结构说明和使用指南
+使用 Bash 工具批量创建目录结构：
+
+```bash
+mkdir -p .doc/{framework/ccg,workflow/{wip/{research,analysis,execution,review,acceptance},research,plans,reviews,progress,archive},agent-teams/{wip/{research,planning,execution,review},research,plans,reviews,progress,archive},spec/{wip/{research,planning,execution,review},constraints,proposals,plans,reviews,progress,templates,archive},common/{wip/{research,planning,execution},plans,reviews,progress,archive},standards-agent,mcp,guides}
+```
+
+**目录结构说明**：
+```
+.doc/
+├── framework/ccg/          # CCG 框架文档（架构、设计文档）
+├── workflow/               # 六阶段工作流文档
+│   ├── wip/               # 临时工作文件（不纳入版本控制）
+│   │   ├── research/      # 研究阶段临时文件
+│   │   ├── analysis/      # 构思阶段临时文件
+│   │   ├── execution/     # 执行阶段临时文件
+│   │   ├── review/        # 审查阶段临时文件
+│   │   └── acceptance/    # 验收阶段临时文件
+│   ├── research/          # 正式研究产出
+│   ├── plans/             # 正式实施计划
+│   ├── reviews/           # 审查报告
+│   ├── progress/          # 进度追踪
+│   └── archive/           # 已完成任务归档
+├── agent-teams/           # Agent Teams 并行开发文档
+│   ├── wip/               # 临时工作文件
+│   │   ├── research/      # team-research 过程记录
+│   │   ├── planning/      # team-plan 过程记录
+│   │   ├── execution/     # team-exec 执行日志
+│   │   └── review/        # team-review 过程记录
+│   ├── research/          # 正式研究产出
+│   ├── plans/             # 正式实施计划
+│   ├── reviews/           # 审查报告
+│   ├── progress/          # 进度追踪
+│   └── archive/           # 归档
+├── spec/                  # OpenSpec 约束驱动开发文档
+│   ├── wip/               # 临时工作文件
+│   │   ├── research/      # spec-research 过程记录
+│   │   ├── planning/      # spec-plan 过程记录
+│   │   ├── execution/     # spec-impl 执行日志
+│   │   └── review/        # spec-review 过程记录
+│   ├── constraints/       # 约束集文档
+│   ├── proposals/         # 提案文档
+│   ├── plans/             # 零决策实施计划
+│   ├── reviews/           # 合规审查报告
+│   ├── progress/          # 进度追踪
+│   ├── templates/         # 模板文件
+│   └── archive/           # 归档
+├── common/                # 通用规划文档
+│   ├── wip/               # 临时工作文件
+│   │   ├── research/      # 分析/检索过程记录
+│   │   ├── planning/      # 规划过程记录
+│   │   └── execution/     # 执行过程记录
+│   ├── plans/             # 正式计划文件
+│   ├── reviews/           # 审查报告
+│   ├── progress/          # 进度追踪
+│   └── archive/           # 归档
+├── standards-agent/       # 代理共享规范（预留）
+├── mcp/                   # MCP 工具文档（预留）
+└── guides/                # 操作指南（预留）
+```
+
+##### 步骤 3：创建 .gitkeep 文件
+
+在所有 `wip/` 子目录中创建 `.gitkeep` 文件，确保空目录被版本控制跟踪：
+
+```bash
+find .doc -type d -path "*/wip/*" -exec touch {}/.gitkeep \;
+```
+
+这将在以下目录创建 `.gitkeep`：
+- `workflow/wip/research/`、`workflow/wip/analysis/`、`workflow/wip/execution/`、`workflow/wip/review/`、`workflow/wip/acceptance/`
+- `agent-teams/wip/research/`、`agent-teams/wip/planning/`、`agent-teams/wip/execution/`、`agent-teams/wip/review/`
+- `spec/wip/research/`、`spec/wip/planning/`、`spec/wip/execution/`、`spec/wip/review/`
+- `common/wip/research/`、`common/wip/planning/`、`common/wip/execution/`
+
+##### 步骤 4：配置 .gitignore
+
+使用 Write 工具创建 `.doc/.gitignore`：
+
+```
+# 忽略所有 wip 目录（临时文件）
+**/wip/
+
+# 但保留目录结构
+!**/wip/.gitkeep
+```
+
+**作用**：
+- 忽略所有 `wip/` 目录下的临时文件（避免污染版本控制）
+- 保留 `.gitkeep` 文件以维持目录结构
+
+##### 步骤 5：创建顶层说明文档
+
+使用 Write 工具创建 `.doc/README.md`，内容包括：
+
+1. **目录结构总览**：完整的目录树和说明
+2. **生命周期管理**：临时/正式/进度/归档的管理规则
+3. **命名规范**：文件命名格式（`YYYYMMDD-<topic>-<type>.md`）
+4. **工作流说明**：各个工作流的用途和触发命令
+5. **清理策略**：自动清理规则和手动归档建议
+6. **使用建议**：最佳实践
+
+##### 步骤 6：创建各工作流说明文档
+
+为每个主要工作流目录创建 `README.md`：
+
+1. **`.doc/workflow/README.md`**：
+   - 六阶段工作流说明
+   - 触发命令：`/ccg:workflow`
+   - 适用场景：复杂全栈开发
+
+2. **`.doc/agent-teams/README.md`**：
+   - Agent Teams 工作流说明
+   - 触发命令：`/ccg:team-research`、`/ccg:team-plan`、`/ccg:team-exec`、`/ccg:team-review`
+   - 适用场景：多模块并行开发
+
+3. **`.doc/spec/README.md`**：
+   - OpenSpec 工作流说明
+   - 触发命令：`/ccg:spec-init`、`/ccg:spec-research`、`/ccg:spec-plan`、`/ccg:spec-impl`、`/ccg:spec-review`
+   - 适用场景：高复杂度、严格合规
+
+4. **`.doc/common/README.md`**：
+   - 通用规划说明
+   - 适用场景：单次性任务、简单任务
+
+##### 步骤 7：验证目录创建
+
+使用 Glob 工具验证目录结构是否完整：
+
+```
+Glob({ pattern: ".doc/**", path: "." })
+```
+
+检查以下关键目录是否存在：
+- `.doc/workflow/wip/research/`
+- `.doc/agent-teams/plans/`
+- `.doc/spec/constraints/`
+- `.doc/common/archive/`
+
+##### 步骤 8：记录创建状态
+
+在 `.claude/index.json` 中记录目录创建状态：
+
+```json
+{
+  "doc_structure": {
+    "created_at": "<ISO-8601 时间戳>",
+    "version": "1.0.0",
+    "directories": {
+      "workflow": true,
+      "agent-teams": true,
+      "spec": true,
+      "common": true,
+      "framework": true,
+      "standards-agent": true,
+      "mcp": true,
+      "guides": true
+    }
+  }
+}
+```
+
+##### 错误处理
+
+- 如果目录创建失败（权限问题、磁盘空间不足），记录错误并继续后续步骤
+- 如果 `.gitkeep` 创建失败，记录警告但不中断流程
+- 如果 README 创建失败，记录警告并在摘要中提示用户手动创建
 
 #### D.1 写入根级 `CLAUDE.md`
    - 如果已存在，则在顶部插入/更新 `变更记录 (Changelog)`
