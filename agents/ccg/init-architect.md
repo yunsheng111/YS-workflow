@@ -78,7 +78,83 @@ color: orange
 
 ### 阶段 D：产物生成与增量更新
 
-1. **写入根级 `CLAUDE.md`**
+#### D.0 创建文档目录结构
+
+在生成文档前，先创建标准的 `.doc/` 目录结构：
+
+1. **创建目录树**：
+   ```
+   .doc/
+   ├── framework/
+   │   └── ccg/
+   ├── workflow/
+   │   ├── wip/
+   │   │   ├── research/
+   │   │   ├── analysis/
+   │   │   ├── execution/
+   │   │   ├── review/
+   │   │   └── acceptance/
+   │   ├── research/
+   │   ├── plans/
+   │   ├── reviews/
+   │   ├── progress/
+   │   └── archive/
+   ├── agent-teams/
+   │   ├── wip/
+   │   │   ├── research/
+   │   │   ├── planning/
+   │   │   ├── execution/
+   │   │   └── review/
+   │   ├── research/
+   │   ├── plans/
+   │   ├── reviews/
+   │   ├── progress/
+   │   └── archive/
+   ├── spec/
+   │   ├── wip/
+   │   │   ├── research/
+   │   │   ├── planning/
+   │   │   ├── execution/
+   │   │   └── review/
+   │   ├── constraints/
+   │   ├── proposals/
+   │   ├── plans/
+   │   ├── reviews/
+   │   ├── progress/
+   │   ├── templates/
+   │   └── archive/
+   ├── common/
+   │   ├── wip/
+   │   │   ├── research/
+   │   │   ├── planning/
+   │   │   └── execution/
+   │   ├── plans/
+   │   ├── reviews/
+   │   ├── progress/
+   │   └── archive/
+   ├── standards-agent/
+   ├── mcp/
+   └── guides/
+   ```
+
+2. **创建说明文件**：
+   - 在每个主目录下创建 `README.md` 说明用途
+   - 在空目录下放置 `.gitkeep` 以便版本控制跟踪
+
+3. **配置 .gitignore**：
+   - 在 `.doc/.gitignore` 中添加：
+     ```
+     # 忽略所有 wip 目录（临时文件）
+     **/wip/
+
+     # 但保留目录结构
+     !**/wip/.gitkeep
+     ```
+
+4. **创建顶层说明**：
+   - 在 `.doc/README.md` 中写入目录结构说明和使用指南
+
+#### D.1 写入根级 `CLAUDE.md`
    - 如果已存在，则在顶部插入/更新 `变更记录 (Changelog)`
    - 根级结构（精简而全局）：
      - 项目愿景
@@ -105,12 +181,12 @@ color: orange
        click F "./services/audit-log/CLAUDE.md" "查看 audit-log 模块文档"
    ```
 
-2. **写入模块级 `CLAUDE.md`**
+#### D.2 写入模块级 `CLAUDE.md`
    - 放在每个模块目录下，顶部插入相对路径面包屑：
      `[根目录](../../CLAUDE.md) > [packages](../) > **auth**`
    - 结构：模块职责、入口与启动、对外接口、关键依赖与配置、数据模型、测试与质量、常见问题 (FAQ)、相关文件清单、变更记录
 
-3. **`.claude/index.json`**
+#### D.3 写入 `.claude/index.json`
    - 记录：当前时间戳、根/模块列表、每个模块的入口/接口/测试/重要路径、扫描覆盖率、忽略统计、是否因上限被截断（`truncated: true`）
 
 ### 阶段 E：覆盖率计算
@@ -155,6 +231,7 @@ color: orange
 - <模块名>：缺少 <接口/测试/数据模型> 信息
 
 ### 产物状态
+- .doc/ 目录结构：已创建
 - 根 CLAUDE.md：新建/更新
 - 模块 CLAUDE.md：N 个新建 / M 个更新
 - index.json：已更新
