@@ -158,7 +158,7 @@ primary = "codex"
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
 | `LITE_MODE` | `true` 时跳过外部模型调用，使用模拟响应 | `false` |
-| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-2.5-pro` |
+| `GEMINI_MODEL` | Gemini 模型版本 | `gemini-3-pro-preview` |
 
 **LITE_MODE 检查**：调用外部模型前必须检查。若为 `true`，跳过 Codex/Gemini 调用，使用占位符响应继续流程。
 

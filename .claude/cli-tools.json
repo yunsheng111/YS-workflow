@@ -1,0 +1,40 @@
+{
+  "version": "3.4.0",
+  "tools": {
+    "gemini": {
+      "enabled": true,
+      "primaryModel": "gemini-3-pro-preview",
+      "secondaryModel": "gemini-2.5-flash",
+      "tags": [],
+      "type": "builtin"
+    },
+    "qwen": {
+      "enabled": false,
+      "primaryModel": "coder-model",
+      "secondaryModel": "coder-model",
+      "tags": [],
+      "type": "builtin"
+    },
+    "codex": {
+      "enabled": true,
+      "primaryModel": "gpt-5.2",
+      "secondaryModel": "gpt-5.2",
+      "tags": [],
+      "type": "builtin"
+    },
+    "claude": {
+      "enabled": true,
+      "primaryModel": "sonnet",
+      "secondaryModel": "haiku",
+      "tags": [],
+      "type": "builtin"
+    },
+    "opencode": {
+      "enabled": true,
+      "primaryModel": "opencode/glm-4.7-free",
+      "secondaryModel": "opencode/glm-4.7-free",
+      "tags": [],
+      "type": "builtin"
+    }
+  }
+}
