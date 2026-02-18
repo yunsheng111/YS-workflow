@@ -21,8 +21,8 @@ function bashRendererHook(params) {
   }
 
   try {
-    // 加载配置
-    const configPath = path.join(process.cwd(), '.ccg', 'config.toml');
+    // 加载配置（使用 __dirname 确保路径稳定，不受 cwd 影响）
+    const configPath = path.join(__dirname, '..', 'config.toml');
     const ccgBin = loadConfig(configPath);
 
     // 构建运行时变量
