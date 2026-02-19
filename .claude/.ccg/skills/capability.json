@@ -3,12 +3,11 @@
   "skills": {
     "ui-ux-pro-max": {
       "triggers": [
-        "设计",
-        "UI",
-        "UX",
-        "配色",
-        "样式",
-        "布局"
+        "设计系统",
+        "配色方案",
+        "字体搭配",
+        "UI审查",
+        "设计令牌"
       ],
       "intents": [
         "design_system",
@@ -73,14 +72,8 @@
         "scope": "--scope"
       }
     },
-    "frontend-design": {
-      "triggers": [
-        "前端",
-        "页面",
-        "组件",
-        "HTML",
-        "CSS"
-      ],
+    "visual-creative-guide": {
+      "triggers": [],
       "intents": [
         "page_build",
         "component_create"
@@ -109,10 +102,9 @@
     },
     "prototype-prompt-generator": {
       "triggers": [
-        "原型",
-        "原型图",
-        "设计稿",
-        "移动端"
+        "生成原型Prompt",
+        "设计稿规格",
+        "prototype prompt"
       ],
       "intents": [
         "prototype_spec"
@@ -339,7 +331,7 @@
       "migration_source": "commands/ccg/commit.md"
     },
     "frontend-dev": {
-      "triggers": ["前端开发", "UI开发", "组件开发", "frontend dev"],
+      "triggers": ["前端开发", "前端实现", "组件实现", "页面实现"],
       "intents": ["frontend_development", "ui_implementation"],
       "params_mapping": { "framework": "--framework" },
       "migration_source": "commands/ccg/frontend.md"

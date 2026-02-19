@@ -44,8 +44,8 @@ color: magenta
 
 ## Skills
 
-- `ui-ux-pro-max` — UI/UX 设计系统，组件规范、设计令牌、交互模式
-- `frontend-design` — 前端设计模式，组件架构、状态管理、路由设计
+- `ui-ux-pro-max` — 设计系统数据查询（配色/字体/风格数据），提供数据支持，设计决策由本代理完成。与 MCP `uiux_*` 分工：`uiux_*` 用于实时小范围查询，`ui-ux-pro-max` 用于批量生成完整设计系统
+- `visual-creative-guide` — 视觉创意指南，独创性设计原则和美学方向（被引用指南，不独立触发）
 
 ## 共享规范
 
